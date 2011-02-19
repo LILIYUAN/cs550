@@ -1,0 +1,72 @@
+(10:12:27  IST) sanjeev.bagewadi@gmail.com/346D2996: Cool work on SQlite !
+(10:12:45  IST) sanjeev.bagewadi@gmail.com/346D2996: Can you check if there is a lib-api that we can use ?
+(10:13:01  IST) sanjeev.bagewadi@gmail.com/346D2996: I have written the basic index server code. Facing some compile issues..
+(10:13:08  IST) sanjeev.bagewadi@gmail.com/346D2996: been ages since I wrote RPC...
+(10:13:27  IST) Ravi Manjunath: lib-api ? we have a set of sql appi that we can use
+(10:13:54  IST) sanjeev.bagewadi@gmail.com/346D2996: As i understand sqlite is a file based db and there is no daemon running...
+(10:13:54  IST) Ravi Manjunath: directly call from c code  ....... sql_get_table sql_create sql_open blah blah
+(10:14:03  IST) sanjeev.bagewadi@gmail.com/346D2996: Ah cool !
+(10:14:06  IST) sanjeev.bagewadi@gmail.com/346D2996: got it...
+(10:14:20  IST) Ravi Manjunath: lets keep the db open and close it in the end :)
+(10:14:32  IST) sanjeev.bagewadi@gmail.com/346D2996: You got a basic rpc code woriking on linux right ?
+(10:14:44  IST) Ravi Manjunath: yes
+(10:14:50  IST) Ravi Manjunath: simple echo command
+(10:15:06  IST) Ravi Manjunath: lemme search for the link
+(10:15:10  IST) sanjeev.bagewadi@gmail.com/346D2996: I will send you the code that I wrote... please check what the error is...
+(10:15:26  IST) Ravi Manjunath: ok
+(10:15:27  IST) sanjeev.bagewadi@gmail.com/346D2996: It seems some stupid error and I am not able to figure out...
+(10:15:40  IST) Ravi Manjunath: will try
+(10:18:52  IST) sanjeev.bagewadi@gmail.com/346D2996: sent you the code
+(10:27:06  IST) sanjeev.bagewadi@gmail.com/346D2996: register is a keyword in C and completely forgot it :D
+(10:27:11  IST) sanjeev.bagewadi@gmail.com/346D2996: hence the errors...
+(10:27:18  IST) sanjeev.bagewadi@gmail.com/346D2996: I am fixing it... don't worry
+(10:27:21  IST) Ravi Manjunath: :)
+(10:29:32  IST) sanjeev.bagewadi@gmail.com/346D2996: fixed
+(10:29:44  IST) Ravi Manjunath: :D
+(10:30:01  IST) sanjeev.bagewadi@gmail.com/346D2996: We now need the client code to call and register... I will write it later today afternoon...
+(10:30:32  IST) sanjeev.bagewadi@gmail.com/346D2996: For now I am creating a file for every file registered with the names of the peer added to the file.
+(10:30:47  IST) sanjeev.bagewadi@gmail.com/346D2996: We could change this to use SQLite if it is simple
+(10:31:50  IST) sanjeev.bagewadi@gmail.com/346D2996: Here is what the record would look like :
+<filename>:<comma separated list of peers which serve this file>
+And this should be indexed on the filename
+(10:32:11  IST) sanjeev.bagewadi@gmail.com/346D2996: that way we can query on the file name and figure out the list of peers serving it
+(10:32:22  IST) sanjeev.bagewadi@gmail.com/346D2996: See if you can build the code for this
+(10:32:34  IST) sanjeev.bagewadi@gmail.com/346D2996: I will send you the fresh tar
+(10:32:48  IST) sanjeev.bagewadi@gmail.com/346D2996: You will need to plug into to add_peer() 
+(10:34:02  IST) Ravi Manjunath: changin it to sql would be simple
+(10:34:34  IST) sanjeev.bagewadi@gmail.com/346D2996: We want something simple where there is no need to run a database daemon
+(10:34:45  IST) sanjeev.bagewadi@gmail.com/346D2996: That will keep it simple
+(10:35:05  IST) Ravi Manjunath: we dont need to run a daemon
+(10:35:09  IST) sanjeev.bagewadi@gmail.com/346D2996: today I can do it with a simple file plugin without using a database...
+(10:35:13  IST) Ravi Manjunath: instead of openeing a file and searching
+(10:35:21  IST) Ravi Manjunath: we can open the db run the query\
+(10:35:54  IST) sanjeev.bagewadi@gmail.com/346D2996: I will call you and explain the idea...
+(10:36:02  IST) sanjeev.bagewadi@gmail.com/346D2996: sometime today...
+(10:36:28  IST) sanjeev.bagewadi@gmail.com/346D2996: We could try both DB (of your choice) and files approach..
+(10:36:37  IST) Ravi Manjunath: hmmm ok sir
+(10:43:40  IST) sanjeev.bagewadi@gmail.com/346D2996: the basic idea of using files is as below :
+- A record in the db is similar to a file :eg /tmp/ind-dir/3idiots
+- The file : /tmp/ind-dir/3idiots has the following contents :
+hostname1
+hostname2
+
+- Here the above contents indicate that both hostname1 and hostname2 have the file 3idiots and can serve it.
+
+(10:44:20  IST) Ravi Manjunath: ok
+(10:45:13  IST) sanjeev.bagewadi@gmail.com/346D2996: So, when the query for the file "3idiots" comes in the index server tries to open() the file "/tmp/ind-dir/3idiots" and if it is able to open then we know the file is available with atleast one peer.. so, read the contents line by line and send the list to the client
+(10:45:56  IST) Ravi Manjunath: :)
+(10:46:03  IST) Ravi Manjunath: efficient
+(10:46:11  IST) sanjeev.bagewadi@gmail.com/346D2996: If another peer (eg. hostname3) also registers the same file, we just append to the contents and the file would look as below :
+hostname1
+hostname2
+hostname3
+(10:46:41  IST) sanjeev.bagewadi@gmail.com/346D2996: So, the query business is as simple as trying to open the filename..
+(10:47:05  IST) sanjeev.bagewadi@gmail.com/346D2996: Just one syscall which is cheap. And if the file exists you already have the contents...
+(10:48:59  IST) sanjeev.bagewadi@gmail.com/346D2996: The complexity of finding the file ie. indexing logic now resides with the underlying filsystem of /tmp/ind-dir which makes our code simple
+(10:49:00  IST) Ravi Manjunath: cool
+(10:49:10  IST) Ravi Manjunath: true
+(10:49:13  IST) sanjeev.bagewadi@gmail.com/346D2996: how do you like it ?
+(10:49:38  IST) Ravi Manjunath: lets explain this in our doc .......
+(10:49:47  IST) sanjeev.bagewadi@gmail.com/346D2996: It scales well enough for our kind of load.. may not be best for real world loads but, serves the purpose.
+(10:49:48  IST) Ravi Manjunath: it looks good with the req and efficiency :)
+(10:50:20  IST) sanjeev.bagewadi@gmail.com/346D2996: Plugging in a database is simple too if you want it that way

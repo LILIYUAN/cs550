@@ -1,0 +1,9 @@
+register_all_files(char *dirname) {
+{
+    - clnt_create() to connect to the index server.
+    - Open the directory
+    - for every file in the directory {
+        - Make RPC call to the index server to register the filename.
+            registry_1(clnt_handle, file_record);
+      }
+}
