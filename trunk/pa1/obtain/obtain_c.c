@@ -12,9 +12,9 @@ int get_file(char *host, char *name)
     readfile_res *result;
     request req;
     FILE *file;
-
+    int flag = 1;
     req.name = name;
-    req.start = 0;
+    req.seek_bytes = 0;
     /*
      * Create client handle used for calling FTPPROG on
      * the server designated on the command line. Use
@@ -36,7 +36,7 @@ int get_file(char *host, char *name)
      * Call the remote procedure readdir on the server
      */
     while (1) {
-        req.start = total_bytes;
+        req.seek_bytes = total_bytes;
         result = obtain_1(&req, clnt);
         if (result == NULL) {
             /*
@@ -63,9 +63,17 @@ int get_file(char *host, char *name)
          * Successfully got a chunk of the file.
          * Write into our local file.
          */
+	//printf("\n read %d \t %s", result->readfile_res_u.chunk.bytes,result->readfile_res_u.chunk.data);
         write_bytes = fwrite(result->readfile_res_u.chunk.data, 1, result->readfile_res_u.chunk.bytes, file);
+
+	//printf("\n  write %d \t %s", result->readfile_res_u.chunk.bytes, result->readfile_res_u.chunk.data);
+
+
+	// lets print the total number of bytes read and written in each cycle
+	printf(" \n read %d written %d ",result->readfile_res_u.chunk.bytes,write_bytes);        
         total_bytes += result->readfile_res_u.chunk.bytes;
-        if (result->readfile_res_u.chunk.bytes < SIZE) 
+	flag = 0;
+        if (result->readfile_res_u.chunk.bytes < SIZE ) 
             break;
     }
 

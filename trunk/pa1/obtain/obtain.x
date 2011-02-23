@@ -1,18 +1,19 @@
 const MAXLEN = 1024;
-const SIZE = 8192;
+const SIZE = 4096;
 
 /*
- * Type for storing path
+ * Type for storing path . Assuming max file path length to be 1024
  */
 typedef string filename<MAXLEN>;
 
 /*
- * Structure for sending request. Expects the path of the file
- * and the byte number at which to start reading the file from
+ * This is the structure for sending request. It has the path of 
+ * the file name on the server and the byte number from where
+ * the data should be read.
  */
 struct request {
     filename name;
-    int start;
+    int seek_bytes;
 };
 
 /*
@@ -25,15 +26,15 @@ typedef struct request request;
  * sent from the server to the client in the current
  * remote procedure call
  */
-typedef string filechunk<SIZE>;
+typedef string filedata<SIZE>;
 
 /*
  * Response sent by the server to the client as a response
  * to remote procedure call, containing the filechunk for
  * the current call and number of bytes actually read
  */
-struct chunkreceive {
-    filechunk data;
+struct datareceived {
+    filedata data;
     int bytes;
 };
 
@@ -41,19 +42,16 @@ struct chunkreceive {
  * Type that represents the structure for file's chunks
  * to be received from the server
  */
-typedef struct chunkreceive chunkreceive;
+typedef struct datareceived datareceived;
 
 union readfile_res switch (int errno) {
     case 0:
-        chunkreceive chunk;
+        datareceived chunk;
     default:
         void;
 };
 
 /*
- * Remote procedure defined in the Interface Definition Language
- * of SUN RPC, contains PROGRAM and VERSION name definitions and
- * the remote procedure signature
  */
 program OBTAINPROG {
     version OBTAINVER {

@@ -14,30 +14,30 @@ extern "C" {
 #endif
 
 #define MAXLEN 1024
-#define SIZE 8192
+#define SIZE 4096
 
 typedef char *filename;
 
 struct request {
 	filename name;
-	int start;
+	int seek_bytes;
 };
 typedef struct request request;
 
 
-typedef char *filechunk;
+typedef char *filedata;
 
-struct chunkreceive {
-	filechunk data;
+struct datareceived {
+	filedata data;
 	int bytes;
 };
-typedef struct chunkreceive chunkreceive;
+typedef struct datareceived datareceived;
 
 
 struct readfile_res {
 	int errno;
 	union {
-		chunkreceive chunk;
+		datareceived chunk;
 	} readfile_res_u;
 };
 typedef struct readfile_res readfile_res;
@@ -64,18 +64,18 @@ extern int obtainprog_1_freeresult ();
 extern  bool_t xdr_filename (XDR *, filename*);
 extern  bool_t xdr_request (XDR *, request*);
 extern  bool_t xdr_request (XDR *, request*);
-extern  bool_t xdr_filechunk (XDR *, filechunk*);
-extern  bool_t xdr_chunkreceive (XDR *, chunkreceive*);
-extern  bool_t xdr_chunkreceive (XDR *, chunkreceive*);
+extern  bool_t xdr_filedata (XDR *, filedata*);
+extern  bool_t xdr_datareceived (XDR *, datareceived*);
+extern  bool_t xdr_datareceived (XDR *, datareceived*);
 extern  bool_t xdr_readfile_res (XDR *, readfile_res*);
 
 #else /* K&R C */
 extern bool_t xdr_filename ();
 extern bool_t xdr_request ();
 extern bool_t xdr_request ();
-extern bool_t xdr_filechunk ();
-extern bool_t xdr_chunkreceive ();
-extern bool_t xdr_chunkreceive ();
+extern bool_t xdr_filedata ();
+extern bool_t xdr_datareceived ();
+extern bool_t xdr_datareceived ();
 extern bool_t xdr_readfile_res ();
 
 #endif /* K&R C */

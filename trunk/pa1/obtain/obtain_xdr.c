@@ -22,13 +22,13 @@ xdr_request (XDR *xdrs, request *objp)
 
 	 if (!xdr_filename (xdrs, &objp->name))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->start))
+	 if (!xdr_int (xdrs, &objp->seek_bytes))
 		 return FALSE;
 	return TRUE;
 }
 
 bool_t
-xdr_filechunk (XDR *xdrs, filechunk *objp)
+xdr_filedata (XDR *xdrs, filedata *objp)
 {
 	register int32_t *buf;
 
@@ -38,11 +38,11 @@ xdr_filechunk (XDR *xdrs, filechunk *objp)
 }
 
 bool_t
-xdr_chunkreceive (XDR *xdrs, chunkreceive *objp)
+xdr_datareceived (XDR *xdrs, datareceived *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_filechunk (xdrs, &objp->data))
+	 if (!xdr_filedata (xdrs, &objp->data))
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->bytes))
 		 return FALSE;
@@ -58,7 +58,7 @@ xdr_readfile_res (XDR *xdrs, readfile_res *objp)
 		 return FALSE;
 	switch (objp->errno) {
 	case 0:
-		 if (!xdr_chunkreceive (xdrs, &objp->readfile_res_u.chunk))
+		 if (!xdr_datareceived (xdrs, &objp->readfile_res_u.chunk))
 			 return FALSE;
 		break;
 	default:
