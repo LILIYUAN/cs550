@@ -7,9 +7,9 @@ extern __thread int errno;
 readfile_res* obtain_1_svc(request *req, struct svc_req *rqstp)
 {
     FILE *file;
-    char data[1024];
     int bytes;
     static readfile_res res;
+    char data[SIZE];
 
     file = fopen(req->name, "rb");
 	printf("hello ");
@@ -19,8 +19,7 @@ readfile_res* obtain_1_svc(request *req, struct svc_req *rqstp)
     }
 
     fseek (file, req->start, SEEK_SET);
-    bytes = fread(data, 1, 1024, file);
-
+    bytes = fread(data, 1, SIZE, file);
     res.readfile_res_u.chunk.data = data;
     res.readfile_res_u.chunk.bytes = bytes;
 
