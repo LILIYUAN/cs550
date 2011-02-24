@@ -14,5 +14,36 @@ xdr_registry_rec (XDR *xdrs, registry_rec *objp)
 		 return FALSE;
 	 if (!xdr_string (xdrs, &objp->fname, MAXNAME))
 		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->ret))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_query_req (XDR *xdrs, query_req *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_string (xdrs, &objp->fname, MAXNAME))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->count))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_query_rec (XDR *xdrs, query_rec *objp)
+{
+	register int32_t *buf;
+
+	int i;
+	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->count))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->peers, BUFSIZE,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
 	return TRUE;
 }

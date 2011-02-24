@@ -21,10 +21,15 @@ indsrvprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
 	union {
 		registry_rec registry_1_arg;
+		query_req search_1_arg;
 	} argument;
-	char *result;
+	union {
+		int registry_1_res;
+		query_rec search_1_res;
+	} result;
+	bool_t retval;
 	xdrproc_t _xdr_argument, _xdr_result;
-	char *(*local)(char *, struct svc_req *);
+	bool_t (*local)(char *, void *, struct svc_req *);
 
 	switch (rqstp->rq_proc) {
 	case NULLPROC:
@@ -34,7 +39,13 @@ indsrvprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 	case registry:
 		_xdr_argument = (xdrproc_t) xdr_registry_rec;
 		_xdr_result = (xdrproc_t) xdr_int;
-		local = (char *(*)(char *, struct svc_req *)) registry_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))registry_1_svc;
+		break;
+
+	case search:
+		_xdr_argument = (xdrproc_t) xdr_query_req;
+		_xdr_result = (xdrproc_t) xdr_query_rec;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))search_1_svc;
 		break;
 
 	default:
@@ -46,14 +57,17 @@ indsrvprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		svcerr_decode (transp);
 		return;
 	}
-	result = (*local)((char *)&argument, rqstp);
-	if (result != NULL && !svc_sendreply(transp, (xdrproc_t) _xdr_result, result)) {
+	retval = (bool_t) (*local)((char *)&argument, (void *)&result, rqstp);
+	if (retval > 0 && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)&result)) {
 		svcerr_systemerr (transp);
 	}
 	if (!svc_freeargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) &argument)) {
 		fprintf (stderr, "%s", "unable to free arguments");
 		exit (1);
 	}
+	if (!indsrvprog_1_freeresult (transp, _xdr_result, (caddr_t) &result))
+		fprintf (stderr, "%s", "unable to free results");
+
 	return;
 }
 

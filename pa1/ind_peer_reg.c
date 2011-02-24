@@ -21,7 +21,8 @@ register_files(char *peer, char *index_svr, char *dirname)
     DIR *dirp;
     struct dirent *entp;
     registry_rec rec;
-    int *ret;
+    bool_t ret;
+    int res;
 
     if ((dirp = opendir(dirname)) == NULL) {
         printf("opendir(%s) failed with errno %d\n", dirname, errno);
@@ -43,14 +44,62 @@ register_files(char *peer, char *index_svr, char *dirname)
             continue;
         rec.peer = peer;
         rec.fname = entp->d_name;
-        ret = registry_1(&rec, clnt);
-        if (*ret != 0) {
-            printf("Failed to register : ret = %d\n", *ret);
-            return (*ret);
+        ret = registry_1(&rec, &res, clnt);
+        if (res != RPC_SUCCESS) {
+            printf("Failed to register : res = %d\n", res);
+            return (res);
         }
     }
 
     closedir(dirp);
+    clnt_destroy(clnt);
+    return (0);
+}
+
+/*
+ * This routine queries the index-server to find the list of peers serving the
+ * file rec->fname.
+ */
+int
+query_and_fetch(char *fname, char *index_svr) 
+{
+    query_req req
+    query_rec res_rec;
+    CLIENT *clnt;
+    bool_t ret;
+    int res, i;
+
+    if ((clnt = clnt_create(index_svr, INDSRVPROG, INDSRVVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(index_svr);
+        return(-1);
+    }
+
+    printf("Created the client\n");
+    /*
+     * Copy the requested filename into the query record.
+     */
+    req.fname = fname;
+    req.count = MAXCOUNT;
+
+    printf("search(%s) \n", rec.fname);
+
+    ret = search_1(&req, &res_rec, clnt);
+
+    if (ret != RPC_SUCCESS) {
+        clnt_perror (clnt, "call failed");
+    }
+
+    if (res_rec.count == 0) {
+        printf("Failed to find any peers serving file : %s\n", rec.fname);
+        return (-1);
+    }
+
+    printf("Peers serving %s = %d %d\n", rec.fname, rec_ret.count, res);
+    printf("peers %s\n", res_rec.peers);
+    for (i = 0; i < rec_ret.count; i++) {
+        printf("hostname : %s\n", rec_ret.peers+(i * MAXNAME));
+    }
+
     return (0);
 }
 
@@ -58,8 +107,7 @@ register_files(char *peer, char *index_svr, char *dirname)
  * usage
  */
 void
-usage(char *name)
-{
+usage(char *name) {
     printf("Usage : %s <peername> <index-server-name> <share-dir>\n", name);
     printf("\tpeername - Local Hostname of the peer machine which is running this server\n");
     printf("\tinder-server-name - Hostname of the index server\n");
@@ -81,5 +129,8 @@ main(int argc, char *argv[])
      * Register the files in the given directory with the index-server.
      */
     register_files(argv[1], argv[2], argv[3]);
+    printf("Registered files\n");
+
+    query_and_fetch("file1", argv[2]);
     return (0);
 }

@@ -1,13 +1,18 @@
-rpcgen ind.x
+#!/usr/bin/ksh
 
-cc -c -o ind_xdr.o ind_xdr.c
-cc -c -o ind_svc.o ind_svc.c
-cc -c -o ind_clnt.o ind_clnt.c
+set -x 
 
-cc -c -o ind_svc_proc.o ind_svc_proc.c
-cc -o indsvr ind_svc.o ind_xdr.o ind_svc_proc.o -lnsl
 
-cc -c -o ind_peer_reg.o ind_peer_reg.c
-cc -o ind_peer_reg ind_clnt.o ind_xdr.o ind_peer_reg.o -lnsl
+rpcgen -M ind.x
+
+gcc -c -o ind_xdr.o ind_xdr.c
+gcc -c -o ind_svc.o ind_svc.c
+gcc -c -o ind_clnt.o ind_clnt.c
+
+gcc -c -o ind_svc_proc.o ind_svc_proc.c
+gcc -o indsvr ind_svc.o ind_xdr.o ind_svc_proc.o -lnsl
+
+gcc -c -o ind_peer_reg.o ind_peer_reg.c
+gcc -o ind_peer_reg ind_clnt.o ind_xdr.o ind_peer_reg.o -lnsl
 
 
