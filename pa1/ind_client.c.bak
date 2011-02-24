@@ -1,0 +1,139 @@
+#include "ind.h"
+#include <dirent.h>
+#include <rpc/rpc.h>
+#include <errno.h>
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+
+#define SERVER_DIR "/tmp/indsvr/"
+
+/*
+ * This routine registers all the files in the directory <dirname>
+ * with the index server against the peer.
+ */
+int
+register_files(char *peer, char *index_svr, char *dirname)
+{
+    CLIENT *clnt;
+    DIR *dirp;
+    struct dirent *entp;
+    registry_rec rec;
+    bool_t ret;
+    int res;
+
+    if ((dirp = opendir(dirname)) == NULL) {
+        printf("opendir(%s) failed with errno %d\n", dirname, errno);
+        return (errno);
+    }
+
+    if ((clnt = clnt_create(index_svr, INDSRVPROG, INDSRVVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(index_svr);
+        return(-1);
+    }
+
+    while ((entp = readdir(dirp)) != NULL) {
+        printf("registering file : %s\n", entp->d_name);
+
+        /*
+         * Skip "." and ".."
+         */
+        if (strcmp(entp->d_name, ".") == 0 || strcmp(entp->d_name, "..") == 0)
+            continue;
+        rec.peer = peer;
+        rec.fname = entp->d_name;
+        ret = registry_1(&rec, &res, clnt);
+        if (res != RPC_SUCCESS) {
+            printf("Failed to register : res = %d\n", res);
+            return (res);
+        }
+    }
+
+    closedir(dirp);
+    clnt_destroy(clnt);
+    return (0);
+}
+
+/*
+ * This routine queries the index-server to find the list of peers serving the
+ * file rec->fname.
+ */
+int
+query_and_fetch(char *fname, char *index_svr) 
+{
+    query_req req;
+    query_rec res_rec;
+    CLIENT *clnt;
+    bool_t ret;
+    int res, i;
+
+    if ((clnt = clnt_create(index_svr, INDSRVPROG, INDSRVVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(index_svr);
+        return(-1);
+    }
+
+    printf("Created the client\n");
+    /*
+     * Copy the requested filename into the query record.
+     */
+    req.fname = fname;
+    req.count = MAXCOUNT;
+
+    printf("search(%s) \n", req.fname);
+
+    ret = search_1(&req, &res_rec, clnt);
+
+    if (ret != RPC_SUCCESS) {
+        printf("ret = %d\n", ret);
+        clnt_perror (clnt, "call failed");
+    }
+
+    if (res_rec.count == 0) {
+        printf("Failed to find any peers serving file : %s\n", req.fname);
+        return (-1);
+    }
+
+    printf("Peers serving %s = %d %d\n", req.fname, res_rec.count, res);
+    printf("peers %s\n", res_rec.peers);
+    /*
+    for (i = 0; i < res_rec.count; i++) {
+        printf("hostname : %s\n", res_rec.peers+(i * MAXNAME));
+    }
+    */
+
+    return (0);
+}
+
+/*
+ * usage
+ */
+void
+usage(char *name) {
+    printf("Usage : %s <peername> <index-server-name> <share-dir>\n", name);
+    printf("\tpeername - Local Hostname of the peer machine which is running this server\n");
+    printf("\tinder-server-name - Hostname of the index server\n");
+    printf("\tshare-dir - Directory that you would like to share\n");
+}
+
+int
+main(int argc, char *argv[])
+{
+    char *dirp;
+    char *peer;
+
+    if (argc != 4 || strlen(argv[1]) == 0 || strlen(argv[2]) == 0 || strlen(argv[3]) == 0) {
+        usage(argv[0]);
+        return (1);
+    }
+
+    /*
+     * Register the files in the given directory with the index-server.
+     */
+    register_files(argv[1], argv[2], argv[3]);
+    printf("Registered files\n");
+
+    query_and_fetch("file1", argv[2]);
+    return (0);
+}
