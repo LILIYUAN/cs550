@@ -3,18 +3,18 @@
 
 # Parameters
 
-CLIENT = ind_client
-SERVER = ind_server
+CLIENT = rdict_client
+SERVER = rdict_server
 
 SOURCES_CLNT.c = 
 SOURCES_CLNT.h = 
 SOURCES_SVC.c = 
 SOURCES_SVC.h = 
-SOURCES.x = ind.x
+SOURCES.x = rdict.x
 
-TARGETS_SVC.c = ind_svc.c ind_server.c ind_xdr.c 
-TARGETS_CLNT.c = ind_clnt.c ind_client.c ind_xdr.c 
-TARGETS = ind.h ind_xdr.c ind_clnt.c ind_svc.c ind_client.c ind_server.c
+TARGETS_SVC.c = rdict_svc.c rdict_server.c rdict_xdr.c rdict_srp.c
+TARGETS_CLNT.c = rdict_clnt.c rdict_client.c rdict_xdr.c 
+TARGETS = rdict.h rdict_xdr.c rdict_clnt.c rdict_svc.c rdict_client.c rdict_server.c
 
 OBJECTS_CLNT = $(SOURCES_CLNT.c:%.c=%.o) $(TARGETS_CLNT.c:%.c=%.o)
 OBJECTS_SVC = $(SOURCES_SVC.c:%.c=%.o) $(TARGETS_SVC.c:%.c=%.o)
@@ -23,7 +23,7 @@ OBJECTS_SVC = $(SOURCES_SVC.c:%.c=%.o) $(TARGETS_SVC.c:%.c=%.o)
 CPPFLAGS += -D_REENTRANT
 CFLAGS += -g 
 LDLIBS += -lnsl -lpthread 
-RPCGENFLAGS = -M
+ RPCGENFLAGS =  
 
 # Targets 
 
