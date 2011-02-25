@@ -14,11 +14,11 @@ int query_and_fetch(char *fname, char *index_svr) {
         query_rec res_rec;
         CLIENT *clnt;
         bool_t ret;
-        int res, i;
+        int res, i, choice;
 
         if ((clnt = clnt_create(index_svr, OBTAINPROG, OBTAINVER, "tcp")) == NULL) {
         	clnt_pcreateerror(index_svr);
-	        return(-1);
+	        return (-1);
         }
 
         printf("Created the client\n");
@@ -44,8 +44,14 @@ int query_and_fetch(char *fname, char *index_svr) {
         printf("Peers serving %s = %d\n", res_rec.fname, res_rec.count);
         printf("peers %s\n", res_rec.peers);
         for (i = 0; i < res_rec.count; i++) {
-		printf("hostname : %s\n", res_rec.peers+(i * MAXHOSTNAME));
+		printf("%d  :  hostname  :  %s\n", i, res_rec.peers+(i * MAXHOSTNAME));
    	}
+
+	// this is my junk code needs improvement :)
+	printf("Select a Peer from where you want to transfer the file\n");
+	scanf("%d",&choice); 
+
+	get_file(res_rec.peers+(choice * MAXHOSTNAME) , req.fname);
 
 	return (0);
 }
@@ -137,7 +143,6 @@ void usage(char *name) {
     printf("Usage : %s <file-name> <index-server-name> \n", name);
     printf("\tfile-name - name of the file that you are searching \n");
     printf("\tinder-server-name - Hostname of the index server\n");
-    printf("\tshare-dir - Directory that you would like to share\n");
 }
 
 int main(int argc, char *argv[])
@@ -150,7 +155,8 @@ int main(int argc, char *argv[])
 	        return (1);
    	}
 
-        result = get_file(argv[1], argv[2]);
+	query_and_fetch(argv[1],argv[2]);
+        //result = get_file(argv[1], argv[2]);
 
         return 0;
 }
