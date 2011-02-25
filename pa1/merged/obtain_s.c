@@ -7,15 +7,18 @@
 
 extern __thread int errno;
 
-#define SERVER_DIR "/tmp/srvdir"
+#define SERVER_INDEX_DIR "/tmp/index"
+#define SERVER_DATA_DIR "/tmp/data"
 
 bool_t obtain_1_svc(request *req, readfile_res *res,struct svc_req *rqstp) {
 
 	FILE *file;
 	int bytes;
         static char data[SIZE];
+	char filepath[MAXLEN];
 
-        file = fopen(req->name, "rb");
+	sprintf(filepath, "%s/%s", SERVER_DATA_DIR, req->name);
+        file = fopen(filepath, "rb");
         if (file == NULL) {
         	res->errno = errno;
 	        return (FALSE); 
@@ -37,7 +40,7 @@ bool_t search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp) {
 	char filepath[MAXPATHLEN];
 	char *p;
 
-	sprintf(filepath, "%s/%s", SERVER_DIR, argp->fname);
+	sprintf(filepath, "%s/%s", SERVER_INDEX_DIR, argp->fname);
 	fh = fopen(filepath, "r");
 	if (fh == NULL) {
         	result->count = 0;
@@ -72,7 +75,10 @@ bool_t search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp) {
 int
 obtainprog_1_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t result)
 {
-        xdr_free (xdr_result, result);
+	// For some wierd reason it crashes. It says we are trying to free a invalid pointer 
+	// commenting for now
+	// Need to look
+        //xdr_free (xdr_result, result);
 
         return 1;
 }
