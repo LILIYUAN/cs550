@@ -43,7 +43,8 @@ Manual.txt      : The Manual which explains the usage of each component
 
 Test files :
 ------------
-The following directoties contains test files ranging from 1Kbytes to 11Kbytes :
+The following directoties contains test files ranging from 1Kbytes to 11Kbytes
+and a large PDF file (pa1.pdf) of size 512kbytes :
     - share1
     - share2
     - share3
