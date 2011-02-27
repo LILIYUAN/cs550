@@ -7,4 +7,4 @@
 #
  
 make -f Makefile.ind
-make -f Makefile.option
+make -f Makefile.obtain
