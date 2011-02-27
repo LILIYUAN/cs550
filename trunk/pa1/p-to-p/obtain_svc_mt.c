@@ -205,7 +205,7 @@ register_files(char *peer, char *index_svr, char *dirname)
          */
         if (strcmp(entp->d_name, ".") == 0 || strcmp(entp->d_name, "..") == 0)
             continue;
-        printf("registering file : %s\n", entp->d_name);
+        printf("Registering file : %s to the index-server : %s\n", entp->d_name, index_svr);
 
         rec.peer = peer;
         rec.fname = entp->d_name;
@@ -226,9 +226,9 @@ register_files(char *peer, char *index_svr, char *dirname)
  */
 void
 usage(char *name) {
-    printf("Usage : %s <peername> <index-server-name> <share-dir>\n", name);
-    printf(" hostname : Local Hostname of the peer machine which is running this server\n");
-    printf(" inder-server-name : Hostname of the index server\n");
+    printf(" Usage : %s <peername> <index-server-name> <share-dir>\n\n", name);
+    printf(" hostname : Local hostname of the machine\n");
+    printf(" index-server-name : Hostname of the index server\n");
     printf(" share-dir : Directory that you would like to share\n");
 }
 
@@ -248,7 +248,6 @@ main (int argc, char **argv)
      * Register the files in the given directory with the index-server.
      */
     register_files(argv[1], argv[2], argv[3]);
-    printf("Registered files\n");
 
     sharedir = argv[3];
 
@@ -273,7 +272,7 @@ main (int argc, char **argv)
         fprintf (stderr, "%s", "unable to register (OBTAINPROG, OBTAINVER, tcp).");
         exit(1);
     }
-    printf("Now ready to serve them\n");
+    printf("Now ready to serve them\n\n");
 
     svc_run ();
     fprintf (stderr, "%s", "svc_run returned");

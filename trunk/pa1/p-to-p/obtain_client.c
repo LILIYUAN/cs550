@@ -190,7 +190,7 @@ int get_file(char *host, char *name, char *dest_dir)
  * usage
  */
 void usage(char *name) {
-    printf("Usage : %s [-f] <file-name> <index-server-name> <dest-dir>\n", name);
+    printf(" Usage : %s [-f] <file-name> <index-server-name> <dest-dir>\n\n", name);
     printf(" -f : With this option it fetches the file from the first available peer\n");
     printf(" file-name : name of the file that you are searching \n");
     printf(" inder-server-name : Hostname of the index server\n");
