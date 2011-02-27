@@ -14,13 +14,13 @@ extern __thread int errno;
  * This routine queries the index-server to find the list of peers serving the
  * file rec->fname.
  */
-int query_and_fetch(char *fname, char *index_svr, char *dest_dir)
+int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
 {
     query_req req;
     query_rec res_rec;
     CLIENT *clnt;
     bool_t ret;
-    int res, i;
+    int res, i, attempts;
 
     if ((clnt = clnt_create(index_svr, INDSRVPROG, INDSRVVERS, "tcp")) == NULL) {
         clnt_pcreateerror(index_svr);
@@ -55,21 +55,51 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir)
     for (i = 0; i < res_rec.count; i++) {
         printf("%d : %s\n", i, res_rec.peers+(i * MAXHOSTNAME));
     }
-    printf("Pick the peer from which you want to fetch from : ");
-    scanf("%d", &i);
 
-    while (i < 0 || i >= res_rec.count) {
-        printf("Pick a valid peer number : ");
+    if (fopt == 0) {
+        printf("Pick the peer from which you want to fetch from : ");
         scanf("%d", &i);
+        while (i < 0 || i >= res_rec.count) {
+            printf("Pick a valid peer number : ");
+            scanf("%d", &i);
+        }
+    } else {
+        i = 0;
     }
 
-    get_file(res_rec.peers+(i * MAXHOSTNAME), fname, dest_dir);
+
+    /*
+     * We try to fetch the file untill we succeed or have tried all the servers.
+     */
+    attempts = 0;
+    while (get_file(res_rec.peers+(i * MAXHOSTNAME), fname, dest_dir) != 0 &&
+        attempts < res_rec.count) {
+
+        printf("Failed to fetch the file from host:%s\nTrying next server\n",
+                res_rec.peers+(i * MAXHOSTNAME));
+
+        i = (i + 1) % res_rec.count;
+        attempts++;
+
+    }
+
+    if (attempts == res_rec.count) {
+        printf("Failed to fetch the file from any of the listed peers\n");
+    }
 
     clnt_destroy(clnt);
 
     return (0);
 }
 
+/*
+ * This routine fetches the file *name from the host *host and copies it to
+ * directory *dest_dir.
+ *
+ * Return values :
+ * 0 : On success
+ * 1 : Failure
+ */
 int get_file(char *host, char *name, char *dest_dir)
 {
     CLIENT *clnt;
@@ -94,7 +124,7 @@ int get_file(char *host, char *name, char *dest_dir)
          * establish connection failed with the server.
          */
         clnt_pcreateerror(host);
-        exit(1);
+        return (1);
     }
 
     sprintf(filepath, "%s/%s", dest_dir, name);
@@ -158,23 +188,42 @@ int get_file(char *host, char *name, char *dest_dir)
  * usage
  */
 void usage(char *name) {
-    printf("Usage : %s <file-name> <index-server-name> \n", name);
-    printf("\tfile-name : name of the file that you are searching \n");
-    printf("\tinder-server-name : Hostname of the index server\n");
-    printf("\tdestination-dir : Destination directory where you want to transfer the file\n");
+    printf("Usage : %s [-f] <file-name> <index-server-name> <dest-dir>\n", name);
+    printf(" -f : With this option it fetches the file from the first available peer\n");
+    printf(" file-name : name of the file that you are searching \n");
+    printf(" inder-server-name : Hostname of the index server\n");
+    printf(" dest-dir : Destination directory where you want to copy the fetched file\n");
 }
 
 int main(int argc, char *argv[])
 {
     int result;
+    int fopt = 0;
+    int opt;
 
-
-    if (argc != 4 || strlen(argv[1]) == 0 || strlen(argv[2]) == 0 || strlen(argv[3]) == 0) {
+    if (argc < 4 || argc > 5) {
         usage(argv[0]);
         return (1);
     }
 
-    result = query_and_fetch(argv[1], argv[2], argv[3]);
+    while ((opt = getopt(argc, argv, "f")) != -1) {
+        switch (opt) {
+            case 'f':
+                fopt = 1;
+                break;
+            default:
+                usage(argv[0]);
+                return (1);
+        }
+    }
+
+    if (strlen(argv[fopt + 1]) == 0 || strlen(argv[fopt + 2]) == 0 || strlen(argv[fopt + 3]) == 0) {
+        usage(argv[0]);
+        return (1);
+    }
+
+
+    result = query_and_fetch(argv[fopt + 1], argv[fopt + 2], argv[fopt + 3], fopt);
 
     return 0;
 }
