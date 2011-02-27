@@ -58,7 +58,9 @@ service_request(void *data )
     struct svc_req *rqstp;
     register SVCXPRT *transp;
 
+#ifdef DEBUG
     printf("service_request() : Entered\n");
+#endif
 
     /*
      * Extract the args from the argument passed.
@@ -71,14 +73,19 @@ service_request(void *data )
     result = &(tdata_p->result);
     _xdr_result = tdata_p->_xdr_result;
 
+#ifdef DEBUG
     printf("rq_proc = %d\n", (int)rqstp->rq_proc);
-
     printf("Calling the service routine\n");
+#endif
+
     retval = (bool_t) (*local)((char *)argument, (void *)result, rqstp);
     if (retval > 0 && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)result)) {
         svcerr_systemerr (transp);
     }
+
+#ifdef DEBUG
     printf("Completed the service routine\n");
+#endif
 
     /*
     if (!svc_freeargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) argument)) {
@@ -111,7 +118,9 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
     tdata_t *datap = (tdata_t *)malloc(sizeof (tdata_t));
 
+#ifdef DEBUG
     printf("obtainprog_1 entered \n");
+#endif
 
     /*
      * If we fail to allocate memory we quit.
@@ -153,9 +162,15 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
     /*
      * Spawn a new thread and pass it the rpc request for it to process it.
      */
+#ifdef DEBUG
     printf("Spawning a new thread\n");
+#endif
+
     pthread_create(&threadp, &attr, service_request, (void *)datap);
+
+#ifdef DEBUG
     printf("Spawned a new thread\n");
+#endif
 
 	return;
 }
