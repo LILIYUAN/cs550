@@ -172,7 +172,9 @@ int get_file(char *host, char *name, char *dest_dir)
 
 
         // lets print the total number of bytes read and written in each cycle
+#ifdef DEBUG
         printf(" \n read %d written %d ",result.readfile_res_u.chunk.bytes,write_bytes);
+#endif
         total_bytes += result.readfile_res_u.chunk.bytes;
         if (result.readfile_res_u.chunk.bytes < SIZE )
             break;
