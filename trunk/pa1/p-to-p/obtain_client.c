@@ -59,7 +59,7 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
     printf("Total number of peers serving %s = %d\n", res_rec.fname, res_rec.count);
     printf("Peers service  %s are :\n", res_rec.peers);
     for (i = 0; i < res_rec.count; i++) {
-        printf("%d : %s\n", i, res_rec.peers+(i * MAXHOSTNAME));
+        printf("\t%d : %s\n", i, res_rec.peers+(i * MAXHOSTNAME));
     }
 
     if (fopt == 0) {
@@ -94,7 +94,6 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
     if (attempts == res_rec.count) {
         printf("Failed to fetch the file from any of the listed peers\n");
     } else {
-        printf("start time %ld end time %ld \n", start_time, end_time);
         printf("Time taken to fetch the file = %ld secs\n", (long) difftime(end_time, start_time));
     }
 
@@ -124,7 +123,9 @@ int get_file(char *host, char *name, char *dest_dir)
     req.name = name;
     req.seek_bytes = 0;
 
+#ifdef DEBUG
     printf("host : %s name : %s\n", host, name);
+#endif
     /*
      * Create client handle used for calling FTPPROG on
      * the server designated on the command line. Use
