@@ -6,6 +6,7 @@
 #include <rpc/rpc.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "ind.h"
 #include "obtain.h"
 
@@ -21,6 +22,7 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
     CLIENT *clnt;
     bool_t ret;
     int res, i, attempts;
+    time_t start_time, end_time;
 
     if ((clnt = clnt_create(index_svr, INDSRVPROG, INDSRVVERS, "tcp")) == NULL) {
         clnt_pcreateerror(index_svr);
@@ -35,7 +37,11 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
     req.count = MAXCOUNT;
 
     printf("searching(%s) \n", req.fname);
+    time(&start_time);
     ret = search_1(&req,&res_rec,clnt);
+    time(&end_time);
+
+    printf("Time taken by index server = %ld secs\n", (long) difftime(end_time, start_time));
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n", ret);
@@ -72,6 +78,7 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
      * We try to fetch the file untill we succeed or have tried all the servers.
      */
     attempts = 0;
+    time(&start_time);
     while (get_file(res_rec.peers+(i * MAXHOSTNAME), fname, dest_dir) != 0 &&
         attempts < res_rec.count) {
 
@@ -80,12 +87,17 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
 
         i = (i + 1) % res_rec.count;
         attempts++;
-
+        time(&start_time);
     }
+    time(&end_time);
 
     if (attempts == res_rec.count) {
         printf("Failed to fetch the file from any of the listed peers\n");
+    } else {
+        printf("start time %ld end time %ld \n", start_time, end_time);
+        printf("Time taken to fetch the file = %ld secs\n", (long) difftime(end_time, start_time));
     }
+
 
     clnt_destroy(clnt);
 
