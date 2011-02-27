@@ -16,7 +16,10 @@ obtain_1_svc(request *argp, readfile_res *result, struct svc_req *rqstp)
     int bytes;
     char filepath[MAXPATHLEN];
 
+#ifdef DEBUG
     printf("obtain_1_svc() : Entered : filepath : %s/%s\n", sharedir, argp->name);
+#endif
+
     sprintf(filepath, "%s/%s", sharedir, argp->name);
     file = fopen(filepath, "rb");
     if (file == NULL) {
@@ -31,7 +34,7 @@ obtain_1_svc(request *argp, readfile_res *result, struct svc_req *rqstp)
     result->errno = 0;
     fclose(file);
 
-    printf("obtain_1_svc() : Read %d bytes from %s:%d\n", bytes, filepath, argp->seek_bytes);
+    printf("obtain_1_svc() : Served %d bytes from %s at offset : %d\n", bytes, filepath, argp->seek_bytes);
     return (TRUE);
 }
 

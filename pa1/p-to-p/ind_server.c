@@ -10,7 +10,7 @@
 
 #define SERVER_DIR "/tmp/indsvr/"
 
-#define DEBUG 1
+/* #define DEBUG 1 */
 
 /*
  * We use a simple registry for now by using dir/files as our index table.
@@ -53,7 +53,7 @@ int add_peer (char *fname, char *peername)
     sprintf(filepath, "%s/%s", SERVER_DIR, fname);
     fh = fopen(filepath, "a+");
     if (fh == NULL) {
-        printf("Failed to make an entry : errno = %d : %s\n", errno, strerror(errno));
+        printf("index-server : Failed to make an entry : errno = %d : %s\n", errno, strerror(errno));
         return (errno);
     }
 
@@ -69,7 +69,10 @@ int add_peer (char *fname, char *peername)
      * If it is already registered do nothing. Else, append the peers name to
      * the file.
      */
+#ifdef DEBUG
     printf("Walking through current entries for %s: ", fname);
+#endif
+
     while ((fgets(peer, MAXHOSTNAME+2, fh)) != NULL) {
         /*
          * Truncate the '\n' from the string.
@@ -85,7 +88,7 @@ int add_peer (char *fname, char *peername)
 
     if (found == 0) {
         fprintf(fh, "%s\n", peername);
-        printf("Registering file : %s peer %s\n", fname, peername);
+        printf("Registering file : %s from peer %s\n", fname, peername);
     }
 
     flock(fd, LOCK_UN);
