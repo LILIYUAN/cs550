@@ -17,20 +17,112 @@
 char dir[MAXPATHLEN];
 char *sharedir;
 
+typedef	union argument {
+		request obtain_1_arg;
+} argument_t ;
+
+typedef union result {
+		readfile_res obtain_1_res;
+} result_t;
+
+/*
+ * Struct to encapsulate the args to the threaded service routine.
+ */
+typedef struct tdata {
+    struct svc_req  *rqstp;
+    SVCXPRT         *transp;
+    bool_t (*local)(char *, void *, struct svc_req *);
+    argument_t      argument;
+    result_t        result;
+    xdrproc_t       _xdr_argument;
+    xdrproc_t       _xdr_result;
+} tdata_t;
+
+/*
+ * Modified service routine. This is the routine executed by the service threads
+ * spawned by the dispatcher routine.
+ * Logic outline :
+ * - It extracts the args from the void poineter passed to it.
+ * - It called the necessary server method and replies to the client with the
+ *   results.
+ */
+void *
+service_request(void *data )
+{
+    tdata_t *tdata_p;
+    argument_t *argument;
+    result_t *result;
+    bool_t retval;
+    xdrproc_t _xdr_argument, _xdr_result;
+    bool_t (*local)(char *, void *, struct svc_req *);
+    struct svc_req *rqstp;
+    register SVCXPRT *transp;
+
+    printf("service_request() : Entered\n");
+
+    /*
+     * Extract the args from the argument passed.
+     */
+    tdata_p = (tdata_t *) data;
+    rqstp = tdata_p->rqstp;
+    transp = tdata_p->transp;
+    local = tdata_p->local;
+    argument = &(tdata_p->argument);
+    result = &(tdata_p->result);
+    _xdr_result = tdata_p->_xdr_result;
+
+    printf("rq_proc = %d\n", (int)rqstp->rq_proc);
+
+    printf("Calling the service routine\n");
+    retval = (bool_t) (*local)((char *)argument, (void *)result, rqstp);
+    if (retval > 0 && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)result)) {
+        svcerr_systemerr (transp);
+    }
+    printf("Completed the service routine\n");
+
+    /*
+    if (!svc_freeargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) argument)) {
+        fprintf (stderr, "%s", "unable to free arguments");
+        exit (1);
+    }
+
+    if (!indsrvprog_1_freeresult (transp, _xdr_result, (caddr_t) result))
+        fprintf (stderr, "%s", "unable to free results");
+    */
+
+    /*
+     * Free the data buffer which was allocated by the dispatcher.
+     */
+    free(data);
+    return;
+}
+
+pthread_t threadp;
+pthread_attr_t attr;
+
+/*
+ * Modified dispatch routine. Outline of the code :
+ * - This routine is called by svc_run() when a new rpc request arrives.
+ * - This routine spawns a new thread for every incoming and hands it (request)
+ *   out to that thread to service it.
+ */
 static void
 obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
-	union {
-		request obtain_1_arg;
-	} argument;
-	union {
-		readfile_res obtain_1_res;
-	} result;
-	bool_t retval;
-	xdrproc_t _xdr_argument, _xdr_result;
-	bool_t (*local)(char *, void *, struct svc_req *);
+    tdata_t *datap = (tdata_t *)malloc(sizeof (tdata_t));
 
     printf("obtainprog_1 entered \n");
+
+    /*
+     * If we fail to allocate memory we quit.
+     */
+    if (datap == NULL) {
+        printf("Failed to allocate memory for the request args !\n");
+        exit(1);
+    }
+
+    datap->rqstp = rqstp;
+    datap->transp = transp;
 
 	switch (rqstp->rq_proc) {
 	case NULLPROC:
@@ -38,32 +130,32 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		return;
 
 	case obtain:
-		_xdr_argument = (xdrproc_t) xdr_request;
-		_xdr_result = (xdrproc_t) xdr_readfile_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))obtain_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_request;
+		datap->_xdr_result = (xdrproc_t) xdr_readfile_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))obtain_1_svc;
 		break;
 
 	default:
 		svcerr_noproc (transp);
 		return;
 	}
-	memset ((char *)&argument, 0, sizeof (argument));
-	if (!svc_getargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) &argument)) {
+	memset ((char *)&(datap->argument), 0, sizeof (datap->argument));
+	if (!svc_getargs (transp, (xdrproc_t) datap-> _xdr_argument, (caddr_t) &(datap->argument))) {
 		svcerr_decode (transp);
 		return;
 	}
-    printf("Calling service routine \n");
-	retval = (bool_t) (*local)((char *)&argument, (void *)&result, rqstp);
-	if (retval > 0 && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)&result)) {
-		svcerr_systemerr (transp);
-	}
-    printf("service routine  completed\n");
-	if (!svc_freeargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) &argument)) {
-		fprintf (stderr, "%s", "unable to free arguments");
-		exit (1);
-	}
-	if (!obtainprog_1_freeresult (transp, _xdr_result, (caddr_t) &result))
-		fprintf (stderr, "%s", "unable to free results");
+
+    /*
+     * We want the service threads to be reaped automatically.
+     */
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+    /*
+     * Spawn a new thread and pass it the rpc request for it to process it.
+     */
+    printf("Spawning a new thread\n");
+    pthread_create(&threadp, &attr, service_request, (void *)datap);
+    printf("Spawned a new thread\n");
 
 	return;
 }
