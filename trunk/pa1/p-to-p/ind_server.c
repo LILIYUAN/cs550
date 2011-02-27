@@ -1,4 +1,5 @@
 #include "ind.h"
+#include "obtain.h"
 #include <stdio.h>
 #include <errno.h>
 #include <rpc/rpc.h>
