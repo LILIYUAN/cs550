@@ -1,0 +1,50 @@
+ind_server : csrocks
+obtain_server : compute-0-0
+obtain_cleint : compute-0-1
+obtain_client : compute-0-2
+obtain_client : compute-0-3
+obtain_client : compute-0-4
+
+[rkumarma@compute-0-1 p-to-p]$ time ./test.sh file-4k csrocks /home/rkumarma/ > file_4k_parallel_1.log
+
+real	0m46.056s
+user	0m1.467s
+sys	0m1.113s
+
+
+[rkumarma@compute-0-2 p-to-p]$ time ./test.sh file-4k csrocks /tmp/ > file_4k_parallel_2.log
+
+real	0m45.540s
+user	0m0.625s
+sys	0m1.492s
+
+
+
+
+----------------------------------------------------------------------------------------
+[rkumarma@compute-0-1 p-to-p]$ time ./test.sh file-4k csrocks /home/rkumarma/ > file_4k_parallel-4_1.log
+
+real	0m46.158s
+user	0m1.411s
+sys	0m1.110s
+
+
+[rkumarma@compute-0-2 p-to-p]$ time ./test.sh file-4k csrocks /tmp/ > file_4k_parallel-4_2.log
+
+real	0m45.558s
+user	0m0.672s
+sys	0m1.385s
+
+[rkumarma@compute-0-3 p-to-p]$ time ./test.sh file-4k csrocks /tmp/ > file_4k_parallel-4_3.log
+
+real	0m45.668s
+user	0m0.731s
+sys	0m1.379s
+
+[rkumarma@compute-0-5 p-to-p]$ time ./test.sh file-4k csrocks /tmp > file_4k_parallel-4_4.log
+
+real	0m45.741s
+user	0m0.753s
+sys	0m1.364s
+
+----------------------------------------------------
