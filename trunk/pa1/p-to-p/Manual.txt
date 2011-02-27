@@ -1,0 +1,179 @@
+This file explains the steps involved in compiling the code. And also the steps
+to start the servers and the client application.
+
+Tar file Contents :
+
+Steps to compile the code :
+---------------------------
+- Executable name : ./ind_server
+- We have script "makefile.sh". This script invokes the make for both index
+  server and obtain server.
+- This should build the following executables :
+    - ind_server : The index server
+    - obtain_server : The peer server which should started by each peer to share
+      the files from a directory
+    - obtain_client : The peer client which the user should use to fetch the
+      files.
+
+Steps to start the index server :
+---------------------------------
+- Pick a machine where you want to run the index server (eg.
+  csrocks.cs.iit.edu).
+- NOTE : The index server uses a directory "/tmp/indsvr" for maintaining the
+  index files. Hence please ensure that :
+    - either the directory "/tmp/indsvr" does not exist.
+    - or make sure that it is writable.
+- Start the server by executing the ind_server binary :
+-- snip --
+sanjeev@indus:~/iit/cs550/trunk/pa1/p-to-p$ ./ind_server
+-- snip --
+
+  This should start the index server which is ready to register new files and
+  serve query() requests.
+
+Steps to start the peer server :
+--------------------------------
+- Executable name : ./obtain_server
+- Put all the files that the peer server wants to share in a directory.
+  For example we have share1 directory which has the following files.
+    -- snip --
+    $ ls -l share1
+    total 640
+    -rw-r--r-- 1 sanjeev sanjeev  31679 2011-02-27 16:46 file1
+    -rw-r--r-- 1 sanjeev sanjeev  10530 2011-02-27 17:22 file-10k
+    -rw-r--r-- 1 sanjeev sanjeev   1053 2011-02-27 17:17 file-1k
+    -rw-r--r-- 1 sanjeev sanjeev  15879 2011-02-27 18:33 file2
+    -rw-r--r-- 1 sanjeev sanjeev   2106 2011-02-27 17:18 file-2k
+    -rw-r--r-- 1 sanjeev sanjeev   3159 2011-02-27 17:18 file-3k
+    -rw-r--r-- 1 sanjeev sanjeev   4212 2011-02-27 17:18 file-4k
+    -rw-r--r-- 1 sanjeev sanjeev   5265 2011-02-27 17:21 file-5k
+    -rw-r--r-- 1 sanjeev sanjeev   6318 2011-02-27 17:19 file-6k
+    -rw-r--r-- 1 sanjeev sanjeev   7371 2011-02-27 17:19 file-7k
+    -rw-r--r-- 1 sanjeev sanjeev   8424 2011-02-27 17:21 file-8k
+    -rw-r--r-- 1 sanjeev sanjeev   9477 2011-02-27 17:21 file-9k
+    -rw-r--r-- 1 sanjeev sanjeev 521158 2011-02-27 16:53 pa1.pdf
+    -- snip --
+
+- The peer sever takes the following arguments :
+    -- snip --
+    $ ./obtain_server
+     Usage : ./obtain_server <hostname> <index-server-name> <share-dir>
+
+     hostname : Local hostname of the machine
+     index-server-name : Hostname of the index server
+     share-dir : Directory that you would like to share
+    -- snip --
+
+  Here is an example of starting the peer server on compute-0-0.cs.iit.edu with
+  index server running on "csrocks" :
+
+    -- snip --
+    $ ./obtain_server compute-0-0 csrocks ./share1
+    Registering file : file-2k to the index-server : indus
+    Registering file : file-10k to the index-server : indus
+    Registering file : file-1k to the index-server : indus
+    Registering file : file1 to the index-server : indus
+    Registering file : .svn to the index-server : indus
+    Registering file : file-7k to the index-server : indus
+    Registering file : file-6k to the index-server : indus
+    Registering file : file2 to the index-server : indus
+    Registering file : file-5k to the index-server : indus
+    Registering file : file-8k to the index-server : indus
+    Registering file : file-3k to the index-server : indus
+    Registering file : file-9k to the index-server : indus
+    Registering file : file-4k to the index-server : indus
+    Registering file : pa1.pdf to the index-server : indus
+    Now ready to serve them
+    -- snip --
+
+    NOTE :  1> The peer servers can be started on multiple servers.
+                For example we tried starting the peer servers on :
+                    - compute-0-0 sharing "./share1"
+                    - compute-0-1 sharing "./share3"
+                    
+            2> We cannot start multiple peer servers on the same node as they all
+            use the same RPC program number and hence would overwrite the
+            registration with rpcbind (ie. rpc port mapper).
+
+
+
+Steps to use the peer client :
+------------------------------
+- Executable name : ./obtain_client
+- The peer client (obtain_client) takes the following arguments :
+    -- snip --
+    $ ./obtain_client
+     Usage : ./obtain_client [-f] <file-name> <index-server-name> <dest-dir>
+
+     -f : With this option it fetches the file from the first available peer
+     file-name : name of the file that you are searching 
+     inder-server-name : Hostname of the index server
+     dest-dir : Destination directory where you want to copy the fetched file
+    -- snip --
+
+- Example of fetching a file with interactive option :
+  Assuming :
+    - we are looking for the file "file-1k". 
+    - the index server is running on "csrocks"
+    - we want to save the fetched file in "/tmp"
+    Here is how the client is executed :
+
+    -- snip --
+    $ ./obtain_client file-1k indus /tmp
+    Created the client
+    searching(file-1k) 
+    Time taken by index server = 0 secs
+    Total number of peers serving file-1k = 2
+    Peers service  192.168.0.102 are :
+        0 : compute-0-0 
+        1 : compute-0-1
+    Pick the peer from which you want to fetch from : 1
+    obtain_1_svc() : Served 1053 bytes from ./share1/file-1k at offset : 0
+    Time taken to fetch the file = 0 secs
+
+    sanjeev@indus:~/iit/cs550/trunk/pa1/p-to-p$ head /tmp/file-1k
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    -- snip --
+
+- We have "-f" for the non-interactive way of petching the file. Here the app will
+  pick the first listed peer and then fetches it from that peer.
+
+    -- snip --
+    $ ./obtain_client -f file-1k indus /tmp
+    Created the client
+    searching(file-1k) 
+    Time taken by index server = 0 secs
+    Total number of peers serving file-1k = 2
+    Peers service  192.168.0.102 are :
+        0 : compute-0-0
+        1 : compute-0-1
+    Time taken to fetch the file = 0 secs
+    -- snip --
+
+- The client is also smart to try other listed server (if it fails to fetch from the choosen one).
+  Assuming we killed the obtain server on compute-0-0. It would try to fetch it from the next
+  server which is serving it
+
+    -- snip --
+    $ ./obtain_client -f file-1k indus /tmp
+    Created the client
+    searching(file-1k) 
+    Time taken by index server = 0 secs
+    Total number of peers serving file-1k = 2
+    Peers service  192.168.0.128 are :
+        0 : compute-0-0
+        1 : compute-0-1 
+    compute-0-0 :  RPC: Remote system error - Connection refused
+    Failed to fetch the file from host:compute-0-0                  <-------******* Retry in action
+    Trying next server                                              <-------*******
+    Time taken to fetch the file = 0 secs
+    -- snip --
