@@ -78,8 +78,10 @@ int add_peer (char *fname, char *peername)
         /*
          * Truncate the '\n' from the string.
          */
+#ifdef DEBUG
         peer[strlen(peer) - 1] = '\0';
         printf("%s : strlen = %d\n", peer, strlen(peer));
+#endif
 
         if (strcmp(peer, peername) == 0) {
             found = 1;
@@ -121,6 +123,8 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     char filepath[MAXPATHLEN];
     char *p;
     int fd;
+
+    printf("Processing query for file : %s\n", argp->fname);
 
     sprintf(filepath, "%s/%s", SERVER_DIR, argp->fname);
     fh = fopen(filepath, "r");
