@@ -6,9 +6,9 @@
 1000-req-remote-2k
 1000-req-remote-8k
 
-1000-req-local-local-1k-3parallel
-1000-req-local-local-2k-2parallel
-1000-req-local-local-8k-2parallel
+1000-req-remote-1k-3parallel
+1000-req-remote-2k-2parallel
+1000-req-remote-8k-2parallel
 
 parallel tests
 
