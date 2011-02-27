@@ -226,7 +226,7 @@ register_files(char *peer, char *index_svr, char *dirname)
  */
 void
 usage(char *name) {
-    printf(" Usage : %s <peername> <index-server-name> <share-dir>\n\n", name);
+    printf(" Usage : %s <hostname> <index-server-name> <share-dir>\n\n", name);
     printf(" hostname : Local hostname of the machine\n");
     printf(" index-server-name : Hostname of the index server\n");
     printf(" share-dir : Directory that you would like to share\n");
