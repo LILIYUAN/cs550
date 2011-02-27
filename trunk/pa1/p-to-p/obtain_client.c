@@ -58,7 +58,7 @@ int query_and_fetch(char *fname, char *index_svr)
     printf("Pick the peer from which you want to fetch from : ");
     scanf("%d", &i);
 
-    while (i < 0 && i >= res_rec.count) {
+    while (i < 0 || i >= res_rec.count) {
         printf("Pick a valid peer number : ");
         scanf("%d", &i);
     }
@@ -160,7 +160,6 @@ void usage(char *name) {
     printf("Usage : %s <file-name> <index-server-name> \n", name);
     printf("\tfile-name - name of the file that you are searching \n");
     printf("\tinder-server-name - Hostname of the index server\n");
-    printf("\tshare-dir - Directory that you would like to share\n");
 }
 
 int main(int argc, char *argv[])
