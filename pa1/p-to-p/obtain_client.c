@@ -14,7 +14,7 @@ extern __thread int errno;
  * This routine queries the index-server to find the list of peers serving the
  * file rec->fname.
  */
-int query_and_fetch(char *fname, char *index_svr)
+int query_and_fetch(char *fname, char *index_svr, char *dest_dir)
 {
     query_req req;
     query_rec res_rec;
@@ -63,14 +63,14 @@ int query_and_fetch(char *fname, char *index_svr)
         scanf("%d", &i);
     }
 
-    get_file(res_rec.peers+(i * MAXHOSTNAME), fname);
+    get_file(res_rec.peers+(i * MAXHOSTNAME), fname, dest_dir);
 
     clnt_destroy(clnt);
 
     return (0);
 }
 
-int get_file(char *host, char *name)
+int get_file(char *host, char *name, char *dest_dir)
 {
     CLIENT *clnt;
     int total_bytes = 0, write_bytes;
@@ -78,6 +78,7 @@ int get_file(char *host, char *name)
     request req;
     FILE *file;
     int ret = 1;
+    char filepath[MAXPATHLEN];
     req.name = name;
     req.seek_bytes = 0;
 
@@ -96,8 +97,8 @@ int get_file(char *host, char *name)
         exit(1);
     }
 
-    //currently hardcoded to this as I am testing it on the same box....
-    file = fopen("/tmp/name", "wb");
+    sprintf(filepath, "%s/%s", dest_dir, name);
+    file = fopen(filepath, "wb");
 
     /*
      * Call the remote procedure readdir on the server
@@ -158,8 +159,9 @@ int get_file(char *host, char *name)
  */
 void usage(char *name) {
     printf("Usage : %s <file-name> <index-server-name> \n", name);
-    printf("\tfile-name - name of the file that you are searching \n");
-    printf("\tinder-server-name - Hostname of the index server\n");
+    printf("\tfile-name : name of the file that you are searching \n");
+    printf("\tinder-server-name : Hostname of the index server\n");
+    printf("\tdestination-dir : Destination directory where you want to transfer the file\n");
 }
 
 int main(int argc, char *argv[])
@@ -167,12 +169,12 @@ int main(int argc, char *argv[])
     int result;
 
 
-    if (argc != 3 || strlen(argv[1]) == 0 || strlen(argv[2]) == 0 ) {
+    if (argc != 4 || strlen(argv[1]) == 0 || strlen(argv[2]) == 0 || strlen(argv[3]) == 0) {
         usage(argv[0]);
         return (1);
     }
 
-    result = query_and_fetch(argv[1], argv[2]);
+    result = query_and_fetch(argv[1], argv[2], argv[3]);
 
     return 0;
 }
