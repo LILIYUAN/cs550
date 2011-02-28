@@ -1,9 +1,20 @@
-ind_server : csrocks
-obtain_server : compute-0-0
-obtain_cleint : compute-0-1
-obtain_client : compute-0-2
-obtain_client : compute-0-3
-obtain_client : compute-0-4
+Node ::
+
+	ind_server : csrocks
+	obtain_server : compute-0-0
+	obtain_cleint : compute-0-1
+	obtain_client : compute-0-2
+	obtain_client : compute-0-3
+	obtain_client : compute-0-5
+
+---------------------------------------------------------------------------------------------------
+
+Test Case ::
+
+	2 peers try to tarnsfer the file from another peer 1000 times 
+	sequentially. Both the peers try parallely to fetch the files.
+	File size is set to 4.2k
+
 
 [rkumarma@compute-0-1 p-to-p]$ time ./test.sh file-4k csrocks /home/rkumarma/ > file_4k_parallel_1.log
 
@@ -20,8 +31,15 @@ sys	0m1.492s
 
 
 
+---------------------------------------------------------------------------------------------------
 
-----------------------------------------------------------------------------------------
+Test Case ::
+
+        4 peers try to tarnsfer the file from another peer 1000 times 
+        sequentially. All 4 peers try parallely to fetch the files.
+        File size is set to 4.2k
+
+
 [rkumarma@compute-0-1 p-to-p]$ time ./test.sh file-4k csrocks /home/rkumarma/ > file_4k_parallel-4_1.log
 
 real	0m46.158s
@@ -47,4 +65,4 @@ real	0m45.741s
 user	0m0.753s
 sys	0m1.364s
 
-----------------------------------------------------
+---------------------------------------------------------------------------------------------------
