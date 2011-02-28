@@ -247,7 +247,11 @@ main (int argc, char **argv)
     /*
      * Register the files in the given directory with the index-server.
      */
-    register_files(argv[1], argv[2], argv[3]);
+    if (register_files(argv[1], argv[2], argv[3]) != 0) {
+        printf("Failed to register with the index server on %s\n", argv[2]);
+        printf("Quitting :(\n");
+        return (1);
+    }
 
     sharedir = argv[3];
 
