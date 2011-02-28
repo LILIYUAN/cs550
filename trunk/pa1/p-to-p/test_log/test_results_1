@@ -1,58 +1,80 @@
-ind_server : csrocks 
-obtain_server : compute-0-0
-obtain_client : compute-0-1
+Nodes :: 
+
+	ind_server : csrocks 
+	obtain_server : compute-0-0
+	obtain_client : compute-0-1
+
+Test Case ::
+	A machine tries to fetch / transfer a file from another 
+	peer server sequentially 1000 times. The file sizes for 
+	this test case is varying from 1k to 10k. The size of the
+	file fetched is also displayed in the end result
 
 
-@compute-0-1 p-to-p]$ time ./test.sh file-1k csrocks /home/rkumarma/ > file_1k_remote_1000.log
+---------------------------------------------------------------------------------------------------
+
+Transfering a file of 1.1k 1000 times from compute-0-0 to compute-0-1 node
+
+[rkumarma@compute-0-1 p-to-p]$ time ./test.sh file-1k csrocks /home/rkumarma/ > file_1k_remote_1000.log
 
 real	0m5.272s
 user	0m0.770s
 sys	0m1.597s
+
 [rkumarma@compute-0-1 p-to-p]$ ls -lh  /home/rkumarma/file-1k 
 -rw-r--r-- 1 rkumarma stud 1.1K Feb 27 06:51 /home/rkumarma/file-1k
-------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
+
+Transfering a file of 2.1k 1000 times from compute-0-0 to compute-0-1 node
+
 [rkumarma@compute-0-1 p-to-p]$ time ./test.sh file-2k csrocks /home/rkumarma/ > file_2k_remote_1000.log
 
 real	0m5.364s
 user	0m0.768s
 sys	0m1.537s
+
 [rkumarma@compute-0-1 p-to-p]$ ls -lh  /home/rkumarma/file-2k 
 -rw-r--r-- 1 rkumarma stud 2.1K Feb 27 06:54 /home/rkumarma/file-2k
 
-----------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+
+Transfering a file of 4.2k 1000 times from compute-0-0 to compute-0-1 node
+
 [rkumarma@compute-0-1 p-to-p]$ time ./test.sh file-4k csrocks /home/rkumarma/ > file_4k_remote_1000.log
 
 real	0m46.058s
 user	0m1.451s
 sys	0m1.125s
+
 [rkumarma@compute-0-1 p-to-p]$ ls -lh  /home/rkumarma/file-4k 
 -rw-r--r-- 1 rkumarma stud 4.2K Feb 27 06:56 /home/rkumarma/file-4k
 
--------------------------------------------------
+---------------------------------------------------------------------------------------------------
+
+Transfering a file of 8.3k 1000 times from compute-0-0 to compute-0-1 node
 
 [rkumarma@compute-0-1 p-to-p]$ time ./test.sh file-8k csrocks /home/rkumarma/ > file_8k_remote_1000.log
 
 real	1m26.746s
 user	0m0.889s
 sys	0m1.226s
-[rkumarma@compute-0-1 p-to-p]$ ls -lh /home/rkumarma/file-8k 
--rw-r--r-- 1 rkumarma stud 8.3K Feb 27 07:00 /home/rkumarma/file-8k
---------------------------------------------------------------------
 
 [rkumarma@compute-0-1 p-to-p]$ ls -lh /home/rkumarma/file-8k 
 -rw-r--r-- 1 rkumarma stud 8.3K Feb 27 07:00 /home/rkumarma/file-8k
+
+---------------------------------------------------------------------------------------------------
+
+Transfering a file of 11k 1000 times from compute-0-0 to compute-0-1 node
+
 [rkumarma@compute-0-1 p-to-p]$ time ./test.sh file-10k csrocks /home/rkumarma/ > file_10k_remote_1000.log
 
 real	1m26.811s
 user	0m0.903s
 sys	0m1.137s
-[rkumarma@compute-0-1 p-to-p]$ ls -lh /home/rkumarma/file-10k -rw-r--r-- 1 rkumarma stud 11K Feb 27 07:02 /home/rkumarma/file-10k
 
----------------------------------------------------------------
+[rkumarma@compute-0-1 p-to-p]$ ls -lh /home/rkumarma/file-10k 
+-rw-r--r-- 1 rkumarma stud 11K Feb 27 07:02 /home/rkumarma/file-10k
 
-
-
-
-
-
+---------------------------------------------------------------------------------------------------
 
