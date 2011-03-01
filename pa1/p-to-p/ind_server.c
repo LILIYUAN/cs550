@@ -18,7 +18,7 @@
  * For every file registered we create a file under "/tmp/indsvr/" (if it does
  * not exist already). And append the name of the peer-node to that file.
  */
-int add_peer (char *fname, char *peername)
+int add_peer (char *fname, char *peername, int bw)
 {
     FILE *fh;
     char filepath[MAXPATHLEN];
@@ -78,8 +78,8 @@ int add_peer (char *fname, char *peername)
         /*
          * Truncate the '\n' from the string.
          */
-#ifdef DEBUG
         peer[strlen(peer) - 1] = '\0';
+#ifdef DEBUG
         printf("%s : strlen = %d\n", peer, strlen(peer));
 #endif
 
