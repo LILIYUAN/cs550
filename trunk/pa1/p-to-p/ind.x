@@ -7,7 +7,7 @@ const BUFSIZE = 512; /* MAXHOSTNAME * MAXCOUNT */
 struct registry_rec {
     string  peer<MAXNAME>;
     string  fname<MAXNAME>;
-    int     ret;
+    int     bw;
 };
 
 struct query_req {
@@ -16,9 +16,10 @@ struct query_req {
 };
 
 struct query_rec {
-    char fname[MAXNAME];
-    int count;
-    char peers[BUFSIZE];
+    char    fname[MAXNAME];
+    int     count;
+    char    peers[BUFSIZE];
+    int     bw[MAXCOUNT];
 };
 
 program INDSRVPROG {

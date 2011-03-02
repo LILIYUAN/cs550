@@ -23,8 +23,9 @@ int add_peer (char *fname, char *peername, int bw)
     FILE *fh;
     char filepath[MAXPATHLEN];
     char peer[MAXHOSTNAME+2];
-    int ret, found = 0;
+    int old_bw, ret, found = 0;
     int fd;
+    fpos_t fpos; 
     static init_done = 0;
 
     /*
@@ -52,10 +53,15 @@ int add_peer (char *fname, char *peername, int bw)
      * already exists we open it else we create a new one.
      */
     sprintf(filepath, "%s/%s", SERVER_DIR, fname);
-    fh = fopen(filepath, "a+");
+    fh = fopen(filepath, "rw");
     if (fh == NULL) {
-        printf("index-server : Failed to make an entry : errno = %d : %s\n", errno, strerror(errno));
-        return (errno);
+        /*
+         * The file does not exist. Hence try creating it.
+         */
+        if ((fh = fopen(filepath, "a+")) == NULL) {
+            printf("index-server : Failed to make an entry : errno = %d : %s\n", errno, strerror(errno));
+            return (errno);
+        }
     }
 
     fd = fileno(fh);
@@ -74,24 +80,36 @@ int add_peer (char *fname, char *peername, int bw)
     printf("Walking through current entries for %s: ", fname);
 #endif
 
-    while ((fgets(peer, MAXHOSTNAME+2, fh)) != NULL) {
-        /*
-         * Truncate the '\n' from the string.
-         */
-        peer[strlen(peer) - 1] = '\0';
+    fgetpos(fh, &fpos);
+
+    while ((fscanf(fh, "%s %d", peer, &old_bw)) != EOF) {
 #ifdef DEBUG
-        printf("%s : strlen = %d\n", peer, strlen(peer));
+        printf("peer %s oldbw = %d\n", peer, old_bw);
 #endif
 
         if (strcmp(peer, peername) == 0) {
             found = 1;
             break;
         }
+        fgetpos(fh, &fpos);
     }
 
     if (found == 0) {
-        fprintf(fh, "%s\n", peername);
+        fprintf(fh, "%s %d\n", peername, bw);
         printf("Registering file : %s from peer %s\n", fname, peername);
+    } else {
+        /*
+         * We found an entry. We check if the new b/w is different from
+         * old_bw and record the change.
+         */
+        if (bw != old_bw) {
+            fsetpos(fh, &fpos);
+            printf("errno = %d\n", errno);
+            fprintf(fh, "%s %d\n", peername, bw);
+            printf("errno = %d\n", errno);
+            printf("Registering file with new bandwidth: %s from peer %s BW = %d\n",
+                    fname, peername, bw);
+        }
     }
 
     flock(fd, LOCK_UN);
@@ -105,7 +123,7 @@ registry_1_svc(registry_rec *argp, int *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
 
-    *result = add_peer(argp->fname, argp->peer);
+    *result = add_peer(argp->fname, argp->peer, argp->bw);
 #ifdef SLEEP
     printf("Sleeping for 5 secs\n");
     sleep(5);
@@ -150,8 +168,7 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 
     p = result->peers;
 
-    while (cnt < argp->count && fgets(p, MAXHOSTNAME + 2, fh) != NULL) {
-        p[strlen(p) - 1] = '\0';
+    while (cnt < argp->count && fscanf(fh, "%s %d\n", p, &(result->bw[cnt])) != EOF) {
         p += MAXHOSTNAME;
         cnt++;
     }
@@ -162,14 +179,14 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 
     flock(fd, LOCK_UN);
     fclose(fh);
-
+#define DEBUG 1
 #ifdef DEBUG
     {
         int i;
         printf("Peers serving %s = %d \n", argp->fname, result->count);
         printf("peers %s\n", result->peers);
         for (i = 0; i < result->count; i++) {
-            printf("hostname : %s\n", result->peers+(i * MAXHOSTNAME));
+            printf("hostname : %s bw = %d\n", result->peers+(i * MAXHOSTNAME), result->bw[i]);
         }
     }
 #endif /* DEBUG */

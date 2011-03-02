@@ -180,7 +180,7 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
  * with the index server against the peer.
  */
 int
-register_files(char *peer, char *index_svr, char *dirname)
+register_files(char *peer, char *index_svr, char *dirname, int bw)
 {
     CLIENT *clnt;
     DIR *dirp;
@@ -209,6 +209,7 @@ register_files(char *peer, char *index_svr, char *dirname)
 
         rec.peer = peer;
         rec.fname = entp->d_name;
+        rec.bw = bw;
         ret = registry_1(&rec, &res, clnt);
         if (res != RPC_SUCCESS) {
             printf("Failed to register : res = %d\n", res);
@@ -226,20 +227,44 @@ register_files(char *peer, char *index_svr, char *dirname)
  */
 void
 usage(char *name) {
-    printf(" Usage : %s <hostname> <index-server-name> <share-dir>\n\n", name);
+    printf(" Usage : %s [-b <bandwidth>] <hostname> <index-server-name> <share-dir>\n\n", name);
+    printf(" -b : This is the bandwidth that the peer can offer\n");
+    printf("      If unspecified it is considered as 0 and clients would give\n");
+    printf("      lower priority to this peer\n");
     printf(" hostname : Local hostname of the machine\n");
     printf(" index-server-name : Hostname of the index server\n");
-    printf(" share-dir : Directory that you would like to share\n");
+    printf(" share-dir : Directory that you would like to share\n\n");
 }
 
+extern char *optarg;
+extern int optind;
 
 int
 main (int argc, char **argv)
 {
     char *peer;
     register SVCXPRT *transp;
+    int bw = 0;
+    int opt, bw_opt = 0;
 
-    if (argc != 4 || strlen(argv[1]) == 0 || strlen(argv[2]) == 0 || strlen(argv[3]) == 0) {
+    if (argc != 4 && argc != 6) {
+        usage(argv[0]);
+        return (1);
+    }
+
+    while ((opt = getopt(argc, argv, "b:")) != -1) {
+        switch (opt) {
+            case 'b':
+                bw_opt = 1;
+                bw = atoi(optarg);
+                break;
+            default :
+                usage(argv[0]);
+                return (1);
+        }
+    }
+
+    if (strlen(argv[optind]) == 0 || strlen(argv[optind + 1]) == 0 || strlen(argv[optind + 2]) == 0) {
         usage(argv[0]);
         return (1);
     }
@@ -247,7 +272,7 @@ main (int argc, char **argv)
     /*
      * Register the files in the given directory with the index-server.
      */
-    if (register_files(argv[1], argv[2], argv[3]) != 0) {
+    if (register_files(argv[optind], argv[optind+1], argv[optind+2], bw) != 0) {
         printf("Failed to register with the index server on %s\n", argv[2]);
         printf("Quitting :(\n");
         return (1);
