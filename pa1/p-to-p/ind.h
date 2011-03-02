@@ -22,7 +22,7 @@ extern "C" {
 struct registry_rec {
 	char *peer;
 	char *fname;
-	int ret;
+	int bw;
 };
 typedef struct registry_rec registry_rec;
 
@@ -36,6 +36,7 @@ struct query_rec {
 	char fname[MAXNAME];
 	int count;
 	char peers[BUFSIZE];
+	int bw[MAXCOUNT];
 };
 typedef struct query_rec query_rec;
 

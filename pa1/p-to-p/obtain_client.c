@@ -11,17 +11,21 @@
 #include "obtain.h"
 
 extern __thread int errno;
+
+#define FOPT    0x0001
+#define BOPT    0x0010
+
 /*
  * This routine queries the index-server to find the list of peers serving the
  * file rec->fname.
  */
-int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
+int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int opt)
 {
     query_req req;
     query_rec res_rec;
     CLIENT *clnt;
     bool_t ret;
-    int res, i, attempts;
+    int res, i, j, attempts;
     time_t start_time, end_time;
 
     if ((clnt = clnt_create(index_svr, INDSRVPROG, INDSRVVERS, "tcp")) == NULL) {
@@ -59,10 +63,14 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
     printf("Total number of peers serving %s = %d\n", res_rec.fname, res_rec.count);
     printf("Peers service  %s are :\n", res_rec.peers);
     for (i = 0; i < res_rec.count; i++) {
-        printf("\t%d : %s\n", i, res_rec.peers+(i * MAXHOSTNAME));
+        printf("\t%d : %s bandwidth = %d\n", i, res_rec.peers+(i * MAXHOSTNAME), res_rec.bw[i]);
     }
 
-    if (fopt == 0) {
+    /*
+     * If user has not specified either BOPT or FOPT ask the user to chose a
+     * peer.
+     */
+    if (opt == 0) {
         printf("Pick the peer from which you want to fetch from : ");
         scanf("%d", &i);
         while (i < 0 || i >= res_rec.count) {
@@ -70,7 +78,21 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
             scanf("%d", &i);
         }
     } else {
-        i = 0;
+        /*
+         * We either have an FOPT or BOPT.
+         */
+        if (opt == FOPT) {
+            i = 0;
+        } else {
+            /*
+             * Find the server with the highest bandwidth.
+             */
+            i = 0;
+            for (j = 0; j < res_rec.count; j++) {
+                if (res_rec.bw[j] > res_rec.bw[i])
+                    i = j;
+            }
+        }
     }
 
 
@@ -203,8 +225,10 @@ int get_file(char *host, char *name, char *dest_dir)
  * usage
  */
 void usage(char *name) {
-    printf(" Usage : %s [-f] <file-name> <index-server-name> <dest-dir>\n\n", name);
+    printf(" Usage : %s [-f|b] <file-name> <index-server-name> <dest-dir>\n\n", name);
     printf(" -f : With this option it fetches the file from the first available peer\n");
+    printf(" -b : With this option it fetches the file from the peer with the best bandwidth\n");
+    printf("      -f and -b options are mutually exclusive\n");
     printf(" file-name : name of the file that you are searching \n");
     printf(" inder-server-name : Hostname of the index server\n");
     printf(" dest-dir : Destination directory where you want to copy the fetched file\n");
@@ -214,6 +238,7 @@ int main(int argc, char *argv[])
 {
     int result;
     int fopt = 0;
+    int bopt = 0;
     int opt;
 
     if (argc < 4 || argc > 5) {
@@ -221,8 +246,11 @@ int main(int argc, char *argv[])
         return (1);
     }
 
-    while ((opt = getopt(argc, argv, "f")) != -1) {
+    while ((opt = getopt(argc, argv, "bf")) != -1) {
         switch (opt) {
+            case 'b':
+                bopt = 1;
+                break;
             case 'f':
                 fopt = 1;
                 break;
@@ -231,14 +259,26 @@ int main(int argc, char *argv[])
                 return (1);
         }
     }
+    if (bopt && fopt) {
+        printf(" -f and -b are mutually exclusive options. Kindly chose of them\n");
+        usage(argv[0]);
+    }
 
-    if (strlen(argv[fopt + 1]) == 0 || strlen(argv[fopt + 2]) == 0 || strlen(argv[fopt + 3]) == 0) {
+    if (bopt || fopt) {
+        opt = 1;
+    }
+
+    if (strlen(argv[opt + 1]) == 0 || strlen(argv[opt + 2]) == 0 || strlen(argv[opt + 3]) == 0) {
         usage(argv[0]);
         return (1);
     }
 
+    if (fopt == 1)
+        opt = FOPT;
+    if (bopt == 1)
+        opt = BOPT;
 
-    result = query_and_fetch(argv[fopt + 1], argv[fopt + 2], argv[fopt + 3], fopt);
+    result = query_and_fetch(argv[opt + 1], argv[opt + 2], argv[opt + 3], opt);
 
     return 0;
 }
