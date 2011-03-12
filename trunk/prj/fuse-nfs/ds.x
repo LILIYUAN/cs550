@@ -53,6 +53,7 @@ struct my_dirent {
 
 struct getattr_res {
 	struct my_stat sbuf;	
+	int res;
 };
 
 struct getattr_req {
