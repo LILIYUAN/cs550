@@ -77,6 +77,7 @@ typedef struct my_dirent my_dirent;
 
 struct getattr_res {
 	struct my_stat sbuf;
+	int res;
 };
 typedef struct getattr_res getattr_res;
 
