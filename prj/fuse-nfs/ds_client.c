@@ -809,8 +809,6 @@ int readlink(char *ds_svr, char *path, int bufsize, char *buf)
 
 
 
-
-
 int
 main (int argc, char *argv[])
 {
