@@ -57,7 +57,7 @@ struct getattr_res {
 };
 
 struct getattr_req {
-	pathname path;
+	pathname name;
 };
 
 struct readdir_res {
@@ -66,7 +66,7 @@ struct readdir_res {
 };
 
 struct readdir_req {
-	pathname path;
+	pathname name;
 	int d_off;
 };
 
@@ -76,7 +76,7 @@ struct mkdir_res {
 };
 
 struct mkdir_req {
-	pathname path;
+	pathname name;
 	my_mode_t mode;
 };
 
@@ -111,7 +111,7 @@ struct mknod_res {
 };
 
 struct mknod_req {
-	pathname path;
+	pathname name;
 	my_mode_t mode;
 	my_dev_t dev;
 };
@@ -122,7 +122,7 @@ struct create_res {
 };
 
 struct create_req {
-	pathname path;
+	pathname name;
 	my_mode_t mode;
 	my_dev_t dev;
 };
@@ -132,7 +132,7 @@ struct open_res {
 };
 
 struct open_req {
-	pathname path;
+	pathname name;
 	int flags;
 	my_mode_t mode;
 };
@@ -173,7 +173,7 @@ struct lookup_res {
 };
 
 struct lookup_req {
-pathname name;
+	pathname name;
 };
 
 struct truncate_res {
