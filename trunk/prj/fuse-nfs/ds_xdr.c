@@ -202,6 +202,8 @@ xdr_getattr_res (XDR *xdrs, getattr_res *objp)
 
 	 if (!xdr_my_stat (xdrs, &objp->sbuf))
 		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->res))
+		 return FALSE;
 	return TRUE;
 }
 
