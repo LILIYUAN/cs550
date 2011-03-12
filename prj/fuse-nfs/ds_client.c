@@ -171,6 +171,645 @@ dsprog_1(char *host)
 #endif	 /* DEBUG */
 }
 
+int getattr(char *ds_svr, char *path, struct stat *buf)
+{
+	getattr_req req;
+	getattr_res res;
+    	CLIENT *clnt;
+    	bool_t ret;
+
+	if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+		clnt_pcreateerror(ds_svr);
+		return(-1);
+    	}
+
+	req.name = path;
+
+	ret = getattr_1(&req,&res,clnt);
+
+	if (ret != RPC_SUCCESS) {
+		printf("ret = %d\n",ret);
+		clnt_perror(clnt, "call failed");
+	}
+
+	if (res.res  < 0) {
+		errno = -(res.res);
+		return (-1);
+	}
+
+	// individually copy the items
+	*buf = res.sbuf;
+
+	clnt_destroy(clnt);
+	return res.res;
+}
+
+int readdir(char *ds_svr, char *path, int offsett, struct dirent *dentry)
+{
+        readdir_req req;
+        readdir_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+	req.d_off = offset;
+
+        ret = readdir_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        // individually copy the items
+        *dentry = res.dent;
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int mkdir(char *ds_svr, char *path, mode_t mode)
+{
+        mkdir_req req;
+        mkdir_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+	req.mode = mode;
+
+        ret = mkdir_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int unlink(char *ds_svr, char *path)
+{
+        unlink_req req;
+        unlink_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+
+        ret = unlink_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+
+int rmdir(char *ds_svr, char *path)
+{
+        rmdir_req req;
+        rmdir_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+
+        ret = rmdir_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int rename(char *ds_svr, char *oldpath, char *newpath)
+{
+        rename_req req;
+        reanme_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.old = oldpath;
+	req.new = newpath;
+
+        ret = rename_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int mknod(char *ds_svr, char *path, mode_t mode, dev_t dev)
+{
+        mknod_req req;
+        mknod_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+	req.mode = mode;
+	req.dev = dev;
+
+        ret = mknod_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int create(char *ds_svr, char *path, mode_t mode, dev_t dev)
+{
+        create_req req;
+        create_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+	req.mode = mode;
+	req.dev = dev;
+
+        ret = create_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int open(char *ds_svr, char *path, int flags, mode_t mode)
+{
+        open_req req;
+        open_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+	req.flags = flags;
+	req.mode = mode;
+
+        ret = open_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int close(char *ds_svr, char *path)
+{
+        close_req req;
+        close_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+
+        ret = close_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int read(char *ds_svr, char *path, int offset, int count, char *buf, int *bytes)
+{
+        read_req req;
+        read_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+	req.offset = offset;
+	req.count = count;
+
+        ret = read_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        // individually copy the items
+        *buf = res.data;
+	*bytes = res.bytes;
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int write(char *ds_svr, char *path, char *data, int offset, int count)
+{
+        write_req req;
+        write_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+	req.data =  data;
+	req.offset = offset;
+	req.count = count;
+
+        ret = write_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int lookup(char *ds_svr, char *path)
+{
+        lookup_req req;
+        lookup_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+
+        ret = lookup_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int truncate(char *ds_svr, char *path, int length)
+{
+        truncate_req req;
+        truncate_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+	req.len = length;
+
+        ret = truncate_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int statfs(char *ds_svr, char *path, struct statfs *buf)
+{
+        statfs_req req;
+        statfs_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+
+        ret = statfs_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        // individually copy the items
+        *buf = res.stat;
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int chmod(char *ds_svr, char *path, mode_t mode)
+{
+        chmod_req req;
+        chmod_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+
+        ret = chmod_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int chown(char *ds_svr, char *path, uid_t uid, gid_t gid)
+{
+        chown_req req;
+        chown_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+	req.uid = uid;
+	req.gid = gid;
+
+        ret = chown_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int link(char *ds_svr, char *old, char *new)
+{
+        link_req req;
+        link_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.old = old;
+	req.new = new;
+
+        ret = link_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int symlink(char *ds_svr, char *old, char * new)
+{
+        symlink_req req;
+        symlink_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.old = old;
+	req.new = new;
+
+        ret = symlink_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+int readlink(char *ds_svr, char *path, int bufsize, char *buf)
+{
+        readlink_req req;
+        readlink_res res;
+        CLIENT *clnt;
+        bool_t ret;
+
+        if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+                clnt_pcreateerror(ds_svr);
+                return(-1);
+        }
+
+        req.name = path;
+	req.bugsize = bufsize;
+
+        ret = readlink_1(&req,&res,clnt);
+
+        if (ret != RPC_SUCCESS) {
+                printf("ret = %d\n",ret);
+                clnt_perror(clnt, "call failed");
+        }
+
+        if (res.res  < 0) {
+                errno = -(res.res);
+                return (-1);
+        }
+
+        *buf = res.buf;
+
+        clnt_destroy(clnt);
+        return res.res;
+}
+
+
+
+
 
 int
 main (int argc, char *argv[])
