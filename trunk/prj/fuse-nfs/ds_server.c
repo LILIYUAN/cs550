@@ -15,11 +15,16 @@
 bool_t
 getattr_1_svc(getattr_req *argp, getattr_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
 
 	/*
 	 * insert server code here
 	 */
+    result.res = stat(argp->name, result->sbuf);
+
+    if (result.res != 0) {
+        result.res = -errno;
+    }
 
 	return retval;
 }
@@ -27,35 +32,80 @@ getattr_1_svc(getattr_req *argp, getattr_res *result, struct svc_req *rqstp)
 bool_t
 readdir_1_svc(readdir_req *argp, readdir_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+
+    DIR *dirp;
+    struct dirent dent;
+    struct dirent *p = NULL;
 
 	/*
 	 * insert server code here
 	 */
+    dirp = opendir(argp->name);
+    if (dirp == NULL) {
+        result.res = -errno;
+        return retval;
+    }
 
+    seekdir(dirp, argp->d_off);
+    ret = readdir_r(dirp, &dent, &p);
+
+    if (ret != 0) {
+        result->res = -errno;
+        close(dirp);
+        return result;
+    }
+
+    result->dent.st_dev = dent.st_dev;
+    result->dent.st_ino = dent.st_ino;
+    result->dent.st_mode = dent.st_mode;
+    result->dent.st_nlink = dent.st_nlink;
+    result->dent.st_uid = dent.st_uid;
+    result->dent.st_gid = dent.st_gid;
+    result->dent.st_rdev = dent.st_gid;
+    result->dent.st_size = dent.st_size;    /* total size, in bytes */
+    result->dent.st_blksize = dent.st_blksize; /* blocksize for file system I/O */
+    result->dent.st_blocks = dent.st_blocks;  /* number of 512B blocks allocated */
+    result->dent.st_atime = dent.st_atime;   /* time of last access */
+    result->dent.st_mtime = dent.st_mtime;   /* time of last modification */
+    result->dent.st_ctime = dent.st_ctime;   /* time of last status change */
+
+    if (p == NULL)
+        result->eof = 1;
+    else 
+        result->eof = 0;
+
+    close(dirp);
 	return retval;
 }
 
 bool_t
 mkdir_1_svc(mkdir_req *argp, mkdir_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+    bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = mkdir(argp->name, argp->mode);
+    if (ret != 0) 
+        result->ret = -errno;
+    else 
+        result->ret = 0;
 
-	return retval;
+    return retval;
 }
 
 bool_t
 unlink_1_svc(unlink_req *argp, unlink_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = unlink(argp->name);
+    if (ret != 0) 
+        result->ret = -errno;
+    else 
+        result->ret = 0;
 
 	return retval;
 }
@@ -63,11 +113,14 @@ unlink_1_svc(unlink_req *argp, unlink_res *result, struct svc_req *rqstp)
 bool_t
 rmdir_1_svc(rmdir_req *argp, rmdir_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = rmdir(argp->name);
+    if (ret != 0) 
+        result->ret = -errno;
+    else 
+        result->ret = 0;
 
 	return retval;
 }
@@ -75,11 +128,14 @@ rmdir_1_svc(rmdir_req *argp, rmdir_res *result, struct svc_req *rqstp)
 bool_t
 rename_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = rename(argp->old, argp->new);
+    if (ret != 0) 
+        result->ret = -errno;
+    else 
+        result->ret = 0;
 
 	return retval;
 }
@@ -87,11 +143,14 @@ rename_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
 bool_t
 mknod_1_svc(mknod_req *argp, mknod_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = mknod(argp->name, argp->mode, argp->dev);
+    if (ret != 0) 
+        result->ret = -errno;
+    else 
+        result->ret = 0;
 
 	return retval;
 }
@@ -99,11 +158,14 @@ mknod_1_svc(mknod_req *argp, mknod_res *result, struct svc_req *rqstp)
 bool_t
 create_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = creat(argp->name, argp->flags, argp->mode);
+    if (ret != 0) 
+        result->ret = -errno;
+    else 
+        result->ret = 0;
 
 	return retval;
 }
@@ -111,11 +173,16 @@ create_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
 bool_t
 open_1_svc(open_req *argp, open_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int fd;
 
-	/*
-	 * insert server code here
-	 */
+    fd = open(argp->name, argp->flags, argp->mode);
+    if (fd < 0) 
+        result->ret = -errno;
+    else 
+        result->ret = fd;
+
+    close(fd);
 
 	return retval;
 }
@@ -123,7 +190,7 @@ open_1_svc(open_req *argp, open_res *result, struct svc_req *rqstp)
 bool_t
 close_1_svc(close_res *argp, close_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
 
 	/*
 	 * insert server code here
@@ -135,11 +202,24 @@ close_1_svc(close_res *argp, close_res *result, struct svc_req *rqstp)
 bool_t
 read_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+    int fd;
 
-	/*
-	 * insert server code here
-	 */
+    fd = open(argp->name, O_RDONLY);
+    if (fd  < 0) {
+        printf("Failed to open(%s) : errno %d\n", filepath, errno);
+        result->res = -errno;
+        return (TRUE);
+    }
+
+    ret = pread(fd, result->data, argp->count, argp->off);
+    close(fd);
+
+    if (ret < 0)
+        result->res = -errno;
+    else 
+        result->res = ret;
 
 	return retval;
 }
@@ -147,11 +227,24 @@ read_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
 bool_t
 write_1_svc(write_req *argp, write_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval TRUE;
+    int ret;
+    int fd;
 
-	/*
-	 * insert server code here
-	 */
+    fd = open(argp->name, O_RDWR);
+    if (fd  < 0) {
+        printf("Failed to open(%s) : errno %d\n", filepath, errno);
+        result->res = -errno;
+        return (TRUE);
+    }
+
+    ret = pwrite(fd, result->data, argp->count, argp->off);
+    close(fd);
+
+    if (ret < 0)
+        result->res = -errno;
+    else 
+        result->res = ret;
 
 	return retval;
 }
@@ -159,7 +252,7 @@ write_1_svc(write_req *argp, write_res *result, struct svc_req *rqstp)
 bool_t
 lookup_1_svc(lookup_req *argp, lookup_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
 
 	/*
 	 * insert server code here
@@ -171,12 +264,15 @@ lookup_1_svc(lookup_req *argp, lookup_res *result, struct svc_req *rqstp)
 bool_t
 truncate_1_svc(truncate_req *argp, truncate_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int res;
 
-	/*
-	 * insert server code here
-	 */
-
+    res = truncate(argp->name, argp->len);
+    if (res < 0) 
+        result->res = -errno;
+    else
+        result->res = 0;
+    
 	return retval;
 }
 
@@ -184,22 +280,40 @@ bool_t
 statfs_1_svc(statfs_req *argp, statfs_res *result, struct svc_req *rqstp)
 {
 	bool_t retval;
+    struct statfs sbuf;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = statfs(argp->name, &sbuf);
 
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
+
+    result->stat.f_type = sbuf.f_type;     /* type of file system (see below) */
+    result->stat.f_bsize = sbuf.f_bsize;    /* optimal transfer block size */
+    result->stat.f_blocks = sbuf.f_blocks;   /* total data blocks in file system */
+    result->stat.f_bfree = sbuf.f_bfree;    /* free blocks in fs */
+    result->stat.f_bavail = sbuf.f_bavail;   /* free blocks avail to unprivileged user */
+    result->stat.f_files = sbuf.f_files;    /* total file nodes in file system */
+    result->stat.f_ffree = sbuf.f_ffree;    /* free file nodes in fs */
+    result->stat.f_fsid = sbuf.f_fsid;     /* file system id */
+    result->stat.f_namelen = sbuf.f_namelen;  /* maximum length of filenames */
+    
 	return retval;
 }
 
 bool_t
 chmod_1_svc(chmod_req *argp, chmod_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = chmod(argp->name, argp->mode);
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
 
 	return retval;
 }
@@ -207,11 +321,15 @@ chmod_1_svc(chmod_req *argp, chmod_res *result, struct svc_req *rqstp)
 bool_t
 chown_1_svc(chown_req *argp, chown_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = chown(argp->name, argp->uid, argp->gid);
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
+
 
 	return retval;
 }
@@ -219,11 +337,14 @@ chown_1_svc(chown_req *argp, chown_res *result, struct svc_req *rqstp)
 bool_t
 link_1_svc(link_req *argp, link_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = link(argp->old, argp->new);
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
 
 	return retval;
 }
@@ -231,11 +352,14 @@ link_1_svc(link_req *argp, link_res *result, struct svc_req *rqstp)
 bool_t
 symlink_1_svc(symlink_req *argp, symlink_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = symlink(argp->old, argp->new);
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
 
 	return retval;
 }
@@ -243,11 +367,14 @@ symlink_1_svc(symlink_req *argp, symlink_res *result, struct svc_req *rqstp)
 bool_t
 readlink_1_svc(readlink_req *argp, readlink_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    ret = readlink(argp->name, result->buf, argp->bufsize);
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
 
 	return retval;
 }
