@@ -212,7 +212,7 @@ xdr_getattr_req (XDR *xdrs, getattr_req *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_pathname (xdrs, &objp->path))
+	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
 	return TRUE;
 }
@@ -234,7 +234,7 @@ xdr_readdir_req (XDR *xdrs, readdir_req *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_pathname (xdrs, &objp->path))
+	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->d_off))
 		 return FALSE;
@@ -256,7 +256,7 @@ xdr_mkdir_req (XDR *xdrs, mkdir_req *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_pathname (xdrs, &objp->path))
+	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
 	 if (!xdr_my_mode_t (xdrs, &objp->mode))
 		 return FALSE;
@@ -340,7 +340,7 @@ xdr_mknod_req (XDR *xdrs, mknod_req *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_pathname (xdrs, &objp->path))
+	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
 	 if (!xdr_my_mode_t (xdrs, &objp->mode))
 		 return FALSE;
@@ -364,7 +364,7 @@ xdr_create_req (XDR *xdrs, create_req *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_pathname (xdrs, &objp->path))
+	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
 	 if (!xdr_my_mode_t (xdrs, &objp->mode))
 		 return FALSE;
@@ -388,7 +388,7 @@ xdr_open_req (XDR *xdrs, open_req *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_pathname (xdrs, &objp->path))
+	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->flags))
 		 return FALSE;
