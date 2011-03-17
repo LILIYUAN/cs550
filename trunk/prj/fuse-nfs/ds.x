@@ -268,7 +268,7 @@ program DSPROG {
 
 	create_res	create(create_req *) 	= 8;
 	open_res 	open(open_req *) 	= 9;
-	close_res 	close(close_res *) 	= 10;
+	close_res 	close(close_req *) 	= 10;
 	read_res	read(read_req *) 	= 11;	
 	write_res	write(write_req *) 	= 12;	
 	lookup_res	lookup(lookup_req *) 	= 13;
