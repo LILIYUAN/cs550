@@ -27,19 +27,19 @@ typedef int my_time_t;
 typedef int my_nlink_t;
 
 struct my_stat {
-       my_dev_t     st_dev;     /* ID of device containing file */
-       my_ino_t     st_ino;     /* inode number */
-       my_mode_t    st_mode;    /* protection */
-       my_nlink_t   st_nlink;   /* number of hard links */
-       my_uid_t     st_uid;     /* user ID of owner */
-       my_gid_t     st_gid;     /* group ID of owner */
-       my_dev_t     st_rdev;    /* device ID (if special file) */
-       my_off_t     st_size;    /* total size, in bytes */
-       my_blksize_t st_blksize; /* blocksize for file system I/O */
-       my_blkcnt_t  st_blocks;  /* number of 512B blocks allocated */
-       my_time_t    st_atime;   /* time of last access */
-       my_time_t    st_mtime;   /* time of last modification */
-       my_time_t    st_ctime;   /* time of last status change */
+       my_dev_t     stat_dev;     /* ID of device containing file */
+       my_ino_t     stat_ino;     /* inode number */
+       my_mode_t    stat_mode;    /* protection */
+       my_nlink_t   stat_nlink;   /* number of hard links */
+       my_uid_t     stat_uid;     /* user ID of owner */
+       my_gid_t     stat_gid;     /* group ID of owner */
+       my_dev_t     stat_rdev;    /* device ID (if special file) */
+       my_off_t     stat_size;    /* total size, in bytes */
+       my_blksize_t stat_blksize; /* blocksize for file system I/O */
+       my_blkcnt_t  stat_blocks;  /* number of 512B blocks allocated */
+       my_time_t    stat_atime;   /* time of last access */
+       my_time_t    stat_mtime;   /* time of last modification */
+       my_time_t    stat_ctime;   /* time of last status change */
 };
 
 struct my_dirent {
