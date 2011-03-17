@@ -619,7 +619,7 @@ int truncate_c(char *ds_svr, char *path, int length)
         return res.res;
 }
 
-int statfs_c(char *ds_svr, char *path, struct statfs *buf)
+int statfs_c(char *ds_svr, char *path, struct my_statfs *buf)
 {
         statfs_req req;
         statfs_res res;
@@ -646,7 +646,7 @@ int statfs_c(char *ds_svr, char *path, struct statfs *buf)
         }
 
         // individually copy the items
-        *buf = res.stat;
+        //*buf = res.stat;
 
         clnt_destroy(clnt);
         return res.res;
@@ -803,7 +803,8 @@ int readlink_c(char *ds_svr, char *path, int bufsize, char *buf)
                 return (-1);
         }
 
-        *buf = res.buf;
+	//cast it before assigning
+        //*buf = res.buf;
 
         clnt_destroy(clnt);
         return res.res;
