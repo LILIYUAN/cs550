@@ -12,7 +12,6 @@
 #include <dirent.h>
 #include <unistd.h>
 
-extern __thread int errno;
 
 void
 dsprog_1(char *host)
@@ -47,7 +46,7 @@ dsprog_1(char *host)
 	open_req  open_1_arg;
 	enum clnt_stat retval_10;
 	close_res result_10;
-	close_res  close_1_arg;
+	close_req  close_1_arg;
 	enum clnt_stat retval_11;
 	read_res result_11;
 	read_req  read_1_arg;
@@ -172,7 +171,7 @@ dsprog_1(char *host)
 #endif	 /* DEBUG */
 }
 
-int getattr(char *ds_svr, char *path, struct stat *buf)
+int getattr_c(char *ds_svr, char *path, struct stat *buf)
 {
 	getattr_req req;
 	getattr_res res;
@@ -199,13 +198,13 @@ int getattr(char *ds_svr, char *path, struct stat *buf)
 	}
 
 	// individually copy the items
-	*buf = res.sbuf;
+	//*buf = res.sbuf;
 
 	clnt_destroy(clnt);
 	return res.res;
 }
 
-int readdir(char *ds_svr, char *path, int offset, struct dirent *dentry)
+int readdir_c(char *ds_svr, char *path, int offset, struct dirent *dentry)
 {
         readdir_req req;
         readdir_res res;
@@ -239,7 +238,7 @@ int readdir(char *ds_svr, char *path, int offset, struct dirent *dentry)
         return res.res;
 }
 
-int mkdir(char *ds_svr, char *path, mode_t mode)
+int mkdir_c(char *ds_svr, char *path, mode_t mode)
 {
         mkdir_req req;
         mkdir_res res;
@@ -270,7 +269,7 @@ int mkdir(char *ds_svr, char *path, mode_t mode)
         return res.res;
 }
 
-int unlink(char *ds_svr, char *path)
+int unlink_c(char *ds_svr, char *path)
 {
         unlink_req req;
         unlink_res res;
@@ -301,7 +300,7 @@ int unlink(char *ds_svr, char *path)
 }
 
 
-int rmdir(char *ds_svr, char *path)
+int rmdir_c(char *ds_svr, char *path)
 {
         rmdir_req req;
         rmdir_res res;
@@ -331,10 +330,10 @@ int rmdir(char *ds_svr, char *path)
         return res.res;
 }
 
-int rename(char *ds_svr, char *oldpath, char *newpath)
+int rename_c(char *ds_svr, char *oldpath, char *newpath)
 {
         rename_req req;
-        reanme_res res;
+        rename_res res;
         CLIENT *clnt;
         bool_t ret;
 
@@ -362,7 +361,7 @@ int rename(char *ds_svr, char *oldpath, char *newpath)
         return res.res;
 }
 
-int mknod(char *ds_svr, char *path, mode_t mode, dev_t dev)
+int mknod_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
 {
         mknod_req req;
         mknod_res res;
@@ -394,7 +393,7 @@ int mknod(char *ds_svr, char *path, mode_t mode, dev_t dev)
         return res.res;
 }
 
-int create(char *ds_svr, char *path, mode_t mode, dev_t dev)
+int create_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
 {
         create_req req;
         create_res res;
@@ -426,7 +425,7 @@ int create(char *ds_svr, char *path, mode_t mode, dev_t dev)
         return res.res;
 }
 
-int open(char *ds_svr, char *path, int flags, mode_t mode)
+int open_c(char *ds_svr, char *path, int flags, mode_t mode)
 {
         open_req req;
         open_res res;
@@ -458,7 +457,7 @@ int open(char *ds_svr, char *path, int flags, mode_t mode)
         return res.res;
 }
 
-int close(char *ds_svr, char *path)
+int close_c(char *ds_svr, char *path)
 {
         close_req req;
         close_res res;
@@ -807,6 +806,7 @@ int readlink(char *ds_svr, char *path, int bufsize, char *buf)
         clnt_destroy(clnt);
         return res.res;
 }
+
 
 
 

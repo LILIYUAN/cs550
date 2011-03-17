@@ -35,7 +35,7 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		mknod_req mknod_1_arg;
 		create_req create_1_arg;
 		open_req open_1_arg;
-		close_res close_1_arg;
+		close_req close_1_arg;
 		read_req read_1_arg;
 		write_req write_1_arg;
 		lookup_req lookup_1_arg;
@@ -133,7 +133,7 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		break;
 
 	case close:
-		_xdr_argument = (xdrproc_t) xdr_close_res;
+		_xdr_argument = (xdrproc_t) xdr_close_req;
 		_xdr_result = (xdrproc_t) xdr_close_res;
 		local = (bool_t (*) (char *, void *,  struct svc_req *))close_1_svc;
 		break;

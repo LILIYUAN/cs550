@@ -97,10 +97,10 @@ open_1(open_req *argp, open_res *clnt_res, CLIENT *clnt)
 }
 
 enum clnt_stat 
-close_1(close_res *argp, close_res *clnt_res, CLIENT *clnt)
+close_1(close_req *argp, close_res *clnt_res, CLIENT *clnt)
 {
 	return (clnt_call(clnt, close,
-		(xdrproc_t) xdr_close_res, (caddr_t) argp,
+		(xdrproc_t) xdr_close_req, (caddr_t) argp,
 		(xdrproc_t) xdr_close_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
