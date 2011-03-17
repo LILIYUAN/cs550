@@ -6,24 +6,38 @@
 
 #include "ds.h"
 #include <sys/vfs.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
+
+extern __thread int errno;
 
 bool_t
 getattr_1_svc(getattr_req *argp, getattr_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
+    struct stat sbuf;
 
-	/*
-	 * insert server code here
-	 */
-    result.res = stat(argp->name, result->sbuf);
+    result->res = stat(argp->name, &sbuf);
 
-    if (result.res != 0) {
-        result.res = -errno;
+    if (result->res != 0) {
+        result->res = -errno;
+    } else {
+        result->sbuf.stat_dev = sbuf.st_dev;
+        result->sbuf.stat_ino = sbuf.st_ino;
+        result->sbuf.stat_mode = sbuf.st_mode;
+        result->sbuf.stat_nlink = sbuf.st_nlink;
+        result->sbuf.stat_uid = sbuf.st_uid;
+        result->sbuf.stat_gid = sbuf.st_gid;
+        result->sbuf.stat_rdev = sbuf.st_rdev;
+        result->sbuf.stat_size = sbuf.st_size;
+        result->sbuf.stat_blksize = sbuf.st_blksize;
+        result->sbuf.stat_blocks = sbuf.st_blocks;
+        result->sbuf.stat_atime = sbuf.st_atime;
+        result->sbuf.stat_mtime = sbuf.st_mtime;
+        result->sbuf.stat_ctime = sbuf.st_ctime;
     }
 
 	return retval;
@@ -44,7 +58,7 @@ readdir_1_svc(readdir_req *argp, readdir_res *result, struct svc_req *rqstp)
 	 */
     dirp = opendir(argp->name);
     if (dirp == NULL) {
-        result.res = -errno;
+        result->res = -errno;
         return retval;
     }
 
@@ -53,30 +67,22 @@ readdir_1_svc(readdir_req *argp, readdir_res *result, struct svc_req *rqstp)
 
     if (ret != 0) {
         result->res = -errno;
-        close(dirp);
-        return result;
+        closedir(dirp);
+        return retval;
     }
 
-    result->dent.st_dev = dent.st_dev;
-    result->dent.st_ino = dent.st_ino;
-    result->dent.st_mode = dent.st_mode;
-    result->dent.st_nlink = dent.st_nlink;
-    result->dent.st_uid = dent.st_uid;
-    result->dent.st_gid = dent.st_gid;
-    result->dent.st_rdev = dent.st_gid;
-    result->dent.st_size = dent.st_size;    /* total size, in bytes */
-    result->dent.st_blksize = dent.st_blksize; /* blocksize for file system I/O */
-    result->dent.st_blocks = dent.st_blocks;  /* number of 512B blocks allocated */
-    result->dent.st_atime = dent.st_atime;   /* time of last access */
-    result->dent.st_mtime = dent.st_mtime;   /* time of last modification */
-    result->dent.st_ctime = dent.st_ctime;   /* time of last status change */
+    result->dent.d_ino = dent.d_ino;
+    result->dent.d_off = dent.d_off;
+    result->dent.d_reclen = dent.d_reclen;
+    result->dent.d_type = dent.d_type;
+    strcpy(result->dent.d_name, dent.d_name);
 
     if (p == NULL)
         result->eof = 1;
     else 
         result->eof = 0;
 
-    close(dirp);
+    closedir(dirp);
 	return retval;
 }
 
@@ -86,11 +92,11 @@ mkdir_1_svc(mkdir_req *argp, mkdir_res *result, struct svc_req *rqstp)
     bool_t retval = TRUE;
     int ret;
 
-    ret = mkdir(argp->name, argp->mode);
+    ret = mkdir((const char *)argp->name, (mode_t)argp->mode);
     if (ret != 0) 
-        result->ret = -errno;
+        result->res = -errno;
     else 
-        result->ret = 0;
+        result->res = 0;
 
     return retval;
 }
@@ -103,9 +109,9 @@ unlink_1_svc(unlink_req *argp, unlink_res *result, struct svc_req *rqstp)
 
     ret = unlink(argp->name);
     if (ret != 0) 
-        result->ret = -errno;
+        result->res = -errno;
     else 
-        result->ret = 0;
+        result->res = 0;
 
 	return retval;
 }
@@ -118,9 +124,9 @@ rmdir_1_svc(rmdir_req *argp, rmdir_res *result, struct svc_req *rqstp)
 
     ret = rmdir(argp->name);
     if (ret != 0) 
-        result->ret = -errno;
+        result->res = -errno;
     else 
-        result->ret = 0;
+        result->res = 0;
 
 	return retval;
 }
@@ -133,9 +139,9 @@ rename_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
 
     ret = rename(argp->old, argp->new);
     if (ret != 0) 
-        result->ret = -errno;
+        result->res = -errno;
     else 
-        result->ret = 0;
+        result->res = 0;
 
 	return retval;
 }
@@ -148,9 +154,9 @@ mknod_1_svc(mknod_req *argp, mknod_res *result, struct svc_req *rqstp)
 
     ret = mknod(argp->name, argp->mode, argp->dev);
     if (ret != 0) 
-        result->ret = -errno;
+        result->res = -errno;
     else 
-        result->ret = 0;
+        result->res = 0;
 
 	return retval;
 }
@@ -163,9 +169,9 @@ create_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
 
     ret = creat(argp->name, argp->flags, argp->mode);
     if (ret != 0) 
-        result->ret = -errno;
+        result->res = -errno;
     else 
-        result->ret = 0;
+        result->res = 0;
 
 	return retval;
 }
@@ -178,9 +184,9 @@ open_1_svc(open_req *argp, open_res *result, struct svc_req *rqstp)
 
     fd = open(argp->name, argp->flags, argp->mode);
     if (fd < 0) 
-        result->ret = -errno;
+        result->res = -errno;
     else 
-        result->ret = fd;
+        result->res = fd;
 
     close(fd);
 
@@ -208,12 +214,12 @@ read_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
 
     fd = open(argp->name, O_RDONLY);
     if (fd  < 0) {
-        printf("Failed to open(%s) : errno %d\n", filepath, errno);
+        printf("Failed to open(%s) : errno %d\n", argp->name, errno);
         result->res = -errno;
         return (TRUE);
     }
 
-    ret = pread(fd, result->data, argp->count, argp->off);
+    ret = pread(fd, result->data, argp->count, argp->offset);
     close(fd);
 
     if (ret < 0)
@@ -233,12 +239,12 @@ write_1_svc(write_req *argp, write_res *result, struct svc_req *rqstp)
 
     fd = open(argp->name, O_RDWR);
     if (fd  < 0) {
-        printf("Failed to open(%s) : errno %d\n", filepath, errno);
+        printf("Failed to open(%s) : errno %d\n", argp->name, errno);
         result->res = -errno;
         return (TRUE);
     }
 
-    ret = pwrite(fd, result->data, argp->count, argp->off);
+    ret = pwrite(fd, argp->data, argp->count, argp->offset);
     close(fd);
 
     if (ret < 0)
