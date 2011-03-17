@@ -349,8 +349,8 @@ extern  bool_t create_1_svc(create_req *, create_res *, struct svc_req *);
 extern  enum clnt_stat open_1(open_req *, open_res *, CLIENT *);
 extern  bool_t open_1_svc(open_req *, open_res *, struct svc_req *);
 #define close 10
-extern  enum clnt_stat close_1(close_res *, close_res *, CLIENT *);
-extern  bool_t close_1_svc(close_res *, close_res *, struct svc_req *);
+extern  enum clnt_stat close_1(close_req *, close_res *, CLIENT *);
+extern  bool_t close_1_svc(close_req *, close_res *, struct svc_req *);
 #define read 11
 extern  enum clnt_stat read_1(read_req *, read_res *, CLIENT *);
 extern  bool_t read_1_svc(read_req *, read_res *, struct svc_req *);
