@@ -142,6 +142,16 @@ xdr_my_nlink_t (XDR *xdrs, my_nlink_t *objp)
 }
 
 bool_t
+xdr_my_fsid_t (XDR *xdrs, my_fsid_t *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_int (xdrs, objp))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
 xdr_my_stat (XDR *xdrs, my_stat *objp)
 {
 	register int32_t *buf;
@@ -171,6 +181,99 @@ xdr_my_stat (XDR *xdrs, my_stat *objp)
 	 if (!xdr_my_time_t (xdrs, &objp->stat_mtime))
 		 return FALSE;
 	 if (!xdr_my_time_t (xdrs, &objp->stat_ctime))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_my_statfs (XDR *xdrs, my_statfs *objp)
+{
+	register int32_t *buf;
+
+
+	if (xdrs->x_op == XDR_ENCODE) {
+		buf = XDR_INLINE (xdrs, 7 * BYTES_PER_XDR_UNIT);
+		if (buf == NULL) {
+			 if (!xdr_long (xdrs, &objp->f_type))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_bsize))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_blocks))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_bfree))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_bavail))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_files))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_ffree))
+				 return FALSE;
+
+		} else {
+		IXDR_PUT_LONG(buf, objp->f_type);
+		IXDR_PUT_LONG(buf, objp->f_bsize);
+		IXDR_PUT_LONG(buf, objp->f_blocks);
+		IXDR_PUT_LONG(buf, objp->f_bfree);
+		IXDR_PUT_LONG(buf, objp->f_bavail);
+		IXDR_PUT_LONG(buf, objp->f_files);
+		IXDR_PUT_LONG(buf, objp->f_ffree);
+		}
+		 if (!xdr_my_fsid_t (xdrs, &objp->f_fsid))
+			 return FALSE;
+		 if (!xdr_long (xdrs, &objp->f_namelen))
+			 return FALSE;
+		return TRUE;
+	} else if (xdrs->x_op == XDR_DECODE) {
+		buf = XDR_INLINE (xdrs, 7 * BYTES_PER_XDR_UNIT);
+		if (buf == NULL) {
+			 if (!xdr_long (xdrs, &objp->f_type))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_bsize))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_blocks))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_bfree))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_bavail))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_files))
+				 return FALSE;
+			 if (!xdr_long (xdrs, &objp->f_ffree))
+				 return FALSE;
+
+		} else {
+		objp->f_type = IXDR_GET_LONG(buf);
+		objp->f_bsize = IXDR_GET_LONG(buf);
+		objp->f_blocks = IXDR_GET_LONG(buf);
+		objp->f_bfree = IXDR_GET_LONG(buf);
+		objp->f_bavail = IXDR_GET_LONG(buf);
+		objp->f_files = IXDR_GET_LONG(buf);
+		objp->f_ffree = IXDR_GET_LONG(buf);
+		}
+		 if (!xdr_my_fsid_t (xdrs, &objp->f_fsid))
+			 return FALSE;
+		 if (!xdr_long (xdrs, &objp->f_namelen))
+			 return FALSE;
+	 return TRUE;
+	}
+
+	 if (!xdr_long (xdrs, &objp->f_type))
+		 return FALSE;
+	 if (!xdr_long (xdrs, &objp->f_bsize))
+		 return FALSE;
+	 if (!xdr_long (xdrs, &objp->f_blocks))
+		 return FALSE;
+	 if (!xdr_long (xdrs, &objp->f_bfree))
+		 return FALSE;
+	 if (!xdr_long (xdrs, &objp->f_bavail))
+		 return FALSE;
+	 if (!xdr_long (xdrs, &objp->f_files))
+		 return FALSE;
+	 if (!xdr_long (xdrs, &objp->f_ffree))
+		 return FALSE;
+	 if (!xdr_my_fsid_t (xdrs, &objp->f_fsid))
+		 return FALSE;
+	 if (!xdr_long (xdrs, &objp->f_namelen))
 		 return FALSE;
 	return TRUE;
 }
@@ -516,7 +619,7 @@ xdr_statfs_res (XDR *xdrs, statfs_res *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_statfs (xdrs, &objp->stat))
+	 if (!xdr_my_statfs (xdrs, &objp->stat))
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->res))
 		 return FALSE;
