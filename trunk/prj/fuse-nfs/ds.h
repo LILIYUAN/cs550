@@ -314,7 +314,7 @@ typedef struct readlink_res readlink_res;
 
 struct readlink_req {
 	pathname name;
-	int bufzise;
+	int bufsize;
 };
 typedef struct readlink_req readlink_req;
 

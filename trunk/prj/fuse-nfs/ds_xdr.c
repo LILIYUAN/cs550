@@ -751,7 +751,7 @@ xdr_readlink_req (XDR *xdrs, readlink_req *objp)
 
 	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->bufzise))
+	 if (!xdr_int (xdrs, &objp->bufsize))
 		 return FALSE;
 	return TRUE;
 }
