@@ -47,7 +47,7 @@ dsprog_1(char *host)
 	open_req  open_1_arg;
 	enum clnt_stat retval_10;
 	close_res result_10;
-	close_res  close_1_arg;
+	close_req  close_1_arg;
 	enum clnt_stat retval_11;
 	read_res result_11;
 	read_req  read_1_arg;
