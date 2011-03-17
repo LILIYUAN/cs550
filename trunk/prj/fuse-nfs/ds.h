@@ -104,6 +104,7 @@ typedef struct getattr_req getattr_req;
 struct readdir_res {
 	struct my_dirent dent;
 	int eof;
+	int res;
 };
 typedef struct readdir_res readdir_res;
 

@@ -76,6 +76,7 @@ struct getattr_req {
 struct readdir_res {
 	struct my_dirent dent;
 	int eof;
+	int res;
 };
 
 struct readdir_req {
