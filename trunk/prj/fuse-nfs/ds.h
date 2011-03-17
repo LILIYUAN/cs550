@@ -50,19 +50,19 @@ typedef int my_time_t;
 typedef int my_nlink_t;
 
 struct my_stat {
-	my_dev_t st_dev;
-	my_ino_t st_ino;
-	my_mode_t st_mode;
-	my_nlink_t st_nlink;
-	my_uid_t st_uid;
-	my_gid_t st_gid;
-	my_dev_t st_rdev;
-	my_off_t st_size;
-	my_blksize_t st_blksize;
-	my_blkcnt_t st_blocks;
-	my_time_t st_atime;
-	my_time_t st_mtime;
-	my_time_t st_ctime;
+	my_dev_t stat_dev;
+	my_ino_t stat_ino;
+	my_mode_t stat_mode;
+	my_nlink_t stat_nlink;
+	my_uid_t stat_uid;
+	my_gid_t stat_gid;
+	my_dev_t stat_rdev;
+	my_off_t stat_size;
+	my_blksize_t stat_blksize;
+	my_blkcnt_t stat_blocks;
+	my_time_t stat_atime;
+	my_time_t stat_mtime;
+	my_time_t stat_ctime;
 };
 typedef struct my_stat my_stat;
 
@@ -262,8 +262,8 @@ typedef struct chown_res chown_res;
 
 struct chown_req {
 	pathname name;
-	uid_t uid;
-	gid_t gid;
+	my_uid_t uid;
+	my_gid_t gid;
 };
 typedef struct chown_req chown_req;
 
