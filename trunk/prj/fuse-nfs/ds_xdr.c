@@ -531,6 +531,8 @@ xdr_read_res (XDR *xdrs, read_res *objp)
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->bytes))
 		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->res))
+		 return FALSE;
 	return TRUE;
 }
 

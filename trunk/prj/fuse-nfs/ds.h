@@ -205,6 +205,7 @@ typedef struct close_req close_req;
 struct read_res {
 	filedata data;
 	int bytes;
+	int res;
 };
 typedef struct read_res read_res;
 
