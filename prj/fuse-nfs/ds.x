@@ -209,8 +209,8 @@ struct chown_res {
 
 struct chown_req {
 	pathname name;
-	uid_t uid;
-	gid_t gid;
+	my_uid_t uid;
+	my_gid_t gid;
 };
 
 struct link_res {
