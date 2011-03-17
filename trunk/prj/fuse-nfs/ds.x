@@ -25,6 +25,7 @@ typedef int my_blksize_t;
 typedef int my_blkcnt_t;
 typedef int my_time_t;
 typedef int my_nlink_t;
+typedef int my_fsid_t;
 
 struct my_stat {
        my_dev_t     stat_dev;     /* ID of device containing file */
@@ -40,6 +41,18 @@ struct my_stat {
        my_time_t    stat_atime;   /* time of last access */
        my_time_t    stat_mtime;   /* time of last modification */
        my_time_t    stat_ctime;   /* time of last status change */
+};
+
+struct my_statfs {
+       long    f_type;     /* type of file system (see below) */
+       long    f_bsize;    /* optimal transfer block size */
+       long    f_blocks;   /* total data blocks in file system */
+       long    f_bfree;    /* free blocks in fs */
+       long    f_bavail;   /* free blocks avail to non-superuser */
+       long    f_files;    /* total file nodes in file system */
+       long    f_ffree;    /* free file nodes in fs */
+       my_fsid_t  f_fsid;     /* file system id */
+       long    f_namelen;  /* maximum length of filenames */
 };
 
 struct my_dirent {
@@ -186,7 +199,7 @@ struct truncate_req {
 };
 
 struct statfs_res {
-	struct statfs stat;
+	struct my_statfs stat;
 	int res;
 };
 
