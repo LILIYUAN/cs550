@@ -524,7 +524,7 @@ int read_c(char *ds_svr, char *path, int offset, int count, char *buf, int *byte
         return res.res;
 }
 
-int write(char *ds_svr, char *path, char *data, int offset, int count)
+int write_c(char *ds_svr, char *path, char *data, int offset, int count)
 {
         write_req req;
         write_res res;
@@ -537,7 +537,8 @@ int write(char *ds_svr, char *path, char *data, int offset, int count)
         }
 
         req.name = path;
-	req.data =  data;
+	//need to assign properly
+	//req.data =  data;
 	req.offset = offset;
 	req.count = count;
 
@@ -557,7 +558,7 @@ int write(char *ds_svr, char *path, char *data, int offset, int count)
         return res.res;
 }
 
-int lookup(char *ds_svr, char *path)
+int lookup_c(char *ds_svr, char *path)
 {
         lookup_req req;
         lookup_res res;
@@ -587,7 +588,7 @@ int lookup(char *ds_svr, char *path)
         return res.res;
 }
 
-int truncate(char *ds_svr, char *path, int length)
+int truncate_c(char *ds_svr, char *path, int length)
 {
         truncate_req req;
         truncate_res res;
@@ -618,7 +619,7 @@ int truncate(char *ds_svr, char *path, int length)
         return res.res;
 }
 
-int statfs(char *ds_svr, char *path, struct statfs *buf)
+int statfs_c(char *ds_svr, char *path, struct statfs *buf)
 {
         statfs_req req;
         statfs_res res;
@@ -651,7 +652,7 @@ int statfs(char *ds_svr, char *path, struct statfs *buf)
         return res.res;
 }
 
-int chmod(char *ds_svr, char *path, mode_t mode)
+int chmod_c(char *ds_svr, char *path, mode_t mode)
 {
         chmod_req req;
         chmod_res res;
@@ -681,7 +682,7 @@ int chmod(char *ds_svr, char *path, mode_t mode)
         return res.res;
 }
 
-int chown(char *ds_svr, char *path, uid_t uid, gid_t gid)
+int chown_c(char *ds_svr, char *path, uid_t uid, gid_t gid)
 {
         chown_req req;
         chown_res res;
@@ -713,7 +714,7 @@ int chown(char *ds_svr, char *path, uid_t uid, gid_t gid)
         return res.res;
 }
 
-int link(char *ds_svr, char *old, char *new)
+int link_c(char *ds_svr, char *old, char *new)
 {
         link_req req;
         link_res res;
@@ -744,7 +745,7 @@ int link(char *ds_svr, char *old, char *new)
         return res.res;
 }
 
-int symlink(char *ds_svr, char *old, char * new)
+int symlink_c(char *ds_svr, char *old, char * new)
 {
         symlink_req req;
         symlink_res res;
@@ -775,7 +776,7 @@ int symlink(char *ds_svr, char *old, char * new)
         return res.res;
 }
 
-int readlink(char *ds_svr, char *path, int bufsize, char *buf)
+int readlink_c(char *ds_svr, char *path, int bufsize, char *buf)
 {
         readlink_req req;
         readlink_res res;
@@ -788,7 +789,7 @@ int readlink(char *ds_svr, char *path, int bufsize, char *buf)
         }
 
         req.name = path;
-	req.bugsize = bufsize;
+	req.bufsize = bufsize;
 
         ret = readlink_1(&req,&res,clnt);
 

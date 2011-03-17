@@ -253,7 +253,7 @@ struct readlink_res {
 
 struct readlink_req {
 	pathname name;
-	int bufzise;
+	int bufsize;
 };
 
 
