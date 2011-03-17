@@ -49,6 +49,8 @@ typedef int my_time_t;
 
 typedef int my_nlink_t;
 
+typedef int my_fsid_t;
+
 struct my_stat {
 	my_dev_t stat_dev;
 	my_ino_t stat_ino;
@@ -65,6 +67,19 @@ struct my_stat {
 	my_time_t stat_ctime;
 };
 typedef struct my_stat my_stat;
+
+struct my_statfs {
+	long f_type;
+	long f_bsize;
+	long f_blocks;
+	long f_bfree;
+	long f_bavail;
+	long f_files;
+	long f_ffree;
+	my_fsid_t f_fsid;
+	long f_namelen;
+};
+typedef struct my_statfs my_statfs;
 
 struct my_dirent {
 	my_ino_t d_ino;
@@ -234,7 +249,7 @@ struct truncate_req {
 typedef struct truncate_req truncate_req;
 
 struct statfs_res {
-	struct statfs stat;
+	struct my_statfs stat;
 	int res;
 };
 typedef struct statfs_res statfs_res;
@@ -447,7 +462,9 @@ extern  bool_t xdr_my_blksize_t (XDR *, my_blksize_t*);
 extern  bool_t xdr_my_blkcnt_t (XDR *, my_blkcnt_t*);
 extern  bool_t xdr_my_time_t (XDR *, my_time_t*);
 extern  bool_t xdr_my_nlink_t (XDR *, my_nlink_t*);
+extern  bool_t xdr_my_fsid_t (XDR *, my_fsid_t*);
 extern  bool_t xdr_my_stat (XDR *, my_stat*);
+extern  bool_t xdr_my_statfs (XDR *, my_statfs*);
 extern  bool_t xdr_my_dirent (XDR *, my_dirent*);
 extern  bool_t xdr_getattr_res (XDR *, getattr_res*);
 extern  bool_t xdr_getattr_req (XDR *, getattr_req*);
@@ -504,7 +521,9 @@ extern bool_t xdr_my_blksize_t ();
 extern bool_t xdr_my_blkcnt_t ();
 extern bool_t xdr_my_time_t ();
 extern bool_t xdr_my_nlink_t ();
+extern bool_t xdr_my_fsid_t ();
 extern bool_t xdr_my_stat ();
+extern bool_t xdr_my_statfs ();
 extern bool_t xdr_my_dirent ();
 extern bool_t xdr_getattr_res ();
 extern bool_t xdr_getattr_req ();
