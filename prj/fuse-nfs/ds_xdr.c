@@ -329,6 +329,8 @@ xdr_readdir_res (XDR *xdrs, readdir_res *objp)
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->eof))
 		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->res))
+		 return FALSE;
 	return TRUE;
 }
 
