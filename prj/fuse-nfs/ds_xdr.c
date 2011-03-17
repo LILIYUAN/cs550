@@ -146,31 +146,31 @@ xdr_my_stat (XDR *xdrs, my_stat *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_my_dev_t (xdrs, &objp->st_dev))
+	 if (!xdr_my_dev_t (xdrs, &objp->stat_dev))
 		 return FALSE;
-	 if (!xdr_my_ino_t (xdrs, &objp->st_ino))
+	 if (!xdr_my_ino_t (xdrs, &objp->stat_ino))
 		 return FALSE;
-	 if (!xdr_my_mode_t (xdrs, &objp->st_mode))
+	 if (!xdr_my_mode_t (xdrs, &objp->stat_mode))
 		 return FALSE;
-	 if (!xdr_my_nlink_t (xdrs, &objp->st_nlink))
+	 if (!xdr_my_nlink_t (xdrs, &objp->stat_nlink))
 		 return FALSE;
-	 if (!xdr_my_uid_t (xdrs, &objp->st_uid))
+	 if (!xdr_my_uid_t (xdrs, &objp->stat_uid))
 		 return FALSE;
-	 if (!xdr_my_gid_t (xdrs, &objp->st_gid))
+	 if (!xdr_my_gid_t (xdrs, &objp->stat_gid))
 		 return FALSE;
-	 if (!xdr_my_dev_t (xdrs, &objp->st_rdev))
+	 if (!xdr_my_dev_t (xdrs, &objp->stat_rdev))
 		 return FALSE;
-	 if (!xdr_my_off_t (xdrs, &objp->st_size))
+	 if (!xdr_my_off_t (xdrs, &objp->stat_size))
 		 return FALSE;
-	 if (!xdr_my_blksize_t (xdrs, &objp->st_blksize))
+	 if (!xdr_my_blksize_t (xdrs, &objp->stat_blksize))
 		 return FALSE;
-	 if (!xdr_my_blkcnt_t (xdrs, &objp->st_blocks))
+	 if (!xdr_my_blkcnt_t (xdrs, &objp->stat_blocks))
 		 return FALSE;
-	 if (!xdr_my_time_t (xdrs, &objp->st_atime))
+	 if (!xdr_my_time_t (xdrs, &objp->stat_atime))
 		 return FALSE;
-	 if (!xdr_my_time_t (xdrs, &objp->st_mtime))
+	 if (!xdr_my_time_t (xdrs, &objp->stat_mtime))
 		 return FALSE;
-	 if (!xdr_my_time_t (xdrs, &objp->st_ctime))
+	 if (!xdr_my_time_t (xdrs, &objp->stat_ctime))
 		 return FALSE;
 	return TRUE;
 }
@@ -572,9 +572,9 @@ xdr_chown_req (XDR *xdrs, chown_req *objp)
 
 	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
-	 if (!xdr_uid_t (xdrs, &objp->uid))
+	 if (!xdr_my_uid_t (xdrs, &objp->uid))
 		 return FALSE;
-	 if (!xdr_gid_t (xdrs, &objp->gid))
+	 if (!xdr_my_gid_t (xdrs, &objp->gid))
 		 return FALSE;
 	return TRUE;
 }
