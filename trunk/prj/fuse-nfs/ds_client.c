@@ -458,7 +458,7 @@ int open_c(char *ds_svr, char *path, int flags, mode_t mode)
         return res.res;
 }
 
-int close(char *ds_svr, char *path)
+int close_c(char *ds_svr, char *path)
 {
         close_req req;
         close_res res;
@@ -488,7 +488,7 @@ int close(char *ds_svr, char *path)
         return res.res;
 }
 
-int read(char *ds_svr, char *path, int offset, int count, char *buf, int *bytes)
+int read_c(char *ds_svr, char *path, int offset, int count, char *buf, int *bytes)
 {
         read_req req;
         read_res res;

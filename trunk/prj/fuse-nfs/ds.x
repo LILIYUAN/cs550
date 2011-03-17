@@ -162,6 +162,7 @@ struct close_req {
 struct read_res {
 	filedata data;
 	int bytes;
+	int res;
 };
 
 struct read_req {
