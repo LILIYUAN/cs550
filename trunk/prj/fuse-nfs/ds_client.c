@@ -12,6 +12,7 @@
 #include <dirent.h>
 #include <unistd.h>
 
+extern __thread int errno;
 
 void
 dsprog_1(char *host)
