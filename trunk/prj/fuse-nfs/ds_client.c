@@ -204,7 +204,7 @@ int getattr(char *ds_svr, char *path, struct stat *buf)
 	return res.res;
 }
 
-int readdir(char *ds_svr, char *path, int offsett, struct dirent *dentry)
+int readdir(char *ds_svr, char *path, int offset, struct dirent *dentry)
 {
         readdir_req req;
         readdir_res res;
@@ -232,7 +232,7 @@ int readdir(char *ds_svr, char *path, int offsett, struct dirent *dentry)
         }
 
         // individually copy the items
-        *dentry = res.dent;
+        //*dentry = res.dent;
 
         clnt_destroy(clnt);
         return res.res;
@@ -516,8 +516,8 @@ int read(char *ds_svr, char *path, int offset, int count, char *buf, int *bytes)
         }
 
         // individually copy the items
-        *buf = res.data;
-	*bytes = res.bytes;
+        //*buf = res.data;
+	//*bytes = res.bytes;
 
         clnt_destroy(clnt);
         return res.res;
