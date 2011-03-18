@@ -167,7 +167,7 @@ create_ds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
 	bool_t retval = TRUE;
     int ret;
 
-    ret = creat(argp->name, argp->flags, argp->mode);
+    ret = creat(argp->name, argp->mode);
     if (ret != 0) 
         result->res = -errno;
     else 
@@ -194,7 +194,7 @@ open_ds_1_svc(open_req *argp, open_res *result, struct svc_req *rqstp)
 }
 
 bool_t
-close_ds_1_svc(close_res *argp, close_res *result, struct svc_req *rqstp)
+close_ds_1_svc(close_req *argp, close_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
 
@@ -233,7 +233,7 @@ read_ds_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
 bool_t
 write_ds_1_svc(write_req *argp, write_res *result, struct svc_req *rqstp)
 {
-	bool_t retval TRUE;
+	bool_t retval = TRUE;
     int ret;
     int fd;
 
@@ -303,7 +303,7 @@ statfs_ds_1_svc(statfs_req *argp, statfs_res *result, struct svc_req *rqstp)
     result->stat.f_bavail = sbuf.f_bavail;   /* free blocks avail to unprivileged user */
     result->stat.f_files = sbuf.f_files;    /* total file nodes in file system */
     result->stat.f_ffree = sbuf.f_ffree;    /* free file nodes in fs */
-    result->stat.f_fsid = sbuf.f_fsid;     /* file system id */
+    /* result->stat.f_fsid = (my_fsid_t) sbuf.f_fsid; */     /* file system id */
     result->stat.f_namelen = sbuf.f_namelen;  /* maximum length of filenames */
     
 	return retval;
