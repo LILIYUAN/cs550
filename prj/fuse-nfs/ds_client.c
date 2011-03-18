@@ -20,64 +20,64 @@ dsprog_1(char *host)
 	CLIENT *clnt;
 	enum clnt_stat retval_1;
 	getattr_res result_1;
-	getattr_req  getattr_1_arg;
+	getattr_req  getattr_ds_1_arg;
 	enum clnt_stat retval_2;
 	readdir_res result_2;
-	readdir_req  readdir_1_arg;
+	readdir_req  readdir_ds_1_arg;
 	enum clnt_stat retval_3;
 	mkdir_res result_3;
-	mkdir_req  mkdir_1_arg;
+	mkdir_req  mkdir_ds_1_arg;
 	enum clnt_stat retval_4;
 	unlink_res result_4;
-	unlink_req  unlink_1_arg;
+	unlink_req  unlink_ds_1_arg;
 	enum clnt_stat retval_5;
 	rmdir_res result_5;
-	rmdir_req  rmdir_1_arg;
+	rmdir_req  rmdir_ds_1_arg;
 	enum clnt_stat retval_6;
 	rename_res result_6;
-	rename_req  rename_1_arg;
+	rename_req  rename_ds_1_arg;
 	enum clnt_stat retval_7;
 	mknod_res result_7;
-	mknod_req  mknod_1_arg;
+	mknod_req  mknod_ds_1_arg;
 	enum clnt_stat retval_8;
 	create_res result_8;
-	create_req  create_1_arg;
+	create_req  create_ds_1_arg;
 	enum clnt_stat retval_9;
 	open_res result_9;
-	open_req  open_1_arg;
+	open_req  open_ds_1_arg;
 	enum clnt_stat retval_10;
 	close_res result_10;
-	close_req  close_1_arg;
+	close_req  close_ds_1_arg;
 	enum clnt_stat retval_11;
 	read_res result_11;
-	read_req  read_1_arg;
+	read_req  read_ds_1_arg;
 	enum clnt_stat retval_12;
 	write_res result_12;
-	write_req  write_1_arg;
+	write_req  write_ds_1_arg;
 	enum clnt_stat retval_13;
 	lookup_res result_13;
-	lookup_req  lookup_1_arg;
+	lookup_req  lookup_ds_1_arg;
 	enum clnt_stat retval_14;
 	truncate_res result_14;
-	truncate_req  truncate_1_arg;
+	truncate_req  truncate_ds_1_arg;
 	enum clnt_stat retval_15;
 	statfs_res result_15;
-	statfs_req  statfs_1_arg;
+	statfs_req  statfs_ds_1_arg;
 	enum clnt_stat retval_16;
 	chmod_res result_16;
-	chmod_req  chmod_1_arg;
+	chmod_req  chmod_ds_1_arg;
 	enum clnt_stat retval_17;
 	chown_res result_17;
-	chown_req  chown_1_arg;
+	chown_req  chown_ds_1_arg;
 	enum clnt_stat retval_18;
 	link_res result_18;
-	link_req  link_1_arg;
+	link_req  link_ds_1_arg;
 	enum clnt_stat retval_19;
 	symlink_res result_19;
-	symlink_req  symlink_1_arg;
+	symlink_req  symlink_ds_1_arg;
 	enum clnt_stat retval_20;
 	readlink_res result_20;
-	readlink_req  readlink_1_arg;
+	readlink_req  readlink_ds_1_arg;
 
 #ifndef	DEBUG
 	clnt = clnt_create (host, DSPROG, DSVERS, "udp");
@@ -87,83 +87,83 @@ dsprog_1(char *host)
 	}
 #endif	/* DEBUG */
 
-	retval_1 = getattr_1(&getattr_1_arg, &result_1, clnt);
+	retval_1 = getattr_ds_1(&getattr_ds_1_arg, &result_1, clnt);
 	if (retval_1 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_2 = readdir_1(&readdir_1_arg, &result_2, clnt);
+	retval_2 = readdir_ds_1(&readdir_ds_1_arg, &result_2, clnt);
 	if (retval_2 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_3 = mkdir_1(&mkdir_1_arg, &result_3, clnt);
+	retval_3 = mkdir_ds_1(&mkdir_ds_1_arg, &result_3, clnt);
 	if (retval_3 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_4 = unlink_1(&unlink_1_arg, &result_4, clnt);
+	retval_4 = unlink_ds_1(&unlink_ds_1_arg, &result_4, clnt);
 	if (retval_4 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_5 = rmdir_1(&rmdir_1_arg, &result_5, clnt);
+	retval_5 = rmdir_ds_1(&rmdir_ds_1_arg, &result_5, clnt);
 	if (retval_5 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_6 = rename_1(&rename_1_arg, &result_6, clnt);
+	retval_6 = rename_ds_1(&rename_ds_1_arg, &result_6, clnt);
 	if (retval_6 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_7 = mknod_1(&mknod_1_arg, &result_7, clnt);
+	retval_7 = mknod_ds_1(&mknod_ds_1_arg, &result_7, clnt);
 	if (retval_7 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_8 = create_1(&create_1_arg, &result_8, clnt);
+	retval_8 = create_ds_1(&create_ds_1_arg, &result_8, clnt);
 	if (retval_8 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_9 = open_1(&open_1_arg, &result_9, clnt);
+	retval_9 = open_ds_1(&open_ds_1_arg, &result_9, clnt);
 	if (retval_9 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_10 = close_1(&close_1_arg, &result_10, clnt);
+	retval_10 = close_ds_1(&close_ds_1_arg, &result_10, clnt);
 	if (retval_10 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_11 = read_1(&read_1_arg, &result_11, clnt);
+	retval_11 = read_ds_1(&read_ds_1_arg, &result_11, clnt);
 	if (retval_11 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_12 = write_1(&write_1_arg, &result_12, clnt);
+	retval_12 = write_ds_1(&write_ds_1_arg, &result_12, clnt);
 	if (retval_12 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_13 = lookup_1(&lookup_1_arg, &result_13, clnt);
+	retval_13 = lookup_ds_1(&lookup_ds_1_arg, &result_13, clnt);
 	if (retval_13 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_14 = truncate_1(&truncate_1_arg, &result_14, clnt);
+	retval_14 = truncate_ds_1(&truncate_ds_1_arg, &result_14, clnt);
 	if (retval_14 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_15 = statfs_1(&statfs_1_arg, &result_15, clnt);
+	retval_15 = statfs_ds_1(&statfs_ds_1_arg, &result_15, clnt);
 	if (retval_15 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_16 = chmod_1(&chmod_1_arg, &result_16, clnt);
+	retval_16 = chmod_ds_1(&chmod_ds_1_arg, &result_16, clnt);
 	if (retval_16 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_17 = chown_1(&chown_1_arg, &result_17, clnt);
+	retval_17 = chown_ds_1(&chown_ds_1_arg, &result_17, clnt);
 	if (retval_17 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_18 = link_1(&link_1_arg, &result_18, clnt);
+	retval_18 = link_ds_1(&link_ds_1_arg, &result_18, clnt);
 	if (retval_18 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_19 = symlink_1(&symlink_1_arg, &result_19, clnt);
+	retval_19 = symlink_ds_1(&symlink_ds_1_arg, &result_19, clnt);
 	if (retval_19 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_20 = readlink_1(&readlink_1_arg, &result_20, clnt);
+	retval_20 = readlink_ds_1(&readlink_ds_1_arg, &result_20, clnt);
 	if (retval_20 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
@@ -186,7 +186,7 @@ int getattr_c(char *ds_svr, char *path, struct stat *buf)
 
 	req.name = path;
 
-	ret = getattr_1(&req,&res,clnt);
+	ret = getattr_ds_1(&req,&res,clnt);
 
 	if (ret != RPC_SUCCESS) {
 		printf("ret = %d\n",ret);
@@ -220,7 +220,7 @@ int readdir_c(char *ds_svr, char *path, int offset, struct dirent *dentry)
         req.name = path;
 	req.d_off = offset;
 
-        ret = readdir_1(&req,&res,clnt);
+        ret = readdir_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -254,7 +254,7 @@ int mkdir_c(char *ds_svr, char *path, mode_t mode)
         req.name = path;
 	req.mode = mode;
 
-        ret = mkdir_1(&req,&res,clnt);
+        ret = mkdir_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -284,7 +284,7 @@ int unlink_c(char *ds_svr, char *path)
 
         req.name = path;
 
-        ret = unlink_1(&req,&res,clnt);
+        ret = unlink_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -315,7 +315,7 @@ int rmdir_c(char *ds_svr, char *path)
 
         req.name = path;
 
-        ret = rmdir_1(&req,&res,clnt);
+        ret = rmdir_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -346,7 +346,7 @@ int rename_c(char *ds_svr, char *oldpath, char *newpath)
         req.old = oldpath;
 	req.new = newpath;
 
-        ret = rename_1(&req,&res,clnt);
+        ret = rename_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -378,7 +378,7 @@ int mknod_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
 	req.mode = mode;
 	req.dev = dev;
 
-        ret = mknod_1(&req,&res,clnt);
+        ret = mknod_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -410,7 +410,7 @@ int create_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
 	req.mode = mode;
 	req.dev = dev;
 
-        ret = create_1(&req,&res,clnt);
+        ret = create_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -442,7 +442,7 @@ int open_c(char *ds_svr, char *path, int flags, mode_t mode)
 	req.flags = flags;
 	req.mode = mode;
 
-        ret = open_1(&req,&res,clnt);
+        ret = open_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -472,7 +472,7 @@ int close_c(char *ds_svr, char *path)
 
         req.name = path;
 
-        ret = close_1(&req,&res,clnt);
+        ret = close_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -504,7 +504,7 @@ int read_c(char *ds_svr, char *path, int offset, int count, char *buf, int *byte
 	req.offset = offset;
 	req.count = count;
 
-        ret = read_1(&req,&res,clnt);
+        ret = read_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -542,7 +542,7 @@ int write_c(char *ds_svr, char *path, char *data, int offset, int count)
 	req.offset = offset;
 	req.count = count;
 
-        ret = write_1(&req,&res,clnt);
+        ret = write_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -572,7 +572,7 @@ int lookup_c(char *ds_svr, char *path)
 
         req.name = path;
 
-        ret = lookup_1(&req,&res,clnt);
+        ret = lookup_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -603,7 +603,7 @@ int truncate_c(char *ds_svr, char *path, int length)
         req.name = path;
 	req.len = length;
 
-        ret = truncate_1(&req,&res,clnt);
+        ret = truncate_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -633,7 +633,7 @@ int statfs_c(char *ds_svr, char *path, struct my_statfs *buf)
 
         req.name = path;
 
-        ret = statfs_1(&req,&res,clnt);
+        ret = statfs_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -666,7 +666,7 @@ int chmod_c(char *ds_svr, char *path, mode_t mode)
 
         req.name = path;
 
-        ret = chmod_1(&req,&res,clnt);
+        ret = chmod_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -698,7 +698,7 @@ int chown_c(char *ds_svr, char *path, uid_t uid, gid_t gid)
 	req.uid = uid;
 	req.gid = gid;
 
-        ret = chown_1(&req,&res,clnt);
+        ret = chown_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -729,7 +729,7 @@ int link_c(char *ds_svr, char *old, char *new)
         req.old = old;
 	req.new = new;
 
-        ret = link_1(&req,&res,clnt);
+        ret = link_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -760,7 +760,7 @@ int symlink_c(char *ds_svr, char *old, char * new)
         req.old = old;
 	req.new = new;
 
-        ret = symlink_1(&req,&res,clnt);
+        ret = symlink_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
@@ -791,7 +791,7 @@ int readlink_c(char *ds_svr, char *path, int bufsize, char *buf)
         req.name = path;
 	req.bufsize = bufsize;
 
-        ret = readlink_1(&req,&res,clnt);
+        ret = readlink_ds_1(&req,&res,clnt);
 
         if (ret != RPC_SUCCESS) {
                 printf("ret = %d\n",ret);
