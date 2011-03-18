@@ -16,180 +16,180 @@
 static struct timeval TIMEOUT = { 25, 0 };
 
 enum clnt_stat 
-getattr_1(getattr_req *argp, getattr_res *clnt_res, CLIENT *clnt)
+getattr_ds_1(getattr_req *argp, getattr_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, getattr,
+	return (clnt_call(clnt, getattr_ds,
 		(xdrproc_t) xdr_getattr_req, (caddr_t) argp,
 		(xdrproc_t) xdr_getattr_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-readdir_1(readdir_req *argp, readdir_res *clnt_res, CLIENT *clnt)
+readdir_ds_1(readdir_req *argp, readdir_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, readdir,
+	return (clnt_call(clnt, readdir_ds,
 		(xdrproc_t) xdr_readdir_req, (caddr_t) argp,
 		(xdrproc_t) xdr_readdir_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-mkdir_1(mkdir_req *argp, mkdir_res *clnt_res, CLIENT *clnt)
+mkdir_ds_1(mkdir_req *argp, mkdir_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, mkdir,
+	return (clnt_call(clnt, mkdir_ds,
 		(xdrproc_t) xdr_mkdir_req, (caddr_t) argp,
 		(xdrproc_t) xdr_mkdir_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-unlink_1(unlink_req *argp, unlink_res *clnt_res, CLIENT *clnt)
+unlink_ds_1(unlink_req *argp, unlink_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, unlink,
+	return (clnt_call(clnt, unlink_ds,
 		(xdrproc_t) xdr_unlink_req, (caddr_t) argp,
 		(xdrproc_t) xdr_unlink_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-rmdir_1(rmdir_req *argp, rmdir_res *clnt_res, CLIENT *clnt)
+rmdir_ds_1(rmdir_req *argp, rmdir_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, rmdir,
+	return (clnt_call(clnt, rmdir_ds,
 		(xdrproc_t) xdr_rmdir_req, (caddr_t) argp,
 		(xdrproc_t) xdr_rmdir_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-rename_1(rename_req *argp, rename_res *clnt_res, CLIENT *clnt)
+rename_ds_1(rename_req *argp, rename_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, rename,
+	return (clnt_call(clnt, rename_ds,
 		(xdrproc_t) xdr_rename_req, (caddr_t) argp,
 		(xdrproc_t) xdr_rename_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-mknod_1(mknod_req *argp, mknod_res *clnt_res, CLIENT *clnt)
+mknod_ds_1(mknod_req *argp, mknod_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, mknod,
+	return (clnt_call(clnt, mknod_ds,
 		(xdrproc_t) xdr_mknod_req, (caddr_t) argp,
 		(xdrproc_t) xdr_mknod_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-create_1(create_req *argp, create_res *clnt_res, CLIENT *clnt)
+create_ds_1(create_req *argp, create_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, create,
+	return (clnt_call(clnt, create_ds,
 		(xdrproc_t) xdr_create_req, (caddr_t) argp,
 		(xdrproc_t) xdr_create_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-open_1(open_req *argp, open_res *clnt_res, CLIENT *clnt)
+open_ds_1(open_req *argp, open_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, open,
+	return (clnt_call(clnt, open_ds,
 		(xdrproc_t) xdr_open_req, (caddr_t) argp,
 		(xdrproc_t) xdr_open_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-close_1(close_req *argp, close_res *clnt_res, CLIENT *clnt)
+close_ds_1(close_req *argp, close_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, close,
+	return (clnt_call(clnt, close_ds,
 		(xdrproc_t) xdr_close_req, (caddr_t) argp,
 		(xdrproc_t) xdr_close_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-read_1(read_req *argp, read_res *clnt_res, CLIENT *clnt)
+read_ds_1(read_req *argp, read_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, read,
+	return (clnt_call(clnt, read_ds,
 		(xdrproc_t) xdr_read_req, (caddr_t) argp,
 		(xdrproc_t) xdr_read_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-write_1(write_req *argp, write_res *clnt_res, CLIENT *clnt)
+write_ds_1(write_req *argp, write_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, write,
+	return (clnt_call(clnt, write_ds,
 		(xdrproc_t) xdr_write_req, (caddr_t) argp,
 		(xdrproc_t) xdr_write_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-lookup_1(lookup_req *argp, lookup_res *clnt_res, CLIENT *clnt)
+lookup_ds_1(lookup_req *argp, lookup_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, lookup,
+	return (clnt_call(clnt, lookup_ds,
 		(xdrproc_t) xdr_lookup_req, (caddr_t) argp,
 		(xdrproc_t) xdr_lookup_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-truncate_1(truncate_req *argp, truncate_res *clnt_res, CLIENT *clnt)
+truncate_ds_1(truncate_req *argp, truncate_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, truncate,
+	return (clnt_call(clnt, truncate_ds,
 		(xdrproc_t) xdr_truncate_req, (caddr_t) argp,
 		(xdrproc_t) xdr_truncate_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-statfs_1(statfs_req *argp, statfs_res *clnt_res, CLIENT *clnt)
+statfs_ds_1(statfs_req *argp, statfs_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, statfs,
+	return (clnt_call(clnt, statfs_ds,
 		(xdrproc_t) xdr_statfs_req, (caddr_t) argp,
 		(xdrproc_t) xdr_statfs_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-chmod_1(chmod_req *argp, chmod_res *clnt_res, CLIENT *clnt)
+chmod_ds_1(chmod_req *argp, chmod_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, chmod,
+	return (clnt_call(clnt, chmod_ds,
 		(xdrproc_t) xdr_chmod_req, (caddr_t) argp,
 		(xdrproc_t) xdr_chmod_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-chown_1(chown_req *argp, chown_res *clnt_res, CLIENT *clnt)
+chown_ds_1(chown_req *argp, chown_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, chown,
+	return (clnt_call(clnt, chown_ds,
 		(xdrproc_t) xdr_chown_req, (caddr_t) argp,
 		(xdrproc_t) xdr_chown_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-link_1(link_req *argp, link_res *clnt_res, CLIENT *clnt)
+link_ds_1(link_req *argp, link_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, link,
+	return (clnt_call(clnt, link_ds,
 		(xdrproc_t) xdr_link_req, (caddr_t) argp,
 		(xdrproc_t) xdr_link_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-symlink_1(symlink_req *argp, symlink_res *clnt_res, CLIENT *clnt)
+symlink_ds_1(symlink_req *argp, symlink_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, symlink,
+	return (clnt_call(clnt, symlink_ds,
 		(xdrproc_t) xdr_symlink_req, (caddr_t) argp,
 		(xdrproc_t) xdr_symlink_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-readlink_1(readlink_req *argp, readlink_res *clnt_res, CLIENT *clnt)
+readlink_ds_1(readlink_req *argp, readlink_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, readlink,
+	return (clnt_call(clnt, readlink_ds,
 		(xdrproc_t) xdr_readlink_req, (caddr_t) argp,
 		(xdrproc_t) xdr_readlink_res, (caddr_t) clnt_res,
 		TIMEOUT));

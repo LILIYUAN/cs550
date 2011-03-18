@@ -26,48 +26,48 @@ static void
 dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
 	union {
-		getattr_req getattr_1_arg;
-		readdir_req readdir_1_arg;
-		mkdir_req mkdir_1_arg;
-		unlink_req unlink_1_arg;
-		rmdir_req rmdir_1_arg;
-		rename_req rename_1_arg;
-		mknod_req mknod_1_arg;
-		create_req create_1_arg;
-		open_req open_1_arg;
-		close_req close_1_arg;
-		read_req read_1_arg;
-		write_req write_1_arg;
-		lookup_req lookup_1_arg;
-		truncate_req truncate_1_arg;
-		statfs_req statfs_1_arg;
-		chmod_req chmod_1_arg;
-		chown_req chown_1_arg;
-		link_req link_1_arg;
-		symlink_req symlink_1_arg;
-		readlink_req readlink_1_arg;
+		getattr_req getattr_ds_1_arg;
+		readdir_req readdir_ds_1_arg;
+		mkdir_req mkdir_ds_1_arg;
+		unlink_req unlink_ds_1_arg;
+		rmdir_req rmdir_ds_1_arg;
+		rename_req rename_ds_1_arg;
+		mknod_req mknod_ds_1_arg;
+		create_req create_ds_1_arg;
+		open_req open_ds_1_arg;
+		close_req close_ds_1_arg;
+		read_req read_ds_1_arg;
+		write_req write_ds_1_arg;
+		lookup_req lookup_ds_1_arg;
+		truncate_req truncate_ds_1_arg;
+		statfs_req statfs_ds_1_arg;
+		chmod_req chmod_ds_1_arg;
+		chown_req chown_ds_1_arg;
+		link_req link_ds_1_arg;
+		symlink_req symlink_ds_1_arg;
+		readlink_req readlink_ds_1_arg;
 	} argument;
 	union {
-		getattr_res getattr_1_res;
-		readdir_res readdir_1_res;
-		mkdir_res mkdir_1_res;
-		unlink_res unlink_1_res;
-		rmdir_res rmdir_1_res;
-		rename_res rename_1_res;
-		mknod_res mknod_1_res;
-		create_res create_1_res;
-		open_res open_1_res;
-		close_res close_1_res;
-		read_res read_1_res;
-		write_res write_1_res;
-		lookup_res lookup_1_res;
-		truncate_res truncate_1_res;
-		statfs_res statfs_1_res;
-		chmod_res chmod_1_res;
-		chown_res chown_1_res;
-		link_res link_1_res;
-		symlink_res symlink_1_res;
-		readlink_res readlink_1_res;
+		getattr_res getattr_ds_1_res;
+		readdir_res readdir_ds_1_res;
+		mkdir_res mkdir_ds_1_res;
+		unlink_res unlink_ds_1_res;
+		rmdir_res rmdir_ds_1_res;
+		rename_res rename_ds_1_res;
+		mknod_res mknod_ds_1_res;
+		create_res create_ds_1_res;
+		open_res open_ds_1_res;
+		close_res close_ds_1_res;
+		read_res read_ds_1_res;
+		write_res write_ds_1_res;
+		lookup_res lookup_ds_1_res;
+		truncate_res truncate_ds_1_res;
+		statfs_res statfs_ds_1_res;
+		chmod_res chmod_ds_1_res;
+		chown_res chown_ds_1_res;
+		link_res link_ds_1_res;
+		symlink_res symlink_ds_1_res;
+		readlink_res readlink_ds_1_res;
 	} result;
 	bool_t retval;
 	xdrproc_t _xdr_argument, _xdr_result;
@@ -78,124 +78,124 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		(void) svc_sendreply (transp, (xdrproc_t) xdr_void, (char *)NULL);
 		return;
 
-	case getattr:
+	case getattr_ds:
 		_xdr_argument = (xdrproc_t) xdr_getattr_req;
 		_xdr_result = (xdrproc_t) xdr_getattr_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))getattr_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))getattr_ds_1_svc;
 		break;
 
-	case readdir:
+	case readdir_ds:
 		_xdr_argument = (xdrproc_t) xdr_readdir_req;
 		_xdr_result = (xdrproc_t) xdr_readdir_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))readdir_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))readdir_ds_1_svc;
 		break;
 
-	case mkdir:
+	case mkdir_ds:
 		_xdr_argument = (xdrproc_t) xdr_mkdir_req;
 		_xdr_result = (xdrproc_t) xdr_mkdir_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))mkdir_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))mkdir_ds_1_svc;
 		break;
 
-	case unlink:
+	case unlink_ds:
 		_xdr_argument = (xdrproc_t) xdr_unlink_req;
 		_xdr_result = (xdrproc_t) xdr_unlink_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))unlink_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))unlink_ds_1_svc;
 		break;
 
-	case rmdir:
+	case rmdir_ds:
 		_xdr_argument = (xdrproc_t) xdr_rmdir_req;
 		_xdr_result = (xdrproc_t) xdr_rmdir_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))rmdir_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))rmdir_ds_1_svc;
 		break;
 
-	case rename:
+	case rename_ds:
 		_xdr_argument = (xdrproc_t) xdr_rename_req;
 		_xdr_result = (xdrproc_t) xdr_rename_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))rename_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))rename_ds_1_svc;
 		break;
 
-	case mknod:
+	case mknod_ds:
 		_xdr_argument = (xdrproc_t) xdr_mknod_req;
 		_xdr_result = (xdrproc_t) xdr_mknod_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))mknod_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))mknod_ds_1_svc;
 		break;
 
-	case create:
+	case create_ds:
 		_xdr_argument = (xdrproc_t) xdr_create_req;
 		_xdr_result = (xdrproc_t) xdr_create_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))create_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))create_ds_1_svc;
 		break;
 
-	case open:
+	case open_ds:
 		_xdr_argument = (xdrproc_t) xdr_open_req;
 		_xdr_result = (xdrproc_t) xdr_open_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))open_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))open_ds_1_svc;
 		break;
 
-	case close:
+	case close_ds:
 		_xdr_argument = (xdrproc_t) xdr_close_req;
 		_xdr_result = (xdrproc_t) xdr_close_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))close_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))close_ds_1_svc;
 		break;
 
-	case read:
+	case read_ds:
 		_xdr_argument = (xdrproc_t) xdr_read_req;
 		_xdr_result = (xdrproc_t) xdr_read_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))read_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))read_ds_1_svc;
 		break;
 
-	case write:
+	case write_ds:
 		_xdr_argument = (xdrproc_t) xdr_write_req;
 		_xdr_result = (xdrproc_t) xdr_write_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))write_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))write_ds_1_svc;
 		break;
 
-	case lookup:
+	case lookup_ds:
 		_xdr_argument = (xdrproc_t) xdr_lookup_req;
 		_xdr_result = (xdrproc_t) xdr_lookup_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))lookup_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))lookup_ds_1_svc;
 		break;
 
-	case truncate:
+	case truncate_ds:
 		_xdr_argument = (xdrproc_t) xdr_truncate_req;
 		_xdr_result = (xdrproc_t) xdr_truncate_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))truncate_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))truncate_ds_1_svc;
 		break;
 
-	case statfs:
+	case statfs_ds:
 		_xdr_argument = (xdrproc_t) xdr_statfs_req;
 		_xdr_result = (xdrproc_t) xdr_statfs_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))statfs_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))statfs_ds_1_svc;
 		break;
 
-	case chmod:
+	case chmod_ds:
 		_xdr_argument = (xdrproc_t) xdr_chmod_req;
 		_xdr_result = (xdrproc_t) xdr_chmod_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))chmod_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))chmod_ds_1_svc;
 		break;
 
-	case chown:
+	case chown_ds:
 		_xdr_argument = (xdrproc_t) xdr_chown_req;
 		_xdr_result = (xdrproc_t) xdr_chown_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))chown_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))chown_ds_1_svc;
 		break;
 
-	case link:
+	case link_ds:
 		_xdr_argument = (xdrproc_t) xdr_link_req;
 		_xdr_result = (xdrproc_t) xdr_link_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))link_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))link_ds_1_svc;
 		break;
 
-	case symlink:
+	case symlink_ds:
 		_xdr_argument = (xdrproc_t) xdr_symlink_req;
 		_xdr_result = (xdrproc_t) xdr_symlink_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))symlink_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))symlink_ds_1_svc;
 		break;
 
-	case readlink:
+	case readlink_ds:
 		_xdr_argument = (xdrproc_t) xdr_readlink_req;
 		_xdr_result = (xdrproc_t) xdr_readlink_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))readlink_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))readlink_ds_1_svc;
 		break;
 
 	default:
