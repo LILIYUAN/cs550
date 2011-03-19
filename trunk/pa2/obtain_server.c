@@ -41,7 +41,7 @@ obtain_1_svc(request *argp, readfile_res *result, struct svc_req *rqstp)
 }
 
 int
-search_cache(char *fname, peers_t *resp)
+build_peers_from_cache(char *fname, peers_t *resp)
 {
     FILE *fh;
     int cnt = 0;
@@ -141,7 +141,7 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 	/*
 	 * Walk through the list of peers and see if we need to relay the query to them.
 	 */
-	ret = search_cache_(argp->fname, &resp);
+	ret = build_peers_from_cache(argp->fname, &resp);
 
 	/*
 	 * Copy the cache results first.
