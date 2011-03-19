@@ -191,6 +191,7 @@ register_files(char *peer, char *index_svr, char *dirname, int bw)
 
     if ((dirp = opendir(dirname)) == NULL) {
         printf("opendir(%s) failed with errno %d\n", dirname, errno);
+	printf("Please check if the directory %s exists and is accessible\n",dirname);
         return (errno);
     }
 
