@@ -66,3 +66,79 @@ xdr_readfile_res (XDR *xdrs, readfile_res *objp)
 	}
 	return TRUE;
 }
+
+bool_t
+xdr_query_req (XDR *xdrs, query_req *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_string (xdrs, &objp->fname, MAXNAME))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->count))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_query_rec (XDR *xdrs, query_rec *objp)
+{
+	register int32_t *buf;
+
+	int i;
+	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->count))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->peers, BUFSIZE,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_msg_id (XDR *xdrs, msg_id *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_long (xdrs, &objp->hostid))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->seqno))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_b_query_req (XDR *xdrs, b_query_req *objp)
+{
+	register int32_t *buf;
+
+	int i;
+	 if (!xdr_msg_id (xdrs, &objp->id))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->ttl))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
+{
+	register int32_t *buf;
+
+	int i;
+	 if (!xdr_msg_id (xdrs, &objp->id))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->ttl))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->host, MAXHOSTNAME,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
+	return TRUE;
+}

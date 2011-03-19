@@ -17,6 +17,13 @@
 char dir[MAXPATHLEN];
 char *sharedir;
 
+typedef struct peers_s {
+	int count;
+	char *peer[MAXCOUNT];
+} peers_t;
+
+peers_t peers;
+
 typedef	union argument {
 		request obtain_1_arg;
 } argument_t ;
@@ -176,13 +183,101 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 }
 
 /*
+ * We use a simple registry for now by using dir/files as our index table.
+ * For every file registered we create a file under "/tmp/indsvr/" (if it does
+ * not exist already). And append the name of the peer-node to that file.
+ */
+int add_peer (char *fname, char *peername)
+{
+    FILE *fh;
+    char filepath[MAXPATHLEN];
+    char peer[MAXHOSTNAME+2];
+    int ret, found = 0;
+    int fd;
+    fpos_t fpos; 
+    static init_done = 0;
+
+    /*
+     * Create the server index directory for the first time.
+     */
+    if (init_done == 0) {
+        ret = mkdir(SERVER_DIR, 0755);
+
+        /*
+         * If we failed to create the index directory and failed for any other
+         * reason other than EEXIST we exit.
+         */
+        if (ret == -1 && errno != EEXIST) {
+            char errorstr[512];
+            sprintf(errorstr, "Failed to create the index directory : %s", SERVER_DIR);
+            perror(errorstr);
+        }
+        close(ret);
+        init_done = 1;
+    }
+
+
+    /*
+     * Try to open the name of the file under the index diorectory. If it
+     * already exists we open it else we create a new one.
+     */
+    sprintf(filepath, "%s/%s", SERVER_DIR, fname);
+    fh = fopen(filepath, "rw");
+    if (fh == NULL) {
+        /*
+         * The file does not exist. Hence try creating it.
+         */
+        if ((fh = fopen(filepath, "a+")) == NULL) {
+            printf("index-server : Failed to make an entry : errno = %d : %s\n", errno, strerror(errno));
+            return (errno);
+        }
+    }
+
+    fd = fileno(fh);
+    /*
+     * Lock the file in exclusive mode so that other contending threads don't
+     * modify it while we are searching.
+     */
+    flock(fd, LOCK_EX);
+
+    /*
+     * Search through the file to make sure the peer is not already registered.
+     * If it is already registered do nothing. Else, append the peers name to
+     * the file.
+     */
+#ifdef DEBUG
+    printf("Walking through current entries for %s: ", fname);
+#endif
+
+    while ((fscanf(fh, "%s\n", peer, &old_bw)) != EOF) {
+#ifdef DEBUG
+        printf("peer %s \n", peer);
+#endif
+
+        if (strcmp(peer, peername) == 0) {
+            found = 1;
+            break;
+        }
+    }
+
+    if (found == 0) {
+        fprintf(fh, "%s\n", peername);
+        printf("Registering file : %s from peer %s\n", fname, peername);
+    }
+
+    flock(fd, LOCK_UN);
+    fclose(fh);
+
+    return (0);
+}
+
+/*
  * This routine registers all the files in the directory <dirname>
  * with the index server against the peer.
  */
 int
-register_files(char *peer, char *index_svr, char *dirname, int bw)
+register_files(char *localhostname, char *dirname)
 {
-    CLIENT *clnt;
     DIR *dirp;
     struct dirent *entp;
     registry_rec rec;
@@ -195,32 +290,59 @@ register_files(char *peer, char *index_svr, char *dirname, int bw)
         return (errno);
     }
 
-    if ((clnt = clnt_create(index_svr, INDSRVPROG, INDSRVVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(index_svr);
-        return(-1);
-    }
-
     while ((entp = readdir(dirp)) != NULL) {
         /*
          * Skip "." and ".."
          */
         if (strcmp(entp->d_name, ".") == 0 || strcmp(entp->d_name, "..") == 0)
             continue;
-        printf("Registering file : %s to the index-server : %s\n", entp->d_name, index_svr);
+        printf("Registering file : %s to the index-server : %s\n", entp->d_name, localhostname);
 
-        rec.peer = peer;
-        rec.fname = entp->d_name;
-        rec.bw = bw;
-        ret = registry_1(&rec, &res, clnt);
-        if (res != RPC_SUCCESS) {
-            printf("Failed to register : res = %d\n", res);
-            return (res);
-        }
+        ret = add_peer(entp->d_name, localhostname);
     }
 
     closedir(dirp);
-    clnt_destroy(clnt);
     return (0);
+}
+
+int
+parse_peers(char *peerfile)
+{
+	FILE *fh;
+	char tmp[MAXHOSTNAME+2];
+	peers.count = 0;
+
+	/*
+	 * Build the peerlist structure.
+	 */
+	fh = fopen(peerfile, "r");
+	if (fh == NULL) {
+		printf("Failed to open the peerlist file : %s\n", peerfile);
+		usage(argv[0]);
+		return (1);
+	}
+
+	peers.count = 0;
+	while ((fgets(tmp, MAXHOSTNAME+2, fh)) != NULL) {
+        /*
+         * Truncate the '\n' from the string.
+         */
+        tmp[strlen(tmp) - 1] = '\0';
+		peers.peer[peers.count] = malloc(MAXHOSTNAME+2 * sizeof(char));	
+		if (peer.peer == NULL) {
+				printf("Failed to allocate memory. Quitting !\n");
+				fclose(fh);
+				return (1);
+		}
+		strcpy(peers.peer[peers.count], tmp);
+#ifdef DEBUG
+        printf("%s : strlen = %d\n", peers.peer[peers.count], strlen(peers.peer[peers.count]));
+#endif
+		peers.count++;
+ 	}
+
+	fclose(fh);
+	return (0);
 }
 
 /*
@@ -228,12 +350,9 @@ register_files(char *peer, char *index_svr, char *dirname, int bw)
  */
 void
 usage(char *name) {
-    printf(" Usage : %s [-b <bandwidth>] <hostname> <index-server-name> <share-dir>\n\n", name);
-    printf(" -b : This is the bandwidth that the peer can offer\n");
-    printf("      If unspecified it is considered as 0 and clients would give\n");
-    printf("      lower priority to this peer\n");
+    printf(" Usage : %s <hostname> <peer-list-file> <share-dir>\n\n", name);
     printf(" hostname : Local hostname of the machine\n");
-    printf(" index-server-name : Hostname of the index server\n");
+    printf(" peer-list-file : file containing the Hostnames of the peers\n");
     printf(" share-dir : Directory that you would like to share\n\n");
 }
 
@@ -243,37 +362,53 @@ extern int optind;
 int
 main (int argc, char **argv)
 {
-    char *peer;
+    char *peerfile, *sharedir, *hostname;
     register SVCXPRT *transp;
-    int bw = 0;
-    int opt, bw_opt = 0;
+	FILE *fd;
+	int i;
+	char tmp[MAXHOSTNAME+2];
+	
 
-    if (argc != 4 && argc != 6) {
+    if (argc != 4) {
         usage(argv[0]);
         return (1);
     }
 
-    while ((opt = getopt(argc, argv, "b:")) != -1) {
-        switch (opt) {
-            case 'b':
-                bw_opt = 1;
-                bw = atoi(optarg);
-                break;
-            default :
-                usage(argv[0]);
-                return (1);
+	hostname = argv[1];
+	peerfile = argv[2];
+	sharedir = argv[3];
+
+    if (strlen(hostname) == 0 || strlen(peerfile) == 0 || strlen(sharedir) == 0) {
+        usage(argv[0]);
+        return (1);
+    }
+
+
+	if (parse_peers(peerfile) != 0) {
+		printf("Failed to parse the peers file. Quitting !\n");
+		return (1);
+	}
+
+	/*
+	 * Create the directory to hold the pending queries.
+	 */
+	ret = mkdir("/tmp/queries", 0755);
+
+        /*
+         * If we failed to create the queries directory and failed for any other
+         * reason other than EEXIST we exit.
+         */
+        if (ret == -1 && errno != EEXIST) {
+            char errorstr[512];
+            sprintf(errorstr, "Failed to create the index directory : %s", SERVER_DIR);
+            perror(errorstr);
+		return (1);
         }
-    }
-
-    if (strlen(argv[optind]) == 0 || strlen(argv[optind + 1]) == 0 || strlen(argv[optind + 2]) == 0) {
-        usage(argv[0]);
-        return (1);
-    }
 
     /*
      * Register the files in the given directory with the index-server.
      */
-    if (register_files(argv[optind], argv[optind+1], argv[optind+2], bw) != 0) {
+    if (register_files(hostname, sharedir) != 0) {
         printf("Failed to register with the index server on %s\n", argv[2]);
         printf("Quitting :(\n");
         return (1);

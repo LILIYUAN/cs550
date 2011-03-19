@@ -17,3 +17,30 @@ obtain_1(request *argp, readfile_res *clnt_res, CLIENT *clnt)
 		(xdrproc_t) xdr_readfile_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
+
+enum clnt_stat 
+search_1(query_req *argp, query_rec *clnt_res, CLIENT *clnt)
+{
+	return (clnt_call(clnt, search,
+		(xdrproc_t) xdr_query_req, (caddr_t) argp,
+		(xdrproc_t) xdr_query_rec, (caddr_t) clnt_res,
+		TIMEOUT));
+}
+
+enum clnt_stat 
+b_query_1(b_query_req *argp, int *clnt_res, CLIENT *clnt)
+{
+	return (clnt_call(clnt, b_query,
+		(xdrproc_t) xdr_b_query_req, (caddr_t) argp,
+		(xdrproc_t) xdr_int, (caddr_t) clnt_res,
+		TIMEOUT));
+}
+
+enum clnt_stat 
+b_hitquery_1(b_hitquery_reply *argp, int *clnt_res, CLIENT *clnt)
+{
+	return (clnt_call(clnt, b_hitquery,
+		(xdrproc_t) xdr_b_hitquery_reply, (caddr_t) argp,
+		(xdrproc_t) xdr_int, (caddr_t) clnt_res,
+		TIMEOUT));
+}

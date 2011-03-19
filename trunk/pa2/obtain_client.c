@@ -3,282 +3,67 @@
  * These are only templates and you can use them
  * as a guideline for developing your own functions.
  */
-#include <rpc/rpc.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include "ind.h"
+
 #include "obtain.h"
 
-extern __thread int errno;
 
-#define FOPT    0x0001
-#define BOPT    0x0010
-
-/*
- * This routine queries the index-server to find the list of peers serving the
- * file rec->fname.
- */
-int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int opt)
+void
+obtainprog_1(char *host)
 {
-    query_req req;
-    query_rec res_rec;
-    CLIENT *clnt;
-    bool_t ret;
-    int res, i, j, attempts;
-    time_t start_time, end_time;
+	CLIENT *clnt;
+	enum clnt_stat retval_1;
+	readfile_res result_1;
+	request  obtain_1_arg;
+	enum clnt_stat retval_2;
+	query_rec result_2;
+	query_req  search_1_arg;
+	enum clnt_stat retval_3;
+	int result_3;
+	b_query_req  b_query_1_arg;
+	enum clnt_stat retval_4;
+	int result_4;
+	b_hitquery_reply  b_hitquery_1_arg;
 
-    if ((clnt = clnt_create(index_svr, INDSRVPROG, INDSRVVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(index_svr);
-        return(-1);
-    }
+#ifndef	DEBUG
+	clnt = clnt_create (host, OBTAINPROG, OBTAINVER, "udp");
+	if (clnt == NULL) {
+		clnt_pcreateerror (host);
+		exit (1);
+	}
+#endif	/* DEBUG */
 
-    printf("Created the client\n");
-    /*
-     * Copy the requested filename into the query record.
-     */
-    req.fname = fname;
-    req.count = MAXCOUNT;
-
-    printf("searching(%s) \n", req.fname);
-    time(&start_time);
-    ret = search_1(&req,&res_rec,clnt);
-    time(&end_time);
-
-    printf("Time taken by index server = %ld secs\n", (long) difftime(end_time, start_time));
-
-    if (ret != RPC_SUCCESS) {
-        printf("ret = %d\n", ret);
-        clnt_perror (clnt, "call failed");
-    }
-
-    if (res_rec.count == 0) {
-        printf("Failed to find any peers serving file : %s\n", req.fname);
-        return (-1);
-    }
-
-    /*
-     * Continue until the user enters a valid choice.
-     */
-    printf("Total number of peers serving %s = %d\n", res_rec.fname, res_rec.count);
-    printf("Peers service  %s are :\n", res_rec.peers);
-    for (i = 0; i < res_rec.count; i++) {
-        printf("\t%d : %s bandwidth = %d\n", i, res_rec.peers+(i * MAXHOSTNAME), res_rec.bw[i]);
-    }
-
-    /*
-     * If user has not specified either BOPT or FOPT ask the user to chose a
-     * peer.
-     */
-    if (opt == 0) {
-        printf("Pick the peer from which you want to fetch from : ");
-        scanf("%d", &i);
-        while (i < 0 || i >= res_rec.count) {
-            printf("Pick a valid peer number : ");
-            scanf("%d", &i);
-        }
-    } else {
-        /*
-         * We either have an FOPT or BOPT.
-         */
-        if (opt == FOPT) {
-            i = 0;
-        } else {
-            /*
-             * Find the server with the highest bandwidth.
-             */
-            i = 0;
-            for (j = 0; j < res_rec.count; j++) {
-                if (res_rec.bw[j] > res_rec.bw[i])
-                    i = j;
-            }
-        }
-    }
-
-
-    /*
-     * We try to fetch the file untill we succeed or have tried all the servers.
-     */
-    attempts = 0;
-    time(&start_time);
-    while (get_file(res_rec.peers+(i * MAXHOSTNAME), fname, dest_dir) != 0 &&
-        attempts < res_rec.count) {
-
-        printf("Failed to fetch the file from host:%s\nTrying next server\n",
-                res_rec.peers+(i * MAXHOSTNAME));
-
-        i = (i + 1) % res_rec.count;
-        attempts++;
-        time(&start_time);
-    }
-    time(&end_time);
-
-    if (attempts == res_rec.count) {
-        printf("Failed to fetch the file from any of the listed peers\n");
-    } else {
-        printf("Time taken to fetch the file = %ld secs\n", (long) difftime(end_time, start_time));
-    }
-
-
-    clnt_destroy(clnt);
-
-    return (0);
-}
-
-/*
- * This routine fetches the file *name from the host *host and copies it to
- * directory *dest_dir.
- *
- * Return values :
- * 0 : On success
- * 1 : Failure
- */
-int get_file(char *host, char *name, char *dest_dir)
-{
-    CLIENT *clnt;
-    int total_bytes = 0, write_bytes;
-    readfile_res result;
-    request req;
-    FILE *file;
-    int ret = 1;
-    char filepath[MAXPATHLEN];
-    req.name = name;
-    req.seek_bytes = 0;
-
-#ifdef DEBUG
-    printf("host : %s name : %s\n", host, name);
-#endif
-    /*
-     * Create client handle used for calling FTPPROG on
-     * the server designated on the command line. Use
-     * the tcp protocol when contacting the server.
-     */
-    clnt = clnt_create(host, OBTAINPROG, OBTAINVER, "tcp");
-    if (clnt == NULL) {
-        /*
-         * establish connection failed with the server.
-         */
-        clnt_pcreateerror(host);
-        return (1);
-    }
-
-    sprintf(filepath, "%s/%s", dest_dir, name);
-    file = fopen(filepath, "wb");
-
-    /*
-     * Call the remote procedure readdir on the server
-     */
-    while (1) {
-        req.seek_bytes = total_bytes;
-        ret = obtain_1(&req,&result,clnt);
-        if (ret != RPC_SUCCESS) {
-            /*
-             * An RPC error occurred while calling the server.
-             * Print error message and stop.
-             */
-            clnt_perror(clnt, host);
-            clnt_destroy(clnt);
-            return (1);
-        }
-
-        /*
-         * Okay, we successfully called the remote procedure.
-         */
-        if (result.errno != 0) {
-            /*
-             * A remote system error occurred.
-             * Print error message and stop.
-             */
-            errno = result.errno;
-            perror(name);
-            clnt_destroy(clnt);
-            return (1);
-        }
-
-        /*
-         * Successfully got a chunk of the file.
-         * Write into our local file.
-         */
-
-        //printf("\n read %d \t %s", result.readfile_res_u.chunk.bytes,result.readfile_res_u.chunk.data);
-        write_bytes = fwrite(result.readfile_res_u.chunk.data, 1, result.readfile_res_u.chunk.bytes, file);
-
-        //printf("\n  write %d \t %s", result.readfile_res_u.chunk.bytes, result.readfile_res_u.chunk.data);
-
-
-        // lets print the total number of bytes read and written in each cycle
-#ifdef DEBUG
-        printf(" \n read %d written %d ",result.readfile_res_u.chunk.bytes,write_bytes);
-#endif
-        total_bytes += result.readfile_res_u.chunk.bytes;
-        if (result.readfile_res_u.chunk.bytes < SIZE )
-            break;
-    }
-
-    fclose(file);
-    clnt_destroy(clnt);
-    return 0;
+	retval_1 = obtain_1(&obtain_1_arg, &result_1, clnt);
+	if (retval_1 != RPC_SUCCESS) {
+		clnt_perror (clnt, "call failed");
+	}
+	retval_2 = search_1(&search_1_arg, &result_2, clnt);
+	if (retval_2 != RPC_SUCCESS) {
+		clnt_perror (clnt, "call failed");
+	}
+	retval_3 = b_query_1(&b_query_1_arg, &result_3, clnt);
+	if (retval_3 != RPC_SUCCESS) {
+		clnt_perror (clnt, "call failed");
+	}
+	retval_4 = b_hitquery_1(&b_hitquery_1_arg, &result_4, clnt);
+	if (retval_4 != RPC_SUCCESS) {
+		clnt_perror (clnt, "call failed");
+	}
+#ifndef	DEBUG
+	clnt_destroy (clnt);
+#endif	 /* DEBUG */
 }
 
 
-/*
- * usage
- */
-void usage(char *name) {
-    printf(" Usage : %s [-f|b] <file-name> <index-server-name> <dest-dir>\n\n", name);
-    printf(" -f : With this option it fetches the file from the first available peer\n");
-    printf(" -b : With this option it fetches the file from the peer with the best bandwidth\n");
-    printf("      -f and -b options are mutually exclusive\n");
-    printf(" file-name : name of the file that you are searching \n");
-    printf(" inder-server-name : Hostname of the index server\n");
-    printf(" dest-dir : Destination directory where you want to copy the fetched file\n");
-}
-
-int main(int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
-    int result;
-    int fopt = 0;
-    int bopt = 0;
-    int opt;
+	char *host;
 
-    if (argc < 4 || argc > 5) {
-        usage(argv[0]);
-        return (1);
-    }
-
-    while ((opt = getopt(argc, argv, "bf")) != -1) {
-        switch (opt) {
-            case 'b':
-                bopt = 1;
-                break;
-            case 'f':
-                fopt = 1;
-                break;
-            default:
-                usage(argv[0]);
-                return (1);
-        }
-    }
-    if (bopt && fopt) {
-        printf(" -f and -b are mutually exclusive options. Kindly chose of them\n");
-        usage(argv[0]);
-    }
-
-    if (bopt || fopt) {
-        opt = 1;
-    }
-
-    if (strlen(argv[opt + 1]) == 0 || strlen(argv[opt + 2]) == 0 || strlen(argv[opt + 3]) == 0) {
-        usage(argv[0]);
-        return (1);
-    }
-
-    if (fopt == 1)
-        opt = FOPT;
-    if (bopt == 1)
-        opt = BOPT;
-
-    result = query_and_fetch(argv[opt + 1], argv[opt + 2], argv[opt + 3], opt);
-
-    return 0;
+	if (argc < 2) {
+		printf ("usage: %s server_host\n", argv[0]);
+		exit (1);
+	}
+	host = argv[1];
+	obtainprog_1 (host);
+exit (0);
 }
