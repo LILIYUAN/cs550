@@ -1,0 +1,36 @@
+Obtain server exe 
+ - start obtain server with no arguments
+ - start obtain server with less than 3 arguments to it
+ - start obtain server with a share dir which does not exist
+ - start obtain server with a share dir with few files in it
+ - Make some addition / deletion of files in share dir and start the server again [  re registiring ] 
+ - start obtian server with IP of the index server
+ - start obtain server with IP of the localhost
+ - start obtain server with the DNS of the index server
+ - start obtain server with the DNS of the localhost
+ - start obtain server when index server is down 
+
+Index server exe
+ - start index server 
+ - look for outputs on index server - when some one registers and queries 
+
+Obtain client exe
+ - start obtain client with no arguments
+ - start obtain client with less than 3 arguments [ exclusing -f ]
+ - start obtain client with 3 arguments [ including -f ] 
+ - start obtain client with -x as an argument
+ - start obtain client with 3 arguments 
+ - start obtian client when index server is down
+ - Query for a file which is not indexed by any peer 
+ - Query for a file which is not indexed by any peer with -f
+ - Query for a file which is registred by more than 2 peers
+   - Enter a invalid peer no
+   - Enter a peer who is down
+   - Enter the last peer and it should be down
+   - try max_attemps - all serving peers down
+   - try -f option 
+ - try fetching a file which is indexed and deleted on the server - should we loop it again ???? 
+
+MT 
+ - a huge 30k file and multiple peers trying to download from a single peer
+ 
