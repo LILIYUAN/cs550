@@ -18,7 +18,7 @@
  * For every file registered we create a file under "/tmp/indsvr/" (if it does
  * not exist already). And append the name of the peer-node to that file.
  */
-int add_peer (char *fname, char *peername, int bw)
+int add_peer (char *fname, char *peername)
 {
     FILE *fh;
     char filepath[MAXPATHLEN];
