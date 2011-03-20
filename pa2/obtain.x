@@ -63,6 +63,7 @@ struct query_rec {
     char    fname[MAXNAME];
     int     count;
     char    peers[BUFSIZE];
+    int     eof;
 };
 
 struct msg_id {
@@ -79,9 +80,9 @@ struct b_query_req {
 
 struct b_hitquery_reply {
 	msg_id	id;
-	int		ttl;
+	int		cnt;
 	char	fname[MAXNAME];
-	char	host[MAXHOSTNAME];
+	char	hosts[BUFSIZE];
 };
 	
 /*
