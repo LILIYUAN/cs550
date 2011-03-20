@@ -56,6 +56,7 @@ struct query_rec {
 	char fname[MAXNAME];
 	int count;
 	char peers[BUFSIZE];
+	int eof;
 };
 typedef struct query_rec query_rec;
 
@@ -68,15 +69,16 @@ typedef struct msg_id msg_id;
 struct b_query_req {
 	msg_id id;
 	int ttl;
+	char uphost[MAXHOSTNAME];
 	char fname[MAXNAME];
 };
 typedef struct b_query_req b_query_req;
 
 struct b_hitquery_reply {
 	msg_id id;
-	int ttl;
+	int cnt;
 	char fname[MAXNAME];
-	char host[MAXHOSTNAME];
+	char hosts[BUFSIZE];
 };
 typedef struct b_hitquery_reply b_hitquery_reply;
 
