@@ -1,5 +1,4 @@
-#include "ind.h"
-#include "obtain.h"
+#include "obtain_misc.h"
 #include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
@@ -17,12 +16,8 @@
 char dir[MAXPATHLEN];
 char *sharedir;
 
-typedef struct peers_s {
-	int count;
-	char *peer[MAXCOUNT];
-} peers_t;
-
 peers_t peers;
+pending_req_t pending;
 
 typedef	union argument {
 		request obtain_1_arg;
@@ -388,6 +383,11 @@ main (int argc, char **argv)
 		printf("Failed to parse the peers file. Quitting !\n");
 		return (1);
 	}
+
+    /*
+     * Initialize the pending queue mutex.
+     */
+    pthread_mutex_init(&(pending.lock), NULL);
 
 	/*
 	 * Create the directory to hold the pending queries.

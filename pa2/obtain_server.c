@@ -4,11 +4,86 @@
  * as a guideline for developing your own functions.
  */
 
-#include "obtain.h"
+#include "obtain_misc.h"
 
-extern peers_t peers;
+#define SUCCESS    0
+#define FAILED    1
+
+extern peers_t          peers;
+extern pending_req_t    pending;
+
 int seqno;
-pthread_mutex_t seqno_mutex;
+pthread_mutex_t seqno_lock = PTHREAD_MUTEX_INITIALIZER;
+
+int
+add_req(query_node_t *p)
+{
+    if (!p) {
+        return (FAILED);
+    }
+
+    pthread_mutex_lock(pending.lock);
+    p->next = pending.head;
+    pending.head = p; 
+    pending.count++;
+    pthread_mutex_unlock(pending.lock);
+}
+
+query_node_t * 
+remove_node(msg_id_t m)
+{
+    query_node_t *p, *prev = NULL;
+    pthread_mutex_lock(pending.lock);
+    p = pending.head;
+
+    if (!p) {
+        pthread_mutex_unlock(pending.lock);
+        return (NULL);
+    }
+
+    /*
+     * Handle the head as a special case.
+     */
+    if (p->id.hostid == m.hostid && p->id.seqno == m.seqno) {
+        pending.head = pending.head->next;
+        pending.count--;
+        pthread_mutex_unlock(pending.lock);
+        return (p);
+    }
+
+    prev = pending.head;
+    p = p->next;
+
+    while (p && (p->id.hostid != m.hostid || p->id.seqno != m.seqno)) {
+        prev = p;
+        p = p->next;
+    }
+
+    if (p) {
+        /* 
+         * We found a matching node.
+         */
+        prev->next = p->next;
+        pending.count--;
+    }
+    pthread_mutex_unlock(pending.lock);
+    return (p);
+}
+
+query_node_t *
+find_node(msg_id_t m) 
+{
+    query_node_t *p = NULL;
+
+    pthread_mutex_lock(pending.lock);
+    p = pending.head;
+
+    while (p && (p->id.hostid != m.hostid || p->id.seqno != m.seqno)) {
+        p = p->next;
+    }
+
+    return (p);
+}
 
 bool_t
 obtain_1_svc(request *argp, readfile_res *result, struct svc_req *rqstp)
@@ -108,8 +183,12 @@ build_peers_from_cache(char *fname, peers_t *resp)
  */
 int getseqno(void)
 {
+    int ret;
+    pthread_mutex_lock(seqno_lock);
 	seqno++;
-	return(seqno);
+    ret = seqno;
+    pthread_mutex_unlock(seqno_lock);
+	return(ret);
 }
 
 bool_t
@@ -125,7 +204,8 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 	query.msg_id.seqno = getseqno(); 
 
 	/*
-	 * We create a query file of the name "/tmp/queries/<filename>.<seqno>".
+	 * We symlink a query file of the name "/tmp/queries/<filename>.<seqno>" to
+     * the corresponding file in "/tmp/indsvr/<filename>".
 	 */
 	sprintf(queryfile, "/tmp/queries/%s.%d", argp->fname, query.msg_id.seqno);
 	
