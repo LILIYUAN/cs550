@@ -93,6 +93,8 @@ xdr_query_rec (XDR *xdrs, query_rec *objp)
 	 if (!xdr_vector (xdrs, (char *)objp->peers, BUFSIZE,
 		sizeof (char), (xdrproc_t) xdr_char))
 		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->eof))
+		 return FALSE;
 	return TRUE;
 }
 
@@ -118,6 +120,9 @@ xdr_b_query_req (XDR *xdrs, b_query_req *objp)
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->ttl))
 		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->uphost, MAXHOSTNAME,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
 	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
 		sizeof (char), (xdrproc_t) xdr_char))
 		 return FALSE;
@@ -132,12 +137,12 @@ xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
 	int i;
 	 if (!xdr_msg_id (xdrs, &objp->id))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->ttl))
+	 if (!xdr_int (xdrs, &objp->cnt))
 		 return FALSE;
 	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
 		sizeof (char), (xdrproc_t) xdr_char))
 		 return FALSE;
-	 if (!xdr_vector (xdrs, (char *)objp->host, MAXHOSTNAME,
+	 if (!xdr_vector (xdrs, (char *)objp->hosts, BUFSIZE,
 		sizeof (char), (xdrproc_t) xdr_char))
 		 return FALSE;
 	return TRUE;

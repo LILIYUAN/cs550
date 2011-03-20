@@ -5,6 +5,7 @@
  */
 
 #include "obtain_misc.h"
+#include <errno.h>
 
 #define SUCCESS    0
 #define FAILED    1
@@ -12,6 +13,8 @@
 extern peers_t          peers;
 extern pending_req_t    pending;
 extern char             *localhostname;
+extern char             *sharedir;
+extern __thread int errno;
 
 int seqno;
 pthread_mutex_t seqno_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -32,7 +35,7 @@ insert_node(query_node_t *p)
      * Add the timestamp.
      */
     (void) time(&(p->ts));
-    pthread_mutex_lock(pending.lock);
+    pthread_mutex_lock(&(pending.lock));
     /*
      * Add the node to the tail of the list.
      * This will help us keep the nodes sorted by the timestamp.
@@ -46,42 +49,41 @@ insert_node(query_node_t *p)
         pending.head = p;
     }
     pending.count++;
-    pthread_mutex_unlock(pending.lock);
+    pthread_mutex_unlock(&(pending.lock));
 
     return (SUCCESS);
 }
 
-query_node_t * 
-remove_node(msg_id_t m)
+query_node_t *remove_node(msg_id *m)
 {
     query_node_t *p, *prev = NULL;
-    pthread_mutex_lock(pending.lock);
+    pthread_mutex_lock(&(pending.lock));
     p = pending.head;
 
     if (!p) {
-        pthread_mutex_unlock(pending.lock);
+        pthread_mutex_unlock(&(pending.lock));
         return (NULL);
     }
 
     /*
      * Handle the head as a special case.
      */
-    if (p->id.hostid == m.hostid && p->id.seqno == m.seqno) {
+    if (p->req.id.hostid == m->hostid && p->req.id.seqno == m->seqno) {
         pending.head = pending.head->next;
 
-        if (p == pending->tail) {
-            pending->tail = prev;
+        if (p == pending.tail) {
+            pending.tail = prev;
         }
 
         pending.count--;
-        pthread_mutex_unlock(pending.lock);
+        pthread_mutex_unlock(&(pending.lock));
         return (p);
     }
 
     prev = pending.head;
     p = p->next;
 
-    while (p && (p->id.hostid != m.hostid || p->id.seqno != m.seqno)) {
+    while (p && (p->req.id.hostid != m->hostid || p->req.id.seqno != m->seqno)) {
         prev = p;
         p = p->next;
     }
@@ -92,25 +94,25 @@ remove_node(msg_id_t m)
     if (p) {
         prev->next = p->next;
 
-        if (p == pending->tail) {
-            pending->tail = prev;
+        if (p == pending.tail) {
+            pending.tail = prev;
         }
 
         pending.count--;
     }
-    pthread_mutex_unlock(pending.lock);
+    pthread_mutex_unlock(&(pending.lock));
     return (p);
 }
 
 query_node_t *
-find_node(msg_id_t m) 
+find_node(msg_id m) 
 {
     query_node_t *p = NULL;
 
-    pthread_mutex_lock(pending.lock);
+    pthread_mutex_lock(&(pending.lock));
     p = pending.head;
 
-    while (p && (p->id.hostid != m.hostid || p->id.seqno != m.seqno)) {
+    while (p && (p->req.id.hostid != m.hostid || p->req.id.seqno != m.seqno)) {
         p = p->next;
     }
 
@@ -157,7 +159,9 @@ build_peers_from_cache(char *fname, peers_t *resp)
     int fd;
     char host[MAXHOSTNAME+2];
 
-    printf("search_cache : Processing query for file : %s\n", argp->fname);
+#ifdef DEBUG
+    printf("build_peers_from_cache : Processing query for file : %s\n", fname);
+#endif
 
     resp->count = 0;
     sprintf(filepath, "%s/%s", SERVER_DIR, fname);
@@ -179,13 +183,13 @@ build_peers_from_cache(char *fname, peers_t *resp)
      */
     flock(fd, LOCK_SH);
 
-    while (cnt < argp->count && fscanf(fh, "%s\n", host) != EOF) {
-	resp->peer[cnt] = malloc((MAXHOSTNAME + 2) * sizeof(char));
-	if (resp->peer[cnt] == NULL) {
-		printf("search_cache: Out of memory !! Quitting !\n");
-		exit (1);	
-	}
-	strcpy(resp->peer[cnt], host);
+    while (cnt < MAXCOUNT && fscanf(fh, "%s\n", host) != EOF) {
+        resp->peer[cnt] = malloc((MAXHOSTNAME + 2) * sizeof(char));
+        if (resp->peer[cnt] == NULL) {
+            printf("search_cache: Out of memory !! Quitting !\n");
+            exit (1);	
+        }
+        strcpy(resp->peer[cnt], host);
         cnt++;
     }
 
@@ -228,10 +232,10 @@ peer_in_cache(peers_t *cache, char *host)
 int getseqno(void)
 {
     int ret;
-    pthread_mutex_lock(seqno_lock);
+    pthread_mutex_lock(&(seqno_lock));
 	seqno++;
     ret = seqno;
-    pthread_mutex_unlock(seqno_lock);
+    pthread_mutex_unlock(&(seqno_lock));
 	return(ret);
 }
 
@@ -265,41 +269,42 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
 
     fd = fileno(fh);
 
-    clnt = clnt_create(uphost, OBTAINPROG, OBTAINVERS, "tcp");
+    clnt = clnt_create(uphost, OBTAINPROG, OBTAINVER, "tcp");
     if (clnt == NULL) {
         clnt_pcreateerror(uphost);
         fclose(fh);
         printf("send_local_cache(): Failed to contact hitquery to : %s\n", uphost);
-        return FAILURE;
+        return FAILED;
     }
 
     flock(fd, LOCK_SH);
 
     res.id = id;
     strcpy(res.fname, fname_req);
-    res->cnt = 0;
-    p = res->hosts; 
+    res.cnt = 0;
+    p = res.hosts; 
     
     while (fscanf(fh, "%s\n", p) != EOF) {
-        res->cnt++;
-        if (res->cnt == MAXCOUNT) {
+        res.cnt++;
+        if (res.cnt == MAXCOUNT) {
             flock(fd, LOCK_UN);
             /*
              * Make one-way RPC call to send the response back.
              */
-            if (clnt_call(clnt, b_hitquery_reply, xdr_b_hitquery_reply,
+            if (clnt_call(clnt, b_hitquery, xdr_b_hitquery_reply,
                         &res, NULL, NULL, zero_timeout) != RPC_SUCCESS) {
-                clnt_perror(clnt, "b_hitquery_reply failed");
+                clnt_perror(clnt, "b_hitquery failed");
                 continue;
             }
-            res->cnt = 0;
+            res.cnt = 0;
             flock(fd, LOCK_SH);
         }
+        p += MAXHOSTNAME;
     }
 
-    if (clnt_call(clnt, b_hitquery_reply, xdr_b_hitquery_reply,
+    if (clnt_call(clnt, b_hitquery, xdr_b_hitquery_reply,
                 &res, NULL, NULL, zero_timeout) != RPC_SUCCESS) {
-        clnt_perror(clnt, "b_hitquery_reply failed");
+        clnt_perror(clnt, "b_hitquery failed");
     }
 
     clnt_destroy(clnt);
@@ -339,7 +344,7 @@ b_query_propagate(b_query_req *argp, int *result)
     query_node_t *node;
     peers_t my_cache;
     CLIENT *clnt;
-    int cnt;
+    int i, cnt;
 
     node = find_node(argp->id);
 
@@ -397,7 +402,7 @@ b_query_propagate(b_query_req *argp, int *result)
              * Check if we have already an entry for this peer cached.
              * If yes, continue to the next peer.
              */
-            if (peer_in_cache(my_cache, peers.peer[i])) {
+            if (peer_in_cache(&my_cache, peers.peer[i])) {
                 continue;
             }
             /*
@@ -440,10 +445,12 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 	bool_t retval;
 	b_query_req *query;
     query_node_t *node;
-
+    char *p;
 	char fname[MAXPATHLEN];
-	int i;
+	int i, fd;
+    FILE *fh;
 	peers_t resp;
+    int ret;
 
     /*
      * Build the b_query_req for this request.
@@ -454,8 +461,8 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
         goto send_result;
     }
 
-	query->msg_id.hostid = gethostid();
-	query->msg_id.seqno = getseqno(); 
+	query->id.hostid = gethostid();
+	query->id.seqno = getseqno(); 
     query->ttl = MAXTTL;
     strcpy(query->uphost, localhostname);
     strcpy(query->fname, argp->fname);
@@ -463,7 +470,7 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     /*
      * Now propagate the query to the peers.
      */
-    node = b_query_propagate(query, result);
+    node = b_query_propagate(query, &ret);
 
     /*
      * If we propagated to some peers then we should wait for some time for the
@@ -484,7 +491,7 @@ send_result:
      * peers and the local cache should have been updated. So we now send our
      * hits from the local cache.
      */
-    sprintf(fname, "%s/%s", SERVER_DIR, fname_req);
+    sprintf(fname, "%s/%s", SERVER_DIR, argp->fname);
 
     fh = fopen(fname, "r");
     if (fh == NULL) {
@@ -512,6 +519,7 @@ send_result:
             result->eof = 0;
             return retval;
         }
+        p += MAXHOSTNAME;
     }
 
     flock(fd, LOCK_UN);
