@@ -73,6 +73,7 @@ struct msg_id {
 struct b_query_req {
 	msg_id	id;
 	int		ttl;
+    char    uphost[MAXHOSTNAME];
 	char	fname[MAXNAME];
 };
 
