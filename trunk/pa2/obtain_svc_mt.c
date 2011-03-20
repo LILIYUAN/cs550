@@ -15,6 +15,7 @@
 
 char dir[MAXPATHLEN];
 char *sharedir;
+char *localhostname;
 
 peers_t peers;
 pending_req_t pending;
@@ -330,6 +331,7 @@ parse_peers(char *peerfile)
 				return (1);
 		}
 		strcpy(peers.peer[peers.count], tmp);
+        peers.clnt[i] = NULL;
 #ifdef DEBUG
         printf("%s : strlen = %d\n", peers.peer[peers.count], strlen(peers.peer[peers.count]));
 #endif
@@ -357,7 +359,7 @@ extern int optind;
 int
 main (int argc, char **argv)
 {
-    char *peerfile, *sharedir, *hostname;
+    char *peerfile, *sharedir;
     register SVCXPRT *transp;
 	FILE *fd;
 	int i;
@@ -369,11 +371,11 @@ main (int argc, char **argv)
         return (1);
     }
 
-	hostname = argv[1];
+	localhostname = argv[1];
 	peerfile = argv[2];
 	sharedir = argv[3];
 
-    if (strlen(hostname) == 0 || strlen(peerfile) == 0 || strlen(sharedir) == 0) {
+    if (strlen(localhostname) == 0 || strlen(peerfile) == 0 || strlen(sharedir) == 0) {
         usage(argv[0]);
         return (1);
     }
@@ -408,7 +410,7 @@ main (int argc, char **argv)
     /*
      * Register the files in the given directory with the index-server.
      */
-    if (register_files(hostname, sharedir) != 0) {
+    if (register_files(localhostname, sharedir) != 0) {
         printf("Failed to register with the index server on %s\n", argv[2]);
         printf("Quitting :(\n");
         return (1);

@@ -11,22 +11,44 @@
 
 extern peers_t          peers;
 extern pending_req_t    pending;
+extern char             *localhostname;
 
 int seqno;
 pthread_mutex_t seqno_lock = PTHREAD_MUTEX_INITIALIZER;
 
+/*
+ * This zero timeout used for one-way RPC calls.
+ */
+static struct timeval zero_timeout = {0, 0};
+
 int
-add_req(query_node_t *p)
+insert_node(query_node_t *p)
 {
     if (!p) {
         return (FAILED);
     }
 
+    /*
+     * Add the timestamp.
+     */
+    (void) time(&(p->ts));
     pthread_mutex_lock(pending.lock);
-    p->next = pending.head;
-    pending.head = p; 
+    /*
+     * Add the node to the tail of the list.
+     * This will help us keep the nodes sorted by the timestamp.
+     * i.e. the newer nodes will at the tail of the list.
+     */
+    if (pending.tail) {
+        pending.tail->next = p;
+    }
+    pending.tail = p; 
+    if (pending.head == NULL) {
+        pending.head = p;
+    }
     pending.count++;
     pthread_mutex_unlock(pending.lock);
+
+    return (SUCCESS);
 }
 
 query_node_t * 
@@ -46,6 +68,11 @@ remove_node(msg_id_t m)
      */
     if (p->id.hostid == m.hostid && p->id.seqno == m.seqno) {
         pending.head = pending.head->next;
+
+        if (p == pending->tail) {
+            pending->tail = prev;
+        }
+
         pending.count--;
         pthread_mutex_unlock(pending.lock);
         return (p);
@@ -59,11 +86,16 @@ remove_node(msg_id_t m)
         p = p->next;
     }
 
+    /* 
+     * We found a matching node.
+     */
     if (p) {
-        /* 
-         * We found a matching node.
-         */
         prev->next = p->next;
+
+        if (p == pending->tail) {
+            pending->tail = prev;
+        }
+
         pending.count--;
     }
     pthread_mutex_unlock(pending.lock);
@@ -178,8 +210,20 @@ build_peers_from_cache(char *fname, peers_t *resp)
 	return (cnt);
 }
 
+bool_t
+peer_in_cache(peers_t *cache, char *host)
+{
+    int i, j;
+
+    for (i = 0; i < peers.count; i++) {
+        if (strcmp(peers.peer[i], host) == 0)
+            return (TRUE);
+    }
+    return (FALSE);
+}
+
 /*
- * TODO : Use the mutex locking around the seq no.
+ * Generate a unique sequence number for this peer. 
  */
 int getseqno(void)
 {
@@ -191,67 +235,288 @@ int getseqno(void)
 	return(ret);
 }
 
+/*
+ * This routine looks the file in the local index directory
+ * ("/tmp/indsvr/<filename") and sends replies back the host names to uphost.
+ *
+ * It sends one RPC call with MAXCOUNT hosts in each of them.
+ */
+int
+send_local_cache(char *fname_req, msg_id id, char *uphost)
+{
+    b_hitquery_reply res;
+    char fname[MAXPATHLEN];
+    char *p;
+    FILE *fh;
+    int fd;
+    CLIENT *clnt;
+
+    if (!fname_req || !uphost) {
+        return (SUCCESS);
+    }
+
+    sprintf(fname, "%s/%s", SERVER_DIR, fname_req);
+
+    fh = fopen(fname, "r");
+    if (fh == NULL) {
+        printf("Failed to open filename %s : errno = %d\n", fname, errno);
+        return SUCCESS;
+    }
+
+    fd = fileno(fh);
+
+    clnt = clnt_create(uphost, OBTAINPROG, OBTAINVERS, "tcp");
+    if (clnt == NULL) {
+        clnt_pcreateerror(uphost);
+        fclose(fh);
+        printf("send_local_cache(): Failed to contact hitquery to : %s\n", uphost);
+        return FAILURE;
+    }
+
+    flock(fd, LOCK_SH);
+
+    res.id = id;
+    strcpy(res.fname, fname_req);
+    res->cnt = 0;
+    p = res->hosts; 
+    
+    while (fscanf(fh, "%s\n", p) != EOF) {
+        res->cnt++;
+        if (res->cnt == MAXCOUNT) {
+            flock(fd, LOCK_UN);
+            /*
+             * Make one-way RPC call to send the response back.
+             */
+            if (clnt_call(clnt, b_hitquery_reply, xdr_b_hitquery_reply,
+                        &res, NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+                clnt_perror(clnt, "b_hitquery_reply failed");
+                continue;
+            }
+            res->cnt = 0;
+            flock(fd, LOCK_SH);
+        }
+    }
+
+    if (clnt_call(clnt, b_hitquery_reply, xdr_b_hitquery_reply,
+                &res, NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+        clnt_perror(clnt, "b_hitquery_reply failed");
+    }
+
+    clnt_destroy(clnt);
+}
+
+/*
+ * b_query_propagate :
+ * This routine is used by both search_svc_1() and b_query_svc_1() to propagate
+ * the query to the peers.
+ * 
+ * RETURN VALUE :
+ * If it sends relays the requests to its peers then it adds this request to a
+ * local pending queue and returns a pointer to that request.
+ *
+ * Outline of the routine: 
+ * - Checks if we already have received this query (check on the pending list
+ *   for the msg_id of the received message.
+ *      - If we already have processed this don't do anything.
+ *      - Decrement the TTL. If TTL is zero after that don't relay it anymore but
+ *        do the following :  
+ *        - Look at the local cache and call b_hitquery() with the results to
+ *          the uphost.
+ *      - If we have not processed it we do the following :
+ *          - Create a new query_req. Add it to the pending list.
+ *          - Walk the list of peers and do the following :
+ *              - Check if the cached index file already has the name of the
+ *                peer.
+ *              - If the peer name is not in the cache send it a b_query()
+ *                request.
+ *          - Look at the local cache and call b_hitquery() with the results to
+ *            the uphost.
+ */
+query_node_t *
+b_query_propagate(b_query_req *argp, int *result)
+{
+	bool_t retval = TRUE;
+    query_node_t *node;
+    peers_t my_cache;
+    CLIENT *clnt;
+    int cnt;
+
+    node = find_node(argp->id);
+
+    /*
+     * We already have processed msg_id. Hence, we have nothing to do now.
+     */
+    if (node) {
+        *result = SUCCESS;
+        return (NULL);
+    }
+
+    /*
+     * We did not find a matching node. So, this is a new request and we need to
+     * process it.
+     */
+
+    /*
+     * Check if this request should be relayed to the peers.
+     */
+    if (argp->ttl <= 1) {
+        /*
+         * We don't need to relay this to the peers. 
+         */
+        *result = SUCCESS;
+        return (NULL);
+    }
+
+    node = (query_node_t *)malloc(sizeof(query_node_t));
+    if (node == NULL) {
+        printf("Failed to allocate query_node_t. Hence not processing this request.\n");
+        printf("Hoping the reaper thread will reap some memory\n");
+        *result = SUCCESS;
+        return (NULL);
+    }
+
+    node->req.id = argp->id;
+    strcpy(node->req.uphost, argp->uphost);
+    node->req.ttl = argp->ttl - 1;  /* Decrement the TTL by one */
+    node->sent = 0; node->recv = 0;
+    node->next = NULL;
+
+    (void) insert_node(node);
+
+    /*
+     * Get the peers list from the cache.
+     */
+    cnt = build_peers_from_cache(argp->fname, &my_cache);
+
+    if (my_cache.count < peers.count) {
+        /*
+         * We have some peers to whom we need to relay the request.
+         */
+        for (i = 0; i < peers.count; i++) {
+            /*
+             * Check if we have already an entry for this peer cached.
+             * If yes, continue to the next peer.
+             */
+            if (peer_in_cache(my_cache, peers.peer[i])) {
+                continue;
+            }
+            /*
+             * Use the cached client handler to make a call. If not create
+             * one.
+             */
+            if (!peers.clnt[i]) {
+                clnt = clnt_create(peers.peer[i], OBTAINPROG, OBTAINVER, "tcp");
+                if (clnt == NULL) {
+                    clnt_pcreateerror (peers.peer[i]);
+                    /*
+                     * Make a call only if we have a valid handle. We try to create
+                     * a handle above. Ideally that should succeed. But, if we
+                     * failed to create a client handle possible the peer is having
+                     * problems. Hence ignore it and continue.
+                     */
+                    continue;
+                }
+            }
+            /*
+             * Now make a one-way RPC call to relay the message.
+             */
+            if (clnt_call(peers.clnt[i], b_query, xdr_b_query_req,
+                        &(node.req), NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+                clnt_perror(peers.clnt[i], "b_query failed");
+                continue;
+            }
+            node->sent++;
+        }
+    }
+
+    *result = SUCCESS;
+
+    return (node);
+}
+
 bool_t
 search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 {
 	bool_t retval;
-	b_query query;
-	char queryfile[MAXPATHLEN];
+	b_query_req *query;
+    query_node_t *node;
+
+	char fname[MAXPATHLEN];
 	int i;
 	peers_t resp;
 
-	query.msg_id.hostid = gethostid();
-	query.msg_id.seqno = getseqno(); 
+    /*
+     * Build the b_query_req for this request.
+     */
+    if ((query = (b_query_req *) malloc(sizeof(b_query_req))) == NULL) {
+        printf("Failed to allocate memory !\n");
+        printf("Hoping the reaper thread will free some memory !\n");
+        goto send_result;
+    }
 
-	/*
-	 * We symlink a query file of the name "/tmp/queries/<filename>.<seqno>" to
-     * the corresponding file in "/tmp/indsvr/<filename>".
-	 */
-	sprintf(queryfile, "/tmp/queries/%s.%d", argp->fname, query.msg_id.seqno);
-	
-	fd = open(queryfile, O_CREAT|O_TRUNC|O_RDWR, 0755);
-	if (fd < 0) {
-		/*
-		 * We seem to have a flaw in our logic.
-		 */
-		printf("The query file %s already exists !\n", queryfile);
-		exit(1);
-	}	
+	query->msg_id.hostid = gethostid();
+	query->msg_id.seqno = getseqno(); 
+    query->ttl = MAXTTL;
+    strcpy(query->uphost, localhostname);
+    strcpy(query->fname, argp->fname);
 
-	/*
-	 * Walk through the list of peers and see if we need to relay the query to them.
-	 */
-	ret = build_peers_from_cache(argp->fname, &resp);
+    /*
+     * Now propagate the query to the peers.
+     */
+    node = b_query_propagate(query, result);
 
-	/*
-	 * Copy the cache results first.
-	 */
-	if (resp->count != 0) {
-		
-	}
-	for (i = 0; i < peers.count; i++) {
-		/*
-		 * Check we already have the peername in our cache.
-		 */
-		found = 0;
-		for (j = 0; j < resp.count; j++) {
-			if(strcmp(resp.peer[j], peers.peer[i]) == 0) {
-				found = 1;
-				break;
-			}
-		}
-		if (found == 0) {
-			
-		}
-			
-	}
-	
-	
+    /*
+     * If we propagated to some peers then we should wait for some time for the
+     * results to arrive and the send the results.
+     */
+    if (node && node->sent) {
+        /*
+         * TODO : At present we wait for 10 secs. Instead we could use a CV and
+         * wait on it. And the b_hitquery_reply() could signal the CV when the
+         * replies arrive.
+         */
+        sleep(10);
+    }
 
-	
-	/*
-	 * insert server code here
-	 */
+send_result:
+    /*
+     * At this point we should have received results from our peers and their
+     * peers and the local cache should have been updated. So we now send our
+     * hits from the local cache.
+     */
+    sprintf(fname, "%s/%s", SERVER_DIR, fname_req);
+
+    fh = fopen(fname, "r");
+    if (fh == NULL) {
+        printf("Failed to open filename %s : errno = %d\n", fname, errno);
+        result->count = 0;
+        return retval;
+    }
+
+    fd = fileno(fh);
+    flock(fd, LOCK_SH);
+
+    strcpy(result->fname, argp->fname);
+    result->count = 0;
+    p = result->peers; 
+    
+    while (fscanf(fh, "%s\n", p) != EOF) {
+        result->count++;
+        /* 
+         * We have filled up the response with MAXCOUNT results.
+         * Send it back.
+         */
+        if (result->count == MAXCOUNT) {
+            flock(fd, LOCK_UN);
+            fclose(fh);
+            result->eof = 0;
+            return retval;
+        }
+    }
+
+    flock(fd, LOCK_UN);
+    fclose(fh);
+    result->eof = 1;
 
 	return retval;
 }
@@ -259,15 +524,34 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 bool_t
 b_query_1_svc(b_query_req *argp, int *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+    bool_t retval = TRUE;
 
-	/*
-	 * insert server code here
-	 */
+    /*
+     * Propagate the query to the peers if they are not already in the local
+     * cache.
+     */
+    (void) b_query_propagate(argp, result);
 
-	return retval;
+    /*
+     * Send back the current contents of the local cache.
+     */
+    send_local_cache(argp->fname, argp->id, argp->uphost);
+
+    return (retval);
 }
 
+/*
+ * This routine handles the b_hitquery(). It does the following :
+ *  - Look for the msg_id in the pending list.
+ *  - If found :
+ *      - Call b_hitquery() to the uphost.
+ *      - Add the b_hitquery_reply->host to the local cache.
+ *  - If not found :
+ *      - This hitquery() came quite late and the local cache entry from pending
+ *        has been freed. Hence, ignore the response.
+ * NOTE : We have a reaper_thread() which wakes up every minute and frees all
+ * pending requests which are older than a minute.
+ */
 bool_t
 b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
 {
