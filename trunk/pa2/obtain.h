@@ -39,7 +39,7 @@ typedef struct datareceived datareceived;
 
 
 struct readfile_res {
-	int errno;
+	int error;
 	union {
 		datareceived chunk;
 	} readfile_res_u;

@@ -47,7 +47,7 @@ struct datareceived {
  */
 typedef struct datareceived datareceived;
 
-union readfile_res switch (int errno) {
+union readfile_res switch (int error) {
     case 0:
         datareceived chunk;
     default:

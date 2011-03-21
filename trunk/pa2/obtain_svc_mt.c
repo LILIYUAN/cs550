@@ -245,7 +245,7 @@ int add_peer (char *fname, char *peername)
     printf("Walking through current entries for %s: ", fname);
 #endif
 
-    while ((fscanf(fh, "%s\n", peer, &old_bw)) != EOF) {
+    while ((fscanf(fh, "%s\n", peer)) != EOF) {
 #ifdef DEBUG
         printf("peer %s \n", peer);
 #endif
@@ -276,7 +276,6 @@ register_files(char *localhostname, char *dirname)
 {
     DIR *dirp;
     struct dirent *entp;
-    registry_rec rec;
     bool_t ret;
     int res;
 
@@ -314,7 +313,6 @@ parse_peers(char *peerfile)
 	fh = fopen(peerfile, "r");
 	if (fh == NULL) {
 		printf("Failed to open the peerlist file : %s\n", peerfile);
-		usage(argv[0]);
 		return (1);
 	}
 
@@ -325,13 +323,13 @@ parse_peers(char *peerfile)
          */
         tmp[strlen(tmp) - 1] = '\0';
 		peers.peer[peers.count] = malloc(MAXHOSTNAME+2 * sizeof(char));	
-		if (peer.peer == NULL) {
+		if (peers.peer == NULL) {
 				printf("Failed to allocate memory. Quitting !\n");
 				fclose(fh);
 				return (1);
 		}
 		strcpy(peers.peer[peers.count], tmp);
-        peers.clnt[i] = NULL;
+        peers.clnt[peers.count] = NULL;
 #ifdef DEBUG
         printf("%s : strlen = %d\n", peers.peer[peers.count], strlen(peers.peer[peers.count]));
 #endif
@@ -362,7 +360,7 @@ main (int argc, char **argv)
     char *peerfile, *sharedir;
     register SVCXPRT *transp;
 	FILE *fd;
-	int i;
+	int i, ret;
 	char tmp[MAXHOSTNAME+2];
 	
 
