@@ -14,7 +14,7 @@ extern peers_t          peers;
 extern pending_req_t    pending;
 extern char             *localhostname;
 extern char             *sharedir;
-extern __thread int errno;
+/*extern __thread int errno;*/
 
 int seqno;
 pthread_mutex_t seqno_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -134,14 +134,14 @@ obtain_1_svc(request *argp, readfile_res *result, struct svc_req *rqstp)
     file = fopen(filepath, "rb");
     if (file == NULL) {
         printf("Failed to open(%s) : errno %d\n", filepath, errno);
-        result->errno = errno;
+        result->error = errno;
         return (FALSE);
     }
 
     fseek (file, argp->seek_bytes, SEEK_SET);
     bytes = fread(result->readfile_res_u.chunk.data, 1, SIZE, file);
     result->readfile_res_u.chunk.bytes = bytes;
-    result->errno = 0;
+    result->error = 0;
     fclose(file);
 
     printf("obtain_1_svc() : Served %d bytes from %s at offset : %d\n", bytes, filepath, argp->seek_bytes);
@@ -291,8 +291,9 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
             /*
              * Make one-way RPC call to send the response back.
              */
-            if (clnt_call(clnt, b_hitquery, xdr_b_hitquery_reply,
-                        &res, NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+            if (clnt_call(clnt, b_hitquery,
+                    (xdrproc_t) xdr_b_hitquery_reply, (caddr_t) &res,
+                    NULL, NULL, zero_timeout) != RPC_SUCCESS) {
                 clnt_perror(clnt, "b_hitquery failed");
                 continue;
             }
@@ -302,8 +303,9 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
         p += MAXHOSTNAME;
     }
 
-    if (clnt_call(clnt, b_hitquery, xdr_b_hitquery_reply,
-                &res, NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+    if (clnt_call(clnt, b_hitquery,
+        (xdrproc_t) xdr_b_hitquery_reply, (caddr_t)&res,
+        NULL, NULL, zero_timeout) != RPC_SUCCESS) {
         clnt_perror(clnt, "b_hitquery failed");
     }
 
@@ -425,8 +427,8 @@ b_query_propagate(b_query_req *argp, int *result)
             /*
              * Now make a one-way RPC call to relay the message.
              */
-            if (clnt_call(peers.clnt[i], b_query, xdr_b_query_req,
-                        &(node.req), NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+            if (clnt_call(peers.clnt[i], b_query, (xdrproc_t)xdr_b_query_req,
+                        (caddr_t)&(node->req), NULL, NULL, zero_timeout) != RPC_SUCCESS) {
                 clnt_perror(peers.clnt[i], "b_query failed");
                 continue;
             }

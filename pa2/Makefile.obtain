@@ -12,9 +12,9 @@ SOURCES_SVC.c =
 SOURCES_SVC.h = 
 SOURCES.x = obtain.x
 
-TARGETS_SVC.c = obtain_svc.c obtain_server.c obtain_xdr.c 
+TARGETS_SVC.c = obtain_svc_mt.c obtain_server.c obtain_xdr.c 
 TARGETS_CLNT.c = obtain_clnt.c obtain_client.c obtain_xdr.c 
-TARGETS = obtain.h obtain_xdr.c obtain_clnt.c obtain_svc.c obtain_client.c obtain_server.c
+TARGETS = obtain.h obtain_xdr.c obtain_clnt.c obtain_svc_mt.c obtain_client.c obtain_server.c
 
 OBJECTS_CLNT = $(SOURCES_CLNT.c:%.c=%.o) $(TARGETS_CLNT.c:%.c=%.o)
 OBJECTS_SVC = $(SOURCES_SVC.c:%.c=%.o) $(TARGETS_SVC.c:%.c=%.o)

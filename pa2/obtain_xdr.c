@@ -54,9 +54,9 @@ xdr_readfile_res (XDR *xdrs, readfile_res *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, &objp->errno))
+	 if (!xdr_int (xdrs, &objp->error))
 		 return FALSE;
-	switch (objp->errno) {
+	switch (objp->error) {
 	case 0:
 		 if (!xdr_datareceived (xdrs, &objp->readfile_res_u.chunk))
 			 return FALSE;
