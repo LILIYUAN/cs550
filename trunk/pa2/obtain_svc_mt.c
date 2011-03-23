@@ -383,7 +383,7 @@ extern int optind;
 int
 main (int argc, char **argv)
 {
-    char *peerfile, *sharedir;
+    char *peerfile;
     register SVCXPRT *transp;
 	FILE *fd;
 	int i, ret;
