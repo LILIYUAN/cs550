@@ -20,6 +20,8 @@ char *localhostname;
 peers_t peers;
 pending_req_t pending;
 
+extern void *reaper_thread(void *);
+
 typedef	union argument {
 		request obtain_1_arg;
 } argument_t ;
@@ -362,6 +364,7 @@ main (int argc, char **argv)
 	FILE *fd;
 	int i, ret;
 	char tmp[MAXHOSTNAME+2];
+    pthread_t reaper;
 	
 
     if (argc != 4) {
@@ -389,21 +392,11 @@ main (int argc, char **argv)
      */
     pthread_mutex_init(&(pending.lock), NULL);
 
-	/*
-	 * Create the directory to hold the pending queries.
-	 */
-	ret = mkdir("/tmp/queries", 0755);
-
-        /*
-         * If we failed to create the queries directory and failed for any other
-         * reason other than EEXIST we exit.
-         */
-        if (ret == -1 && errno != EEXIST) {
-            char errorstr[512];
-            sprintf(errorstr, "Failed to create the index directory : %s", SERVER_DIR);
-            perror(errorstr);
-		return (1);
-        }
+    /*
+     * Create the reaper_thread.
+     */
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    pthread_create(&reaper, &attr, reaper_thread, NULL);
 
     /*
      * Register the files in the given directory with the index-server.
@@ -414,7 +407,6 @@ main (int argc, char **argv)
         return (1);
     }
 
-    sharedir = argv[3];
 
     pmap_unset (OBTAINPROG, OBTAINVER);
 
