@@ -54,6 +54,12 @@ insert_node(query_node_t *p)
     return (SUCCESS);
 }
 
+/*
+ * remove_node:
+ * - This searches for the node with the msg_id == m.
+ *   If found, locks the node and pulls it out of the linkedlist and returns the
+ *   node locked.
+ */
 query_node_t *remove_node(msg_id *m)
 {
     query_node_t *p, *prev = NULL;
@@ -69,6 +75,11 @@ query_node_t *remove_node(msg_id *m)
      * Handle the head as a special case.
      */
     if (p->req.id.hostid == m->hostid && p->req.id.seqno == m->seqno) {
+        /*
+         * Make sure no one else is operating on this node.
+         */
+        pthread_mutex_lock(&p->node_lock);
+
         pending.head = pending.head->next;
 
         if (p == pending.tail) {
@@ -99,23 +110,39 @@ query_node_t *remove_node(msg_id *m)
         }
 
         pending.count--;
+
+        /*
+         * Make sure that no one is operating on this node.
+         */
+        pthread_mutex_lock(&p->node_lock);
     }
     pthread_mutex_unlock(&(pending.lock));
     return (p);
 }
 
+/*
+ * find_node():
+ * - Searches the node with id == m and if found returns the locked node.
+ *   (The difference between this and remove_node() is that remove_node()
+ *   deletes the node from the linked list, whereas find_node() leaves the node
+ *   on the linked list.
+ */
 query_node_t *
-find_node(msg_id m) 
+find_node(msg_id *m) 
 {
     query_node_t *p = NULL;
 
     pthread_mutex_lock(&(pending.lock));
     p = pending.head;
 
-    while (p && (p->req.id.hostid != m.hostid || p->req.id.seqno != m.seqno)) {
+    while (p && (p->req.id.hostid != m->hostid || p->req.id.seqno != m->seqno)) {
         p = p->next;
     }
 
+    if (p) {
+        pthread_mutex_lock(&p->node_lock);
+    }
+    pthread_mutex_unlock(&(pending.lock));
     return (p);
 }
 
@@ -348,13 +375,14 @@ b_query_propagate(b_query_req *argp, int *result)
     CLIENT *clnt;
     int i, cnt;
 
-    node = find_node(argp->id);
+    node = find_node(&argp->id);
 
     /*
      * We already have processed msg_id. Hence, we have nothing to do now.
      */
     if (node) {
         *result = SUCCESS;
+        pthread_mutex_unlock(&node->node_lock);
         return (NULL);
     }
 
@@ -387,8 +415,15 @@ b_query_propagate(b_query_req *argp, int *result)
     node->req.ttl = argp->ttl - 1;  /* Decrement the TTL by one */
     node->sent = 0; node->recv = 0;
     node->next = NULL;
+    pthread_mutex_init(&node->node_lock, NULL);
 
     (void) insert_node(node);
+
+    /*
+     * Lock the node. This is to avoid processing of responses
+     * even before we are done with the propagation of requests to all the peers.
+     */
+    pthread_mutex_lock(&node->node_lock);
 
     /*
      * Get the peers list from the cache.
@@ -435,6 +470,7 @@ b_query_propagate(b_query_req *argp, int *result)
             node->sent++;
         }
     }
+    pthread_mutex_unlock(&node->node_lock);
 
     *result = SUCCESS;
 
@@ -565,13 +601,70 @@ b_query_1_svc(b_query_req *argp, int *result, struct svc_req *rqstp)
 bool_t
 b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
 {
-	bool_t retval;
-	
+	bool_t retval = TRUE;
+    query_node_t *node;
+    CLIENT *clnt;
+    int i;
+    char *p;
 
-	/*
-	 * insert server code here
-	 */
+    /*
+     * Search for the msg_id in the pending queue.
+     */
+    node = find_node(&argp->id);
 
+    /* 
+     * If the query request is found on the local queue relay the response back.
+     * Else, the response is late (beyond 60 secs) and hence the reaper thread
+     * has possibly reaped the query. Hence, do nothing.
+     */
+    if (node) {
+        /*
+         * We have the query details. Bubble up this response to the upstream
+         * host.
+         */
+        clnt = clnt_create(node->req.uphost, OBTAINPROG, OBTAINVER, "tcp");
+        if (clnt == NULL) {
+            clnt_pcreateerror(node->req.uphost);
+            printf("b_hitquery_1_svc() : Failed to relay the response to : %s\n", node->req.uphost);
+        } else {
+            if (clnt_call(clnt, b_hitquery,
+                        (xdrproc_t) xdr_b_hitquery_reply, (caddr_t) &argp,
+                        NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+                clnt_perror(clnt, "b_hitquery failed");
+            }
+        }
+
+        /*
+         * We reap the request now if the sent == recv
+         */
+        node->recv++;
+        /*
+         * Disabling this code. Let's the request gets processed quickly and
+         * then removed from the list. And later if the same request comes in
+         * through another neighbour we fail to detect that this was already
+         * processed. Hence, we just leave the node on the pending list for the
+         * reaper_thread to reap it.
+         */
+        /*
+        if (node->recv == node->sent) {
+            pthread_mutex_unlock(&node->node_lock);
+            node = remove_node(node->id);
+            free(node);
+        }
+        */
+        pthread_mutex_unlock(&node->node_lock);
+    }
+
+    /*
+     * Record the results in the local cache (/tmp/indsvr/) so that we can reuse
+     * this info for the next queries for this file.
+     */
+    for (i = 0, p = argp->hosts; i < argp->cnt; i++) {
+        add_peer(argp->fname, p);
+        p = p + MAXHOSTNAME;
+    }
+
+    *result = SUCCESS;
 	return retval;
 }
 
@@ -585,4 +678,56 @@ obtainprog_1_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t result)
 	 */
 
 	return 1;
+}
+
+#define INTERVAL 30
+#define TIMEOUT     60
+
+/*
+ * This is a reaper thread which walks the nodes of the pending list and frees
+ * those nodes which are older than a minute.
+ */
+void *
+reaper_thread(void *unused)
+{
+    query_node_t *p, *del_list = NULL;
+    time_t ts;
+
+    /*
+     * Get the current timestamp.
+     */
+    time(&ts);
+
+    while (TRUE) {
+        sleep(INTERVAL);
+        pthread_mutex_lock(&pending.lock);
+
+        p = pending.head;
+
+        /*
+         * Build the delete list.
+         */
+        while (pending.head && (ts - p->ts) > TIMEOUT) {
+            p = pending.head;
+            pending.head = pending.head->next;
+
+            /*
+             * If this is the last node make sure the tail of updated as well.
+             */
+            if (pending.tail == p){
+                pending.tail = pending.head->next;
+            }
+
+            p->next = NULL;
+            pthread_mutex_unlock(&pending.lock);
+
+            /*
+             * Wait for the any active users to drain out.
+             */
+            pthread_mutex_lock(&p->node_lock);
+            free(p);
+            pthread_mutex_lock(&pending.lock);
+        }
+        pthread_mutex_unlock(&pending.lock);
+    }
 }
