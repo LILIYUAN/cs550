@@ -23,11 +23,17 @@ pending_req_t pending;
 extern void *reaper_thread(void *);
 
 typedef	union argument {
-		request obtain_1_arg;
+		request             obtain_1_arg;
+        query_req           search_1_arg;
+        b_query_req         b_query_1_arg;
+        b_hitquery_reply    b_hitquery_1_arg;
 } argument_t ;
 
 typedef union result {
-		readfile_res obtain_1_res;
+		readfile_res    obtain_1_res;
+        query_rec       search_1_res; 
+        int             b_query_1_res;
+        int             b_hitquery_1_res;
 } result_t;
 
 /*
@@ -148,6 +154,24 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		datap->_xdr_result = (xdrproc_t) xdr_readfile_res;
 		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))obtain_1_svc;
 		break;
+
+    case search:
+        datap->_xdr_argument = (xdrproc_t) xdr_query_req;
+        datap->_xdr_result = (xdrproc_t) xdr_query_rec;
+        datap->local = (bool_t (*) (char *, void *, struct svc_req *))search_1_svc;
+        break;
+
+    case b_query:
+        datap->_xdr_argument = (xdrproc_t) xdr_b_query_req;
+        datap->_xdr_result = (xdrproc_t) xdr_int;
+        datap->local = (bool_t (*) (char *, void *, struct svc_req *))b_query_1_svc;
+        break;
+
+    case b_hitquery:
+        datap->_xdr_argument = (xdrproc_t) xdr_b_hitquery_reply;
+        datap->_xdr_result = (xdrproc_t) xdr_int;
+        datap->local = (bool_t (*) (char *, void *, struct svc_req *))b_hitquery_1_svc;
+        break;
 
 	default:
 		svcerr_noproc (transp);
