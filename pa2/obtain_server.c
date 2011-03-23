@@ -232,7 +232,7 @@ build_peers_from_cache(char *fname, peers_t *resp)
     {
         int i;
         printf("Peers serving %s = %d \n", fname, resp->count);
-        for (i = 0; i < result->count; i++) {
+        for (i = 0; i < resp->count; i++) {
             printf("hostname : %s\n", resp->peer[i]);
         }
     }
@@ -246,8 +246,8 @@ peer_in_cache(peers_t *cache, char *host)
 {
     int i, j;
 
-    for (i = 0; i < peers.count; i++) {
-        if (strcmp(peers.peer[i], host) == 0)
+    for (i = 0; i < cache->count; i++) {
+        if (strcmp(cache->peer[i], host) == 0)
             return (TRUE);
     }
     return (FALSE);
@@ -412,6 +412,7 @@ b_query_propagate(b_query_req *argp, int *result)
 
     node->req.id = argp->id;
     strcpy(node->req.uphost, argp->uphost);
+    strcpy(node->req.fname, argp->fname);
     node->req.ttl = argp->ttl - 1;  /* Decrement the TTL by one */
     node->sent = 0; node->recv = 0;
     node->next = NULL;
@@ -430,6 +431,10 @@ b_query_propagate(b_query_req *argp, int *result)
      */
     cnt = build_peers_from_cache(argp->fname, &my_cache);
 
+#ifdef DEBUG
+    printf("b_query_propagate: my_cache.count = %d peers.count = %d\n", my_cache.count, peers.count);
+#endif
+
     if (my_cache.count < peers.count) {
         /*
          * We have some peers to whom we need to relay the request.
@@ -440,12 +445,18 @@ b_query_propagate(b_query_req *argp, int *result)
              * If yes, continue to the next peer.
              */
             if (peer_in_cache(&my_cache, peers.peer[i])) {
+#ifdef DEBUG
+                printf("b_query_propagate: peer_in_cache(%s) return TRUE\n", peers.peer[i]);
+#endif
                 continue;
             }
             /*
              * Use the cached client handler to make a call. If not create
              * one.
              */
+#ifdef DEBUG
+            printf("b_query_propagate(): Relaying query to %s for file %s\n", peers.peer[i], argp->fname);
+#endif
             if (!peers.clnt[i]) {
                 clnt = clnt_create(peers.peer[i], OBTAINPROG, OBTAINVER, "tcp");
                 if (clnt == NULL) {
@@ -480,7 +491,7 @@ b_query_propagate(b_query_req *argp, int *result)
 bool_t
 search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
 	b_query_req *query;
     query_node_t *node;
     char *p;
@@ -489,6 +500,10 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     FILE *fh;
 	peers_t resp;
     int ret;
+
+#ifdef DEBUG
+    printf("search_1_svc() : Received request for file : %s\n", argp->fname);
+#endif
 
     /*
      * Build the b_query_req for this request.
