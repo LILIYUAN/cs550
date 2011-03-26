@@ -331,7 +331,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
                 printf("Cannot make one-way RPC call :-(\n");
             }
             ret = b_hitquery_1(&res, &tmp, clnt);
-            if (ret != RPC_SUCCESS || ret != RPC_TIMEDOUT) {
+            if (ret != RPC_SUCCESS && ret != RPC_TIMEDOUT) {
                 clnt_perror(clnt, "b_hitquery failed");
                 continue;
             }
@@ -346,7 +346,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
         printf("Cannot make one-way RPC call :-(\n");
     }
     ret = b_hitquery_1(&res, &tmp, clnt);
-    if (ret != RPC_SUCCESS || ret != RPC_TIMEDOUT) {
+    if (ret != RPC_SUCCESS && ret != RPC_TIMEDOUT) {
         clnt_perror(clnt, "b_hitquery failed");
     }
 
@@ -505,7 +505,7 @@ b_query_propagate(b_query_req *argp, int *result, int flag)
                 printf("Cannot make oneway RPC calls and hence behaviour could be unpredictable\n");
             }
             stat = b_query_1(&req, &ret, peers.clnt[i]);
-            if (stat != RPC_SUCCESS || stat != RPC_TIMEDOUT) {
+            if (stat != RPC_SUCCESS && stat != RPC_TIMEDOUT) {
                 clnt_perror(peers.clnt[i], "b_query failed");
                 continue;
             }
@@ -711,7 +711,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
                 printf("Cannot make oneway RPC calls and hence behaviour could be unpredictable\n");
             }
             stat = b_hitquery_1(argp, &ret, clnt);
-            if (stat != RPC_TIMEDOUT || stat != RPC_SUCCESS) {
+            if (stat != RPC_TIMEDOUT && stat != RPC_SUCCESS) {
                 clnt_perror(clnt, "b_hitquery failed");
             }
         }
@@ -746,6 +746,9 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
     }
 
     *result = SUCCESS;
+#ifdef DEBUG
+    printf("b_hitquery_1_svc: Done for file %s\n", argp->fname);
+#endif
 	return retval;
 }
 
