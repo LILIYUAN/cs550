@@ -28,8 +28,6 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 	union {
 		readfile_res obtain_1_res;
 		query_rec search_1_res;
-		int b_query_1_res;
-		int b_hitquery_1_res;
 	} result;
 	bool_t retval;
 	xdrproc_t _xdr_argument, _xdr_result;
@@ -54,13 +52,13 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 
 	case b_query:
 		_xdr_argument = (xdrproc_t) xdr_b_query_req;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_void;
 		local = (bool_t (*) (char *, void *,  struct svc_req *))b_query_1_svc;
 		break;
 
 	case b_hitquery:
 		_xdr_argument = (xdrproc_t) xdr_b_hitquery_reply;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_void;
 		local = (bool_t (*) (char *, void *,  struct svc_req *))b_hitquery_1_svc;
 		break;
 

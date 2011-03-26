@@ -28,19 +28,19 @@ search_1(query_req *argp, query_rec *clnt_res, CLIENT *clnt)
 }
 
 enum clnt_stat 
-b_query_1(b_query_req *argp, int *clnt_res, CLIENT *clnt)
+b_query_1(b_query_req *argp, void *clnt_res, CLIENT *clnt)
 {
 	return (clnt_call(clnt, b_query,
 		(xdrproc_t) xdr_b_query_req, (caddr_t) argp,
-		(xdrproc_t) xdr_int, (caddr_t) clnt_res,
+		(xdrproc_t) xdr_void, (caddr_t) clnt_res,
 		TIMEOUT));
 }
 
 enum clnt_stat 
-b_hitquery_1(b_hitquery_reply *argp, int *clnt_res, CLIENT *clnt)
+b_hitquery_1(b_hitquery_reply *argp, void *clnt_res, CLIENT *clnt)
 {
 	return (clnt_call(clnt, b_hitquery,
 		(xdrproc_t) xdr_b_hitquery_reply, (caddr_t) argp,
-		(xdrproc_t) xdr_int, (caddr_t) clnt_res,
+		(xdrproc_t) xdr_void, (caddr_t) clnt_res,
 		TIMEOUT));
 }

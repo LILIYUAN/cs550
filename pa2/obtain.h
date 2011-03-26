@@ -93,11 +93,11 @@ extern  bool_t obtain_1_svc(request *, readfile_res *, struct svc_req *);
 extern  enum clnt_stat search_1(query_req *, query_rec *, CLIENT *);
 extern  bool_t search_1_svc(query_req *, query_rec *, struct svc_req *);
 #define b_query 3
-extern  enum clnt_stat b_query_1(b_query_req *, int *, CLIENT *);
-extern  bool_t b_query_1_svc(b_query_req *, int *, struct svc_req *);
+extern  enum clnt_stat b_query_1(b_query_req *, void *, CLIENT *);
+extern  bool_t b_query_1_svc(b_query_req *, void *, struct svc_req *);
 #define b_hitquery 4
-extern  enum clnt_stat b_hitquery_1(b_hitquery_reply *, int *, CLIENT *);
-extern  bool_t b_hitquery_1_svc(b_hitquery_reply *, int *, struct svc_req *);
+extern  enum clnt_stat b_hitquery_1(b_hitquery_reply *, void *, CLIENT *);
+extern  bool_t b_hitquery_1_svc(b_hitquery_reply *, void *, struct svc_req *);
 extern int obtainprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
