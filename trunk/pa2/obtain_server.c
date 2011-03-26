@@ -10,6 +10,9 @@
 #define SUCCESS    0
 #define FAILED    1
 
+#define UNLOCKED    0
+#define LOCKED      1
+
 extern peers_t          peers;
 extern pending_req_t    pending;
 extern char             *localhostname;
@@ -267,8 +270,8 @@ int getseqno(void)
 }
 
 /*
- * This routine looks the file in the local index directory
- * ("/tmp/indsvr/<filename") and sends replies back the host names to uphost.
+ * This routine looks for the file in the local index directory
+ * ("/tmp/indsvr/<filename>") and sends back the host names to uphost.
  *
  * It sends one RPC call with MAXCOUNT hosts in each of them.
  */
@@ -345,7 +348,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
  * the query to the peers.
  * 
  * RETURN VALUE :
- * If it sends relays the requests to its peers then it adds this request to a
+ * If it relays the requests to its peers then it adds this request to a
  * local pending queue and returns a pointer to that request.
  *
  * Outline of the routine: 
@@ -367,10 +370,11 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
  *            the uphost.
  */
 query_node_t *
-b_query_propagate(b_query_req *argp, int *result)
+b_query_propagate(b_query_req *argp, int *result, int flag)
 {
 	bool_t retval = TRUE;
     query_node_t *node;
+    b_query_req  req;
     peers_t my_cache;
     CLIENT *clnt;
     int i, cnt;
@@ -417,6 +421,15 @@ b_query_propagate(b_query_req *argp, int *result)
     node->sent = 0; node->recv = 0;
     node->next = NULL;
     pthread_mutex_init(&node->node_lock, NULL);
+    pthread_cond_init(&node->allhome_cv, NULL);
+
+    /*
+     * Build the request that we need to send.
+     */
+    req.id = argp->id;
+    strcpy(req.uphost, localhostname);
+    strcpy(req.fname, argp->fname);
+    req.ttl = argp->ttl - 1;
 
     (void) insert_node(node);
 
@@ -474,14 +487,20 @@ b_query_propagate(b_query_req *argp, int *result)
              * Now make a one-way RPC call to relay the message.
              */
             if (clnt_call(peers.clnt[i], b_query, (xdrproc_t)xdr_b_query_req,
-                        (caddr_t)&(node->req), NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+                        (caddr_t)&req, NULL, NULL, zero_timeout) != RPC_SUCCESS) {
                 clnt_perror(peers.clnt[i], "b_query failed");
                 continue;
             }
             node->sent++;
         }
     }
-    pthread_mutex_unlock(&node->node_lock);
+
+    /*
+     * If the caller does not wanted the node locked.
+     */
+    if (flag == UNLOCKED) {
+        pthread_mutex_unlock(&node->node_lock);
+    }
 
     *result = SUCCESS;
 
@@ -500,6 +519,8 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     FILE *fh;
 	peers_t resp;
     int ret;
+    struct timeval now;
+    struct timespec timeout;
 
 #ifdef DEBUG
     printf("search_1_svc() : Received request for file : %s\n", argp->fname);
@@ -523,19 +544,27 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     /*
      * Now propagate the query to the peers.
      */
-    node = b_query_propagate(query, &ret);
+    node = b_query_propagate(query, &ret, LOCKED);
 
     /*
      * If we propagated to some peers then we should wait for some time for the
-     * results to arrive and the send the results.
+     * results to arrive and send the results.
      */
-    if (node && node->sent) {
-        /*
-         * TODO : At present we wait for 10 secs. Instead we could use a CV and
-         * wait on it. And the b_hitquery_reply() could signal the CV when the
-         * replies arrive.
-         */
-        sleep(10);
+    if (node) { 
+        if (node->sent) {
+            /*
+             * We now wait for a max of 5 seconds on the CV (allhome_cv).
+             * And the b_hitquery_reply() signals the CV when all the
+             * peers that we had queried have reponded back. However, if no one
+             * responds back we bail out in 5 secs.
+             */
+            gettimeofday(&now, NULL);
+            timeout.tv_sec = now.tv_sec + 5;
+            timeout.tv_nsec = now.tv_usec *1000;
+
+            pthread_cond_timedwait(&node->allhome_cv, &node->node_lock, &timeout);
+        }
+        pthread_mutex_unlock(&node->node_lock);
     }
 
 send_result:
@@ -591,7 +620,7 @@ b_query_1_svc(b_query_req *argp, int *result, struct svc_req *rqstp)
      * Propagate the query to the peers if they are not already in the local
      * cache.
      */
-    (void) b_query_propagate(argp, result);
+    (void) b_query_propagate(argp, result, UNLOCKED);
 
     /*
      * Send back the current contents of the local cache.
@@ -628,11 +657,12 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
     node = find_node(&argp->id);
 
     /* 
-     * If the query request is found on the local queue relay the response back.
+     * If the query request is found on the local queue and we are not the
+     * uphost relay the response back.
      * Else, the response is late (beyond 60 secs) and hence the reaper thread
      * has possibly reaped the query. Hence, do nothing.
      */
-    if (node) {
+    if (node && strcmp(node->req.uphost, localhostname) != 0) {
         /*
          * We have the query details. Bubble up this response to the upstream
          * host.
@@ -649,24 +679,17 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
             }
         }
 
-        /*
-         * We reap the request now if the sent == recv
-         */
+    }
+
+    if (node) {
         node->recv++;
         /*
-         * Disabling this code. Let's the request gets processed quickly and
-         * then removed from the list. And later if the same request comes in
-         * through another neighbour we fail to detect that this was already
-         * processed. Hence, we just leave the node on the pending list for the
-         * reaper_thread to reap it.
+         * Add code to signal the search_1_svc() which is wait for all the
+         * responses to arrive.
          */
-        /*
         if (node->recv == node->sent) {
-            pthread_mutex_unlock(&node->node_lock);
-            node = remove_node(node->id);
-            free(node);
+            pthread_cond_broadcast(&node->allhome_cv);
         }
-        */
         pthread_mutex_unlock(&node->node_lock);
     }
 
