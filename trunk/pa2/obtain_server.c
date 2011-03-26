@@ -611,7 +611,7 @@ send_result:
     result->count = 0;
     p = result->peers; 
     
-    while (fgets(p, MAXHOSTNAME, fh) != EOF) {
+    while (fgets(p, MAXHOSTNAME, fh) != NULL) {
         p[strlen(p) - 1] = '\0';
         result->count++;
         /* 
