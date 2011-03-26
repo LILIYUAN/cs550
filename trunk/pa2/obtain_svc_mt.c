@@ -90,12 +90,15 @@ service_request(void *data )
 #endif
 
     retval = (bool_t) (*local)((char *)argument, (void *)result, rqstp);
+#ifdef DEBUG
+    printf("Returned from the service routine\n");
+#endif
     if (retval > 0 && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)result)) {
         svcerr_systemerr (transp);
     }
 
 #ifdef DEBUG
-    printf("Completed the service routine\n");
+    printf("Completed the sending the reply\n");
 #endif
 
     /*
