@@ -216,7 +216,6 @@ int add_peer (char *fname, char *peername)
     char peer[MAXHOSTNAME+2];
     int ret, found = 0;
     int fd;
-    fpos_t fpos; 
     static init_done = 0;
 
     /*
@@ -244,15 +243,10 @@ int add_peer (char *fname, char *peername)
      * already exists we open it else we create a new one.
      */
     sprintf(filepath, "%s/%s", SERVER_DIR, fname);
-    fh = fopen(filepath, "rw");
+    fh = fopen(filepath, "a+");
     if (fh == NULL) {
-        /*
-         * The file does not exist. Hence try creating it.
-         */
-        if ((fh = fopen(filepath, "a+")) == NULL) {
-            printf("index-server : Failed to make an entry : errno = %d : %s\n", errno, strerror(errno));
-            return (errno);
-        }
+        printf("index-server : Failed to make an entry : errno = %d : %s\n", errno, strerror(errno));
+        return (errno);
     }
 
     fd = fileno(fh);
@@ -271,9 +265,13 @@ int add_peer (char *fname, char *peername)
     printf("Walking through current entries for %s: ", fname);
 #endif
 
-    while ((fscanf(fh, "%s\n", peer)) != EOF) {
+    while ((fgets(peer, MAXHOSTNAME+2, fh)) != NULL) {
+        /*
+         * Truncate the '\n' from the string.
+         */
+        peer[strlen(peer) - 1] = '\0';
 #ifdef DEBUG
-        printf("peer %s \n", peer);
+        printf("peer %s strlen = %d\n", peer, strlen(peer));
 #endif
 
         if (strcmp(peer, peername) == 0) {
