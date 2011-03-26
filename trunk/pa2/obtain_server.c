@@ -536,6 +536,7 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     query_node_t *node;
     char *p;
 	char fname[MAXPATHLEN];
+    char peer[MAXHOSTNAME+2];
 	int i, fd;
     FILE *fh;
 	peers_t resp;
@@ -610,7 +611,8 @@ send_result:
     result->count = 0;
     p = result->peers; 
     
-    while (fscanf(fh, "%s\n", p) != EOF) {
+    while (fgets(p, MAXHOSTNAME, fh) != EOF) {
+        p[strlen(p) - 1] = '\0';
         result->count++;
         /* 
          * We have filled up the response with MAXCOUNT results.
@@ -626,9 +628,11 @@ send_result:
     }
 
     printf("p = %s\n", p);
+    /*
     if (*p) {
         result->count++;
     }
+    */
 
     flock(fd, LOCK_UN);
     fclose(fh);
