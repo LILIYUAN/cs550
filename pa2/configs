@@ -14,6 +14,14 @@ compute-0-12
 compute-0-13
 compute-0-14
 
+Relay test :
+-------------
+ compute-0-0 ----- compute-0-1 ----- compute-0-2 ------ compute-0-3
+
+
+  Here we try to search a file from compute-0-0 and the file should be served by
+  compute-0-3. This is to test that the request are relayed properly.
+
 Star-config :
 -------------
 2 Nodes : compute-0-0, compute-0-1
