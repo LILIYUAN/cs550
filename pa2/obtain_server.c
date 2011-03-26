@@ -685,6 +685,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
     char *p;
     enum clnt_stat stat;
     int ret;
+    int broadcast = 0;
 
     /*
      * Search for the msg_id in the pending queue.
@@ -725,6 +726,15 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
 
     }
 
+    /*
+     * Record the results in the local cache (/tmp/indsvr/) so that we can reuse
+     * this info for the next queries for this file.
+     */
+    for (i = 0, p = argp->hosts; i < argp->cnt; i++) {
+        add_peer(argp->fname, p);
+        p = p + MAXHOSTNAME;
+    }
+
     if (node) {
         node->recv++;
 #ifdef DEBUG
@@ -741,15 +751,6 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
             pthread_cond_broadcast(&node->allhome_cv);
         }
         pthread_mutex_unlock(&node->node_lock);
-    }
-
-    /*
-     * Record the results in the local cache (/tmp/indsvr/) so that we can reuse
-     * this info for the next queries for this file.
-     */
-    for (i = 0, p = argp->hosts; i < argp->cnt; i++) {
-        add_peer(argp->fname, p);
-        p = p + MAXHOSTNAME;
     }
 
 #ifdef DEBUG
