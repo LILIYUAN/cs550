@@ -683,6 +683,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     query_node_t *node;
+    b_hitquery_reply req;
     CLIENT *clnt;
     int i;
     char *p;
@@ -714,7 +715,13 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
                 printf("Failed to set the timeout value to zero\n");
                 printf("Cannot make oneway RPC calls and hence behaviour could be unpredictable\n");
             }
-            stat = b_hitquery_1(argp, &ret, clnt);
+
+            req.id = argp->id;
+            req.cnt = argp->cnt;
+            strcpy(req.fname, argp->fname);
+            memcpy(req.hosts, argp->hosts, BUFSIZE);
+
+            stat = b_hitquery_1(&req, &ret, clnt);
             if (stat != RPC_TIMEDOUT && stat != RPC_SUCCESS) {
                 clnt_perror(clnt, "b_hitquery failed");
             }
@@ -749,7 +756,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
         p = p + MAXHOSTNAME;
     }
 
-    *result = SUCCESS;
+    *result = TRUE;
 #ifdef DEBUG
     printf("b_hitquery_1_svc: Done for file %s\n", argp->fname);
 #endif
