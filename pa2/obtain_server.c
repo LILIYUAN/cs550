@@ -469,10 +469,11 @@ b_query_propagate(b_query_req *argp, int *result, int flag)
              */
 #ifdef DEBUG
             printf("b_query_propagate(): Relaying query to %s for file %s\n", peers.peer[i], argp->fname);
+            printf("b_query_propagate(): Another printf\n");
 #endif
             if (!peers.clnt[i]) {
-                clnt = clnt_create(peers.peer[i], OBTAINPROG, OBTAINVER, "tcp");
-                if (clnt == NULL) {
+                peers.clnt[i] = clnt_create(peers.peer[i], OBTAINPROG, OBTAINVER, "tcp");
+                if (peers.clnt[i] == NULL) {
                     clnt_pcreateerror (peers.peer[i]);
                     /*
                      * Make a call only if we have a valid handle. We try to create
@@ -491,6 +492,9 @@ b_query_propagate(b_query_req *argp, int *result, int flag)
                 clnt_perror(peers.clnt[i], "b_query failed");
                 continue;
             }
+#ifdef DEBUG
+            printf("Called the b_query(%s)\n", peers.peer[i]);
+#endif
             node->sent++;
         }
     }
