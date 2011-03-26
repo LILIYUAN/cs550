@@ -19,6 +19,7 @@ typedef struct query_node {
     time_t              ts;
     int                 sent;
     int                 recv;
+    pthread_cond_t      allhome_cv;
     pthread_mutex_t     node_lock;
     struct query_node   *next;
 } query_node_t;
