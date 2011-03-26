@@ -163,7 +163,7 @@ obtain_1_svc(request *argp, readfile_res *result, struct svc_req *rqstp)
     sprintf(filepath, "%s/%s", sharedir, argp->name);
     file = fopen(filepath, "rb");
     if (file == NULL) {
-        printf("Failed to open(%s) : errno %d\n", filepath, errno);
+        printf("obtain_1_svc: Failed to open(%s) : errno %d\n", filepath, errno);
         result->error = errno;
         return (FALSE);
     }
@@ -284,6 +284,8 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     FILE *fh;
     int fd;
     CLIENT *clnt;
+    enum clnt_stat ret;
+    int tmp;
 
     if (!fname_req || !uphost) {
         return (SUCCESS);
@@ -293,7 +295,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
 
     fh = fopen(fname, "r");
     if (fh == NULL) {
-        printf("Failed to open filename %s : errno = %d\n", fname, errno);
+        printf("send_local_cache: Failed to open filename %s : errno = %d\n", fname, errno);
         return SUCCESS;
     }
 
@@ -321,9 +323,15 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
             /*
              * Make one-way RPC call to send the response back.
              */
-            if (clnt_call(clnt, b_hitquery,
-                    (xdrproc_t) xdr_b_hitquery_reply, (caddr_t) &res,
-                    NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+#ifdef DEBUG
+            printf("send_local_cache: Sending response to %s for file %s\n", uphost, res.fname);
+#endif
+            if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
+                printf("Failed to set the timeout value to zero\n");
+                printf("Cannot make one-way RPC call :-(\n");
+            }
+            ret = b_hitquery_1(&res, &tmp, clnt);
+            if (ret != RPC_SUCCESS || ret != RPC_TIMEDOUT) {
                 clnt_perror(clnt, "b_hitquery failed");
                 continue;
             }
@@ -333,9 +341,12 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
         p += MAXHOSTNAME;
     }
 
-    if (clnt_call(clnt, b_hitquery,
-        (xdrproc_t) xdr_b_hitquery_reply, (caddr_t)&res,
-        NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+    if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
+        printf("Failed to set the timeout value to zero\n");
+        printf("Cannot make one-way RPC call :-(\n");
+    }
+    ret = b_hitquery_1(&res, &tmp, clnt);
+    if (ret != RPC_SUCCESS || ret != RPC_TIMEDOUT) {
         clnt_perror(clnt, "b_hitquery failed");
     }
 
@@ -378,6 +389,8 @@ b_query_propagate(b_query_req *argp, int *result, int flag)
     peers_t my_cache;
     CLIENT *clnt;
     int i, cnt;
+    enum clnt_stat stat;
+    int ret;
 
     node = find_node(&argp->id);
 
@@ -487,8 +500,12 @@ b_query_propagate(b_query_req *argp, int *result, int flag)
             /*
              * Now make a one-way RPC call to relay the message.
              */
-            if (clnt_call(peers.clnt[i], b_query, (xdrproc_t)xdr_b_query_req,
-                        (caddr_t)&req, NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+            if (clnt_control(peers.clnt[i], CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
+                printf("Failed to set the timeout value to zero\n");
+                printf("Cannot make oneway RPC calls and hence behaviour could be unpredictable\n");
+            }
+            stat = b_query_1(&req, &ret, peers.clnt[i]);
+            if (stat != RPC_SUCCESS || stat != RPC_TIMEDOUT) {
                 clnt_perror(peers.clnt[i], "b_query failed");
                 continue;
             }
@@ -581,7 +598,7 @@ send_result:
 
     fh = fopen(fname, "r");
     if (fh == NULL) {
-        printf("Failed to open filename %s : errno = %d\n", fname, errno);
+        printf("search_1_svc:Failed to open filename %s : errno = %d\n", fname, errno);
         result->count = 0;
         return retval;
     }
@@ -608,10 +625,17 @@ send_result:
         p += MAXHOSTNAME;
     }
 
+    printf("p = %s\n", p);
+    if (*p) {
+        result->count++;
+    }
+
     flock(fd, LOCK_UN);
     fclose(fh);
     result->eof = 1;
-
+#ifdef DEBUG
+    printf("search_1_svc: Done. count = %d\n", result->count);
+#endif
 	return retval;
 }
 
@@ -658,6 +682,8 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
     CLIENT *clnt;
     int i;
     char *p;
+    enum clnt_stat stat;
+    int ret;
 
     /*
      * Search for the msg_id in the pending queue.
@@ -680,9 +706,12 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
             clnt_pcreateerror(node->req.uphost);
             printf("b_hitquery_1_svc() : Failed to relay the response to : %s\n", node->req.uphost);
         } else {
-            if (clnt_call(clnt, b_hitquery,
-                        (xdrproc_t) xdr_b_hitquery_reply, (caddr_t) &argp,
-                        NULL, NULL, zero_timeout) != RPC_SUCCESS) {
+            if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
+                printf("Failed to set the timeout value to zero\n");
+                printf("Cannot make oneway RPC calls and hence behaviour could be unpredictable\n");
+            }
+            stat = b_hitquery_1(argp, &ret, clnt);
+            if (stat != RPC_TIMEDOUT || stat != RPC_SUCCESS) {
                 clnt_perror(clnt, "b_hitquery failed");
             }
         }
@@ -691,11 +720,17 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
 
     if (node) {
         node->recv++;
+#ifdef DEBUG
+        printf("b_hitquery_1_svc:recv = %d sent = %d\n", node->recv, node->sent);
+#endif
         /*
          * Add code to signal the search_1_svc() which is wait for all the
          * responses to arrive.
          */
         if (node->recv == node->sent) {
+#ifdef DEBUG
+            printf("broadcasting : so that search_1_svc() can respond back\n");
+#endif
             pthread_cond_broadcast(&node->allhome_cv);
         }
         pthread_mutex_unlock(&node->node_lock);
