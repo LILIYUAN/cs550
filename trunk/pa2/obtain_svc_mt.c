@@ -30,10 +30,8 @@ typedef	union argument {
 } argument_t ;
 
 typedef union result {
-		readfile_res    obtain_1_res;
+        readfile_res    obtain_1_res;
         query_rec       search_1_res; 
-        int             b_query_1_res;
-        int             b_hitquery_1_res;
 } result_t;
 
 /*
@@ -93,7 +91,9 @@ service_request(void *data )
 #ifdef DEBUG
     printf("Returned from the service routine\n");
 #endif
-    if (retval > 0 && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)result)) {
+    if (retval > 0 && tdata_p->rqstp->rq_proc != b_query 
+            && tdata_p->rqstp->rq_proc != b_hitquery
+            && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)result)) {
         svcerr_systemerr (transp);
     }
 

@@ -381,7 +381,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
  *            the uphost.
  */
 query_node_t *
-b_query_propagate(b_query_req *argp, int *result, int flag)
+b_query_propagate(b_query_req *argp, int flag)
 {
 	bool_t retval = TRUE;
     query_node_t *node;
@@ -398,7 +398,6 @@ b_query_propagate(b_query_req *argp, int *result, int flag)
      * We already have processed msg_id. Hence, we have nothing to do now.
      */
     if (node) {
-        *result = SUCCESS;
         pthread_mutex_unlock(&node->node_lock);
         return (NULL);
     }
@@ -415,7 +414,6 @@ b_query_propagate(b_query_req *argp, int *result, int flag)
         /*
          * We don't need to relay this to the peers. 
          */
-        *result = SUCCESS;
         return (NULL);
     }
 
@@ -423,7 +421,6 @@ b_query_propagate(b_query_req *argp, int *result, int flag)
     if (node == NULL) {
         printf("Failed to allocate query_node_t. Hence not processing this request.\n");
         printf("Hoping the reaper thread will reap some memory\n");
-        *result = SUCCESS;
         return (NULL);
     }
 
@@ -461,7 +458,8 @@ b_query_propagate(b_query_req *argp, int *result, int flag)
     printf("b_query_propagate: my_cache.count = %d peers.count = %d\n", my_cache.count, peers.count);
 #endif
 
-    if (my_cache.count < peers.count) {
+    /*if (my_cache.count < peers.count) { */
+    {
         /*
          * We have some peers to whom we need to relay the request.
          */
@@ -523,8 +521,6 @@ b_query_propagate(b_query_req *argp, int *result, int flag)
         pthread_mutex_unlock(&node->node_lock);
     }
 
-    *result = SUCCESS;
-
     return (node);
 }
 
@@ -566,7 +562,7 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     /*
      * Now propagate the query to the peers.
      */
-    node = b_query_propagate(query, &ret, LOCKED);
+    node = b_query_propagate(query, LOCKED);
 
     /*
      * If we propagated to some peers then we should wait for some time for the
@@ -644,7 +640,7 @@ send_result:
 }
 
 bool_t
-b_query_1_svc(b_query_req *argp, int *result, struct svc_req *rqstp)
+b_query_1_svc(b_query_req *argp, void *result, struct svc_req *rqstp)
 {
     bool_t retval = TRUE;
 
@@ -656,7 +652,7 @@ b_query_1_svc(b_query_req *argp, int *result, struct svc_req *rqstp)
      * Propagate the query to the peers if they are not already in the local
      * cache.
      */
-    (void) b_query_propagate(argp, result, UNLOCKED);
+    (void) b_query_propagate(argp, UNLOCKED);
 
     /*
      * Send back the current contents of the local cache.
@@ -679,7 +675,7 @@ b_query_1_svc(b_query_req *argp, int *result, struct svc_req *rqstp)
  * pending requests which are older than a minute.
  */
 bool_t
-b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
+b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     query_node_t *node;
@@ -756,7 +752,6 @@ b_hitquery_1_svc(b_hitquery_reply *argp, int *result, struct svc_req *rqstp)
         p = p + MAXHOSTNAME;
     }
 
-    *result = TRUE;
 #ifdef DEBUG
     printf("b_hitquery_1_svc: Done for file %s\n", argp->fname);
 #endif

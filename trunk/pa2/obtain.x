@@ -89,13 +89,13 @@ struct b_hitquery_reply {
  */
 program OBTAINPROG {
     version OBTAINVER {
-		readfile_res	obtain(request *) = 1;
+        readfile_res	obtain(request *) = 1;
         query_rec   	search(query_req) = 2;
 		/*
 		 * The following are one-way RPC calls.
 		 */
-		int				b_query(b_query_req) = 3;
-		int				b_hitquery(b_hitquery_reply) = 4;
+        void            b_query(b_query_req) = 3;
+        void            b_hitquery(b_hitquery_reply) = 4;
     } = 1;
 } = 0x20000011;
 
