@@ -734,7 +734,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
          * Add code to signal the search_1_svc() which is wait for all the
          * responses to arrive.
          */
-        if (node->recv == node->sent) {
+        if (node->recv >= node->sent) {
 #ifdef DEBUG
             printf("broadcasting : so that search_1_svc() can respond back\n");
 #endif

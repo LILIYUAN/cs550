@@ -91,8 +91,16 @@ service_request(void *data )
 #ifdef DEBUG
     printf("Returned from the service routine\n");
 #endif
+
+    /*
     if (retval > 0 && tdata_p->rqstp->rq_proc != b_query 
             && tdata_p->rqstp->rq_proc != b_hitquery
+            && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)result)) {
+        svcerr_systemerr (transp);
+    }
+    */
+    if (retval > 0 && local != (bool_t (*) (char *, void *,  struct svc_req *))b_query_1_svc
+            && local != (bool_t (*) (char *, void *,  struct svc_req *))b_hitquery_1_svc
             && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)result)) {
         svcerr_systemerr (transp);
     }
