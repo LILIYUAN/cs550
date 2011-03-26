@@ -620,6 +620,10 @@ b_query_1_svc(b_query_req *argp, int *result, struct svc_req *rqstp)
 {
     bool_t retval = TRUE;
 
+#ifdef DEBUG
+    printf("b_query_1_svc() : Received query for %s from %s\n", argp->fname, argp->uphost);
+#endif
+
     /*
      * Propagate the query to the peers if they are not already in the local
      * cache.
