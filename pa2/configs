@@ -37,29 +37,29 @@ compute-0-2 - Peers: compute-0-0, compute-0-1, compute-0-3
 compute-0-3 - Peers: compute-0-0, compute-0-1, compute-0-2
 
 
-10 Nodes : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+10 Nodes : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-10, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
 
 
-compute-0-0 - Peers : compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
-compute-0-1 - Peers : compute-0-0, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
-compute-0-2 - Peers : compute-0-0, compute-0-1, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
-compute-0-3 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
-compute-0-4 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
-compute-0-5 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-6, compute-0-7, compute-0-8, compute-0-9
-compute-0-6 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-7, compute-0-8, compute-0-9
-compute-0-7 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-8, compute-0-9
-compute-0-8 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-9
-compute-0-9 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8
+compute-0-0 - Peers : compute-0-1, compute-0-2, compute-0-3, compute-0-10, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-1 - Peers : compute-0-0, compute-0-2, compute-0-3, compute-0-10, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-2 - Peers : compute-0-0, compute-0-1, compute-0-3, compute-0-10, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-3 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-10, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-10 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-5 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-10, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-6 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-10, compute-0-5, compute-0-7, compute-0-8, compute-0-9
+compute-0-7 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-10, compute-0-5, compute-0-6, compute-0-8, compute-0-9
+compute-0-8 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-10, compute-0-5, compute-0-6, compute-0-7, compute-0-9
+compute-0-9 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-10, compute-0-5, compute-0-6, compute-0-7, compute-0-8
 
 Mesh configuration
 ------------------
 
-10 Nodes : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+10 Nodes : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-10, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
 
     compute-0-0 ------- compute-0-1 ------- compute-0-2
         |                   |                   |
         |                   |                   |
-    compute-0-3 ------- compute-0-4 ------- compute-0-5
+    compute-0-3 ------- compute-0-10 ------- compute-0-5
         |                   |                   |
         |                   |                   |
     compute-0-6 ------- compute-0-7 ------- compute-0-8
@@ -68,22 +68,22 @@ Mesh configuration
     compute-0-9
 
 compute-0-0 - Peers : compute-0-1, compute-0-3
-compute-0-1 - Peers : compute-0-0, compute-0-4, compute-0-2
+compute-0-1 - Peers : compute-0-0, compute-0-10, compute-0-2
 compute-0-2 - Peers : compute-0-1, compute-0-5
-compute-0-3 - Peers : compute-0-0, compute-0-4, compute-0-6
-compute-0-4 - Peers : compute-0-1, compute-0-5, compute-0-7, compute-0-3
-compute-0-5 - Peers : compute-0-2, compute-0-4, compute-0-8
+compute-0-3 - Peers : compute-0-0, compute-0-10, compute-0-6
+compute-0-10 - Peers : compute-0-1, compute-0-5, compute-0-7, compute-0-3
+compute-0-5 - Peers : compute-0-2, compute-0-10, compute-0-8
 compute-0-6 - Peers : compute-0-3, compute-0-7, compute-0-9
-compute-0-7 - Peers : compute-0-6, compute-0-4, compute-0-8
+compute-0-7 - Peers : compute-0-6, compute-0-10, compute-0-8
 compute-0-8 - Peers : compute-0-5, compute-0-7 
 compute-0-9 - Peers : compute-0-6 
 
-12 Nodes : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9, compute-0-10, compute-0-11
+12 Nodes : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-10, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9, compute-0-10, compute-0-11
 
     compute-0-0 ------- compute-0-1 ------- compute-0-2
         |                   |                   |
         |                   |                   |
-    compute-0-3 ------- compute-0-4 ------- compute-0-5
+    compute-0-3 ------- compute-0-12 ------- compute-0-5
         |                   |                   |
         |                   |                   |
     compute-0-6 ------- compute-0-7 ------- compute-0-8
@@ -92,13 +92,13 @@ compute-0-9 - Peers : compute-0-6
     compute-0-9 ------- compute-0-10 ------ compute-0-11
 
 compute-0-0 - Peers : compute-0-1, compute-0-3
-compute-0-1 - Peers : compute-0-0, compute-0-4, compute-0-2
+compute-0-1 - Peers : compute-0-0, compute-0-12, compute-0-2
 compute-0-2 - Peers : compute-0-1, compute-0-5
-compute-0-3 - Peers : compute-0-0, compute-0-4, compute-0-6
-compute-0-4 - Peers : compute-0-1, compute-0-5, compute-0-7, compute-0-3
-compute-0-5 - Peers : compute-0-2, compute-0-4, compute-0-8
+compute-0-3 - Peers : compute-0-0, compute-0-12, compute-0-6
+compute-0-12 - Peers : compute-0-1, compute-0-5, compute-0-7, compute-0-3
+compute-0-5 - Peers : compute-0-2, compute-0-12, compute-0-8
 compute-0-6 - Peers : compute-0-3, compute-0-7, compute-0-9
-compute-0-7 - Peers : compute-0-6, compute-0-4, compute-0-8, compute-0-10
+compute-0-7 - Peers : compute-0-6, compute-0-12, compute-0-8, compute-0-10
 compute-0-8 - Peers : compute-0-5, compute-0-7, compute-0-11
 compute-0-9 - Peers : compute-0-6, compute-0-10 
 compute-0-10 - Peers : compute-0-9, compute-0-7, compute-0-11
