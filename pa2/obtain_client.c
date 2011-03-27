@@ -205,7 +205,7 @@ void usage(char *name) {
     printf(" Usage : %s [-f] <file-name> <index-server-name> <dest-dir>\n\n", name);
     printf(" -f : With this option it fetches the file from the first available peer\n");
     printf(" file-name : name of the file that you are searching \n");
-    printf(" inder-server-name : Hostname of the index server\n");
+    printf(" hostname : Local hostname of the machine\n");
     printf(" dest-dir : Destination directory where you want to copy the fetched file\n");
 }
 
