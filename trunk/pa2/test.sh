@@ -13,7 +13,7 @@
 while [ $i -lt 200 ]
 do
 
-    ./obtain_client -f $1 $2 $3
+    ./obtain_client -f $1 $2 
     i=$i+1
 done
 
