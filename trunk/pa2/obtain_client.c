@@ -10,6 +10,8 @@
 #include <errno.h>
 #include "obtain.h"
 
+char localhostname[MAXHOSTNAME + 2];
+
 /*
  * This routine queries the index-server to find the list of peers serving the
  * file rec->fname.
@@ -202,10 +204,9 @@ int get_file(char *host, char *name, char *dest_dir)
  * usage
  */
 void usage(char *name) {
-    printf(" Usage : %s [-f] <file-name> <index-server-name> <dest-dir>\n\n", name);
+    printf(" Usage : %s [-f] <file-name> <dest-dir>\n\n", name);
     printf(" -f : With this option it fetches the file from the first available peer\n");
     printf(" file-name : name of the file that you are searching \n");
-    printf(" hostname : Local hostname of the machine\n");
     printf(" dest-dir : Destination directory where you want to copy the fetched file\n");
 }
 
@@ -215,7 +216,7 @@ int main(int argc, char *argv[])
     int fopt = 0;
     int opt;
 
-    if (argc < 4 || argc > 5) {
+    if (argc < 3 || argc > 4) {
         usage(argv[0]);
         return (1);
     }
@@ -231,13 +232,18 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (strlen(argv[fopt + 1]) == 0 || strlen(argv[fopt + 2]) == 0 || strlen(argv[fopt + 3]) == 0) {
+    if (strlen(argv[fopt + 1]) == 0 || strlen(argv[fopt + 2]) == 0 ) {
         usage(argv[0]);
         return (1);
     }
 
+    if ( gethostname(localhostname, sizeof(localhostname)) != 0) {
+        printf("Unable to get the local hostname ! errno = %d\n", errno);
+        return (1);
+    }
 
-    result = query_and_fetch(argv[fopt + 1], argv[fopt + 2], argv[fopt + 3], fopt);
+
+    result = query_and_fetch(argv[fopt + 1], localhostname, argv[fopt + 2], fopt);
 
     return 0;
 }
