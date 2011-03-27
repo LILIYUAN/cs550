@@ -5,31 +5,13 @@ Tar file Contents :
 
 Steps to compile the code :
 ---------------------------
-- Executable name : ./ind_server
-- We have script "makefile.sh". This script invokes the make for both index
-  server and obtain server.
-- This should build the following executables :
-    - ind_server : The index server
+- Executable name : obtain_client obtain_server 
+- We have a Makefile script "Makefile.obtain". This script invokes the make for both 
+  obtain server and obtain client
     - obtain_server : The peer server which should started by each peer to share
       the files from a directory
     - obtain_client : The peer client which the user should use to fetch the
       files.
-
-Steps to start the index server :
----------------------------------
-- Pick a machine where you want to run the index server (eg.
-  csrocks.cs.iit.edu).
-- NOTE : The index server uses a directory "/tmp/indsvr" for maintaining the
-  index files. Hence please ensure that :
-    - either the directory "/tmp/indsvr" does not exist.
-    - or make sure that it is writable.
-- Start the server by executing the ind_server binary :
--- snip --
-sbagewad@csrocks:~/trunk/pa1/p-to-p$ ./ind_server
--- snip --
-
-  This should start the index server which is ready to register new files and
-  serve query() requests.
 
 Steps to start the peer server :
 --------------------------------
@@ -60,7 +42,7 @@ Steps to start the peer server :
      Usage : ./obtain_server <hostname> <index-server-name> <share-dir>
 
      hostname : Local hostname of the machine
-     index-server-name : Hostname of the index server
+     peer-list-file : file containing the Hostnames of the peers
      share-dir : Directory that you would like to share
     -- snip --
 
@@ -68,7 +50,7 @@ Steps to start the peer server :
   index server running on "csrocks" :
 
     -- snip --
-    $ ./obtain_server compute-0-0 csrocks ./share1
+    $ ./obtain_server compute-0-0 relay-test/compute-0-0.peers data/share0
     Registering file : file-2k to the index-server : csrocks
     Registering file : file-10k to the index-server : csrocks
     Registering file : file-1k to the index-server : csrocks
@@ -88,8 +70,8 @@ Steps to start the peer server :
 
     NOTE :  1> The peer servers can be started on multiple servers.
                 For example we tried starting the peer servers on :
-                    - compute-0-0 sharing "./share1"
-                    - compute-0-1 sharing "./share3"
+                    - compute-0-0 relay-test/compute-0-0.peers "./share1"
+                    - compute-0-1 relay-test/compute-0-3.peers "./share3"
                     
             2> We cannot start multiple peer servers on the same node as they all
             use the same RPC program number and hence would overwrite the
@@ -103,18 +85,18 @@ Steps to use the peer client :
 - The peer client (obtain_client) takes the following arguments :
     -- snip --
     $ ./obtain_client
-     Usage : ./obtain_client [-f] <file-name> <index-server-name> <dest-dir>
+     Usage : ./obtain_client [-f] <file-name> <localhost-name> <dest-dir>
 
      -f : With this option it fetches the file from the first available peer
      file-name : name of the file that you are searching 
-     inder-server-name : Hostname of the index server
+     localhost-name : Hostname of the local machine from where the search will start
      dest-dir : Destination directory where you want to copy the fetched file
     -- snip --
 
 - Example of fetching a file with interactive option :
   Assuming :
     - we are looking for the file "file-1k". 
-    - the index server is running on "csrocks"
+    - the local host name is "csrocks"
     - we want to save the fetched file in "/tmp"
     Here is how the client is executed :
 
