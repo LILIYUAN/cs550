@@ -17,7 +17,7 @@ extern "C" {
 #define SIZE 4096
 #define MAXNAME 128
 #define MAXCOUNT 16
-#define MAXHOSTNAME 18
+#define MAXHOSTNAME 32 
 #define BUFSIZE 512
 
 typedef char *filename;
