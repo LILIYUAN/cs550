@@ -10,7 +10,7 @@
 
  i=0
 
-while [ $i -lt 1000 ]
+while [ $i -lt 200 ]
 do
 
     ./obtain_client -f $1 $2 $3
