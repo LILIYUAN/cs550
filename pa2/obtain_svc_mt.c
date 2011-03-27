@@ -15,7 +15,7 @@
 
 char dir[MAXPATHLEN];
 char *sharedir;
-char localhost[MAXHOSTNAME +2];
+char localhost[MAXHOSTNAME * 2];
 char *localhostname = localhost;
 
 peers_t peers;
