@@ -1,0 +1,87 @@
+Created the client
+searching(file-1k) 
+Time taken by index server = 0 secs
+Total number of peers serving file-1k = 1
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+Time taken to fetch the file = 0 secs
+Created the client
+searching(file-1k) 
+Time taken by index server = 0 secs
+Total number of peers serving file-1k = 2
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+	1 : compute-0-3.local
+Time taken to fetch the file = 0 secs
+Created the client
+searching(file-1k) 
+Time taken by index server = 5 secs
+Total number of peers serving file-1k = 2
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+	1 : compute-0-3.local
+Time taken to fetch the file = 0 secs
+Created the client
+searching(file-1k) 
+Time taken by index server = 5 secs
+Total number of peers serving file-1k = 2
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+	1 : compute-0-3.local
+Time taken to fetch the file = 0 secs
+Created the client
+searching(file-1k) 
+Time taken by index server = 5 secs
+Total number of peers serving file-1k = 2
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+	1 : compute-0-3.local
+Time taken to fetch the file = 0 secs
+Created the client
+searching(file-1k) 
+Time taken by index server = 5 secs
+Total number of peers serving file-1k = 2
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+	1 : compute-0-3.local
+Time taken to fetch the file = 0 secs
+Created the client
+searching(file-1k) 
+Time taken by index server = 5 secs
+Total number of peers serving file-1k = 2
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+	1 : compute-0-3.local
+Time taken to fetch the file = 0 secs
+Created the client
+searching(file-1k) 
+Time taken by index server = 5 secs
+Total number of peers serving file-1k = 2
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+	1 : compute-0-3.local
+Time taken to fetch the file = 0 secs
+Created the client
+searching(file-1k) 
+Time taken by index server = 5 secs
+Total number of peers serving file-1k = 2
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+	1 : compute-0-3.local
+Time taken to fetch the file = 0 secs
+Created the client
+searching(file-1k) 
+Time taken by index server = 5 secs
+Total number of peers serving file-1k = 2
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+	1 : compute-0-3.local
+Time taken to fetch the file = 0 secs
+Created the client
+searching(file-1k) 
+Time taken by index server = 5 secs
+Total number of peers serving file-1k = 2
+Peers service  compute-0-1.local are :
+	0 : compute-0-1.local
+	1 : compute-0-3.local
+Time taken to fetch the file = 0 secs
