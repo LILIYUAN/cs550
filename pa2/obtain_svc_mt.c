@@ -15,7 +15,8 @@
 
 char dir[MAXPATHLEN];
 char *sharedir;
-char localhostname[MAXHOSTNAME + 2];
+char localhost[MAXHOSTNAME +2];
+char *localhostname = localhost;
 
 peers_t peers;
 pending_req_t pending;
