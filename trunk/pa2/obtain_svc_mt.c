@@ -405,7 +405,7 @@ main (int argc, char **argv)
         return (1);
     }
 
-	if ( gethostname(localhostname, sizeof(char) * MAXHOSTNAME) != 0) {
+	if ( gethostname(localhostname, sizeof(localhost)) != 0) {
         printf("Unable to get the local hostname ! errno = %d\n", errno);
         return (1);
     }
