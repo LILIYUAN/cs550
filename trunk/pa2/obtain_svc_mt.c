@@ -15,7 +15,7 @@
 
 char dir[MAXPATHLEN];
 char *sharedir;
-char *localhostname;
+char localhostname[MAXHOSTNAME + 2];
 
 peers_t peers;
 pending_req_t pending;
@@ -380,8 +380,7 @@ parse_peers(char *peerfile)
  */
 void
 usage(char *name) {
-    printf(" Usage : %s <hostname> <peer-list-file> <share-dir>\n\n", name);
-    printf(" hostname : Local hostname of the machine\n");
+    printf(" Usage : %s <peer-list-file> <share-dir>\n\n", name);
     printf(" peer-list-file : file containing the Hostnames of the peers\n");
     printf(" share-dir : Directory that you would like to share\n\n");
 }
@@ -400,20 +399,27 @@ main (int argc, char **argv)
     pthread_t reaper;
 	
 
-    if (argc != 4) {
+    if (argc != 3) {
         usage(argv[0]);
         return (1);
     }
 
-	localhostname = argv[1];
-	peerfile = argv[2];
-	sharedir = argv[3];
+	if ( gethostname(localhostname, sizeof(localhostname)) != 0) {
+        printf("Unable to get the local hostname ! errno = %d\n", errno);
+        return (1);
+    }
 
-    if (strlen(localhostname) == 0 || strlen(peerfile) == 0 || strlen(sharedir) == 0) {
+	peerfile = argv[1];
+	sharedir = argv[2];
+
+    if (strlen(peerfile) == 0 || strlen(sharedir) == 0) {
         usage(argv[0]);
         return (1);
     }
 
+#ifdef DEBUG
+    printf("localhostname : %s\n", localhostname);
+#endif
 
 	if (parse_peers(peerfile) != 0) {
 		printf("Failed to parse the peers file. Quitting !\n");
