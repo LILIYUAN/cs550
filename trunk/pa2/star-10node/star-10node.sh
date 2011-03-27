@@ -10,7 +10,7 @@ ssh compute-0-2 "$BASEDIR/obtain_server compute-0-2 $BASEDIR/star-10node/compute
 ssh compute-0-3 "rm -rf /tmp/indsvr"
 ssh compute-0-3 "$BASEDIR/obtain_server compute-0-3 $BASEDIR/star-10node/compute-0-3.peers $BASEDIR/data/share3" &
 ssh compute-0-10 "rm -rf /tmp/indsvr"
-ssh compute-0-10 "$BASEDIR/obtain_server compute-0-10 $BASEDIR/star-10node/compute-0-10.peers $BASEDIR/data/share4" &
+ssh compute-0-10 "$BASEDIR/obtain_server compute-0-10 $BASEDIR/star-10node/compute-0-10.peers $BASEDIR/data/share10" &
 ssh compute-0-5 "rm -rf /tmp/indsvr"
 ssh compute-0-5 "$BASEDIR/obtain_server compute-0-5 $BASEDIR/star-10node/compute-0-5.peers $BASEDIR/data/share5" &
 ssh compute-0-6 "rm -rf /tmp/indsvr"
