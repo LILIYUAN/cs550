@@ -39,6 +39,11 @@ Relay Test :
    should be quicker
  - Try to fetch a file not shared by any peers.
  - Search for a file served by more than 1 peer.
+ 
+ - Run the test for 200 times with and with out removing the cached data
+ - Run the test for 200 times by deleting the cached data
+
+ - Multiple client try to connect and search for a same file and analyze
 
 
 Star-config :
@@ -77,6 +82,11 @@ compute-0-9 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, comput
    should be quicker
  - Try to fetch a file not shared by any peers.
  - Search for a file served by more than 1 peer.
+
+ - Run the test for 200 times with and with out removing the cached data
+ - Run the test for 200 times by deleting the cached data
+
+ - Multiple client try to connect and search for a same file and analyze
 
 
 Mesh configuration
@@ -140,4 +150,8 @@ compute-0-11 - Peers : compute-0-8, compute-0-10
  - Search for a file served by more than 1 peer.
 
 
+ - Run the test for 200 times with and with out removing the cached data
+ - Run the test for 200 times by deleting the cached data
+
+ - Multiple client try to connect and search for a same file and analyze
 
