@@ -9,8 +9,8 @@ ssh compute-0-2"rm -rf /tmp/indsvr"
 ssh compute-0-2 "$BASEDIR/obtain_server compute-0-2 $BASEDIR/mesh-10node/compute-0-2.peers $BASEDIR/data/share2" &
 ssh compute-0-3 "rm -rf /tmp/indsvr"
 ssh compute-0-3 "$BASEDIR/obtain_server compute-0-3 $BASEDIR/mesh-10node/compute-0-3.peers $BASEDIR/data/share3" &
-ssh compute-0-10 "rm -rf /tmp/indsvr"
-ssh compute-0-10 "$BASEDIR/obtain_server compute-0-10 $BASEDIR/mesh-10node/compute-0-10.peers $BASEDIR/data/share10" &
+ssh compute-0-12 "rm -rf /tmp/indsvr"
+ssh compute-0-12 "$BASEDIR/obtain_server compute-0-10 $BASEDIR/mesh-10node/compute-0-12.peers $BASEDIR/data/share12" &
 ssh compute-0-5 "rm -rf /tmp/indsvr"
 ssh compute-0-5 "$BASEDIR/obtain_server compute-0-5 $BASEDIR/mesh-10node/compute-0-5.peers $BASEDIR/data/share5" &
 ssh compute-0-6 "rm -rf /tmp/indsvr"
@@ -21,3 +21,7 @@ ssh compute-0-8 "rm -rf /tmp/indsvr"
 ssh compute-0-8 "$BASEDIR/obtain_server compute-0-8 $BASEDIR/mesh-10node/compute-0-8.peers $BASEDIR/data/share8" &
 ssh compute-0-9 "rm -rf /tmp/indsvr"
 ssh compute-0-9 "$BASEDIR/obtain_server compute-0-9 $BASEDIR/mesh-10node/compute-0-9.peers $BASEDIR/data/share9" &
+ssh compute-0-10 "rm -rf /tmp/indsvr"
+ssh compute-0-10 "$BASEDIR/obtain_server compute-0-10 $BASEDIR/mesh-10node/compute-0-10.peers $BASEDIR/data/share10" &
+ssh compute-0-11 "rm -rf /tmp/indsvr"
+ssh compute-0-11 "$BASEDIR/obtain_server compute-0-11 $BASEDIR/mesh-10node/compute-0-11.peers $BASEDIR/data/share11" &
