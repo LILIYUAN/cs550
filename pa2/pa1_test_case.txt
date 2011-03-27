@@ -3,16 +3,10 @@ Obtain server exe
  - start obtain server with less than 3 arguments to it
  - start obtain server with a share dir which does not exist
  - start obtain server with a share dir with few files in it
- - Make some addition / deletion of files in share dir and start the server again [  re registiring ] 
- - start obtian server with IP of the index server
  - start obtain server with IP of the localhost
- - start obtain server with the DNS of the index server
+ - start obtain server with a non existent peer file list 
  - start obtain server with the DNS of the localhost
- - start obtain server when index server is down 
-
-Index server exe
- - start index server 
- - look for outputs on index server - when some one registers and queries 
+ - start obtain server with a valid peer file list
 
 Obtain client exe
  - start obtain client with no arguments
@@ -20,9 +14,6 @@ Obtain client exe
  - start obtain client with 3 arguments [ including -f ] 
  - start obtain client with -x as an argument
  - start obtain client with 3 arguments 
- - start obtian client when index server is down
- - Query for a file which is not indexed by any peer 
- - Query for a file which is not indexed by any peer with -f
  - Query for a file which is registred by more than 2 peers
    - Enter a invalid peer no
    - Enter a peer who is down
@@ -34,3 +25,119 @@ Obtain client exe
 MT 
  - a huge 30k file and multiple peers trying to download from a single peer
  
+
+Relay Test :
+------------
+ - Peers should be in linear fashion / straight line. The required file ranging from 
+   1k to 10k are are placed on the end of the line. 
+
+   Ex: compute-0-0 ----- compute-0-1 ---- compute-0-2 ---- compute-0-3
+   All the files that we search are served by compute-0-3
+ - Start the client and search for the files ranging from 1k to 10k and download / fetch
+   them. 
+ - Try to search for these files again. Since the index gets cached, the index result obtained 
+   should be quicker
+ - Try to fetch a file not shared by any peers.
+ - Search for a file served by more than 1 peer.
+
+
+Star-config :
+-------------
+2 Nodes : compute-0-0, compute-0-1
+
+compute-0-0 - Peers: compute-0-1
+compute-0-1 - Peers: compute-0-0
+
+4 Nodes :
+
+compute-0-0 - Peers: compute-0-1, compute-0-2, compute-0-3
+compute-0-1 - Peers: compute-0-0, compute-0-2, compute-0-3
+compute-0-2 - Peers: compute-0-0, compute-0-1, compute-0-3
+compute-0-3 - Peers: compute-0-0, compute-0-1, compute-0-2
+
+
+10 Nodes : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+
+
+compute-0-0 - Peers : compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-1 - Peers : compute-0-0, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-2 - Peers : compute-0-0, compute-0-1, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-3 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-4 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-5 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+compute-0-6 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-7, compute-0-8, compute-0-9
+compute-0-7 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-8, compute-0-9
+compute-0-8 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-9
+compute-0-9 - Peers : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8
+
+
+ - Start the client and search for the files ranging from 1k to 10k and download / fetch
+   them. 
+ - Try to search for these files again. Since the index gets cached, the index result obtained 
+   should be quicker
+ - Try to fetch a file not shared by any peers.
+ - Search for a file served by more than 1 peer.
+
+
+Mesh configuration
+------------------
+
+10 Nodes : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9
+
+    compute-0-0 ------- compute-0-1 ------- compute-0-2
+        |                   |                   |
+        |                   |                   |
+    compute-0-3 ------- compute-0-4 ------- compute-0-5
+        |                   |                   |
+        |                   |                   |
+    compute-0-6 ------- compute-0-7 ------- compute-0-8
+        |
+        |
+    compute-0-9
+
+compute-0-0 - Peers : compute-0-1, compute-0-3
+compute-0-1 - Peers : compute-0-0, compute-0-4, compute-0-2
+compute-0-2 - Peers : compute-0-1, compute-0-5
+compute-0-3 - Peers : compute-0-0, compute-0-4, compute-0-6
+compute-0-4 - Peers : compute-0-1, compute-0-5, compute-0-7, compute-0-3
+compute-0-5 - Peers : compute-0-2, compute-0-4, compute-0-8
+compute-0-6 - Peers : compute-0-3, compute-0-7, compute-0-9
+compute-0-7 - Peers : compute-0-6, compute-0-4, compute-0-8
+compute-0-8 - Peers : compute-0-5, compute-0-7
+compute-0-9 - Peers : compute-0-6
+
+12 Nodes : compute-0-0, compute-0-1, compute-0-2, compute-0-3, compute-0-4, compute-0-5, compute-0-6, compute-0-7, compute-0-8, compute-0-9, compute-0-10, compute-0-11
+
+    compute-0-0 ------- compute-0-1 ------- compute-0-2
+        |                   |                   |
+        |                   |                   |
+    compute-0-3 ------- compute-0-4 ------- compute-0-5
+        |                   |                   |
+        |                   |                   |
+    compute-0-6 ------- compute-0-7 ------- compute-0-8
+        |                   |                   |
+        |                   |                   |
+    compute-0-9 ------- compute-0-10 ------ compute-0-11
+
+compute-0-0 - Peers : compute-0-1, compute-0-3
+compute-0-1 - Peers : compute-0-0, compute-0-4, compute-0-2
+compute-0-2 - Peers : compute-0-1, compute-0-5
+compute-0-3 - Peers : compute-0-0, compute-0-4, compute-0-6
+compute-0-4 - Peers : compute-0-1, compute-0-5, compute-0-7, compute-0-3
+compute-0-5 - Peers : compute-0-2, compute-0-4, compute-0-8
+compute-0-6 - Peers : compute-0-3, compute-0-7, compute-0-9
+compute-0-7 - Peers : compute-0-6, compute-0-4, compute-0-8, compute-0-10
+compute-0-8 - Peers : compute-0-5, compute-0-7, compute-0-11
+compute-0-9 - Peers : compute-0-6, compute-0-10
+compute-0-10 - Peers : compute-0-9, compute-0-7, compute-0-11
+compute-0-11 - Peers : compute-0-8, compute-0-10
+
+ - Start the client and search for the files ranging from 1k to 10k and download / fetch
+   them. 
+ - Try to search for these files again. Since the index gets cached, the index result obtained 
+   should be quicker
+ - Try to fetch a file not shared by any peers.
+ - Search for a file served by more than 1 peer.
+
+
+
