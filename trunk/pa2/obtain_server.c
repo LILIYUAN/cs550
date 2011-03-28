@@ -468,6 +468,9 @@ b_query_propagate(b_query_req *argp, int flag)
              * Check if we have already an entry for this peer cached.
              * If yes, continue to the next peer.
              */
+#ifdef DEBUG
+            printf("b_query_propagate: Looking for %s in my_cache\n", peers.peer[i]);
+#endif
             if (peer_in_cache(&my_cache, peers.peer[i])) {
 #ifdef DEBUG
                 printf("b_query_propagate: peer_in_cache(%s) return TRUE\n", peers.peer[i]);
