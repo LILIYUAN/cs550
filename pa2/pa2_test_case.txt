@@ -1,3 +1,5 @@
+Generic Test Cases :
+-------------------
 Obtain server exe 
  - start obtain server with no arguments
  - start obtain server with less than 3 arguments to it
