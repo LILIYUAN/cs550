@@ -8,8 +8,10 @@ Steps to compile the code :
 - Executable name : obtain_client obtain_server 
 - We have a Makefile script "Makefile.obtain". This script invokes the make for both 
   obtain server and obtain client
+
     - obtain_server : The peer server which should started by each peer to share
-      the files from a directory
+      the files from a directory and to register its trusted peers.
+
     - obtain_client : The peer client which the user should use to fetch the
       files.
 
@@ -39,18 +41,26 @@ Steps to start the peer server :
 - The peer sever takes the following arguments :
     -- snip --
     $ ./obtain_server
-     Usage : ./obtain_server <hostname> <index-server-name> <share-dir>
+     Usage : ./obtain_server <peer-list-file> <share-dir>
 
-     hostname : Local hostname of the machine
      peer-list-file : file containing the Hostnames of the peers
      share-dir : Directory that you would like to share
     -- snip --
+
+  Here is an example of peer-list-file. It contains the list of peers that the 
+  the node trusts.
+    --snip--
+    $ cat star-4node/compute-0-3.peers
+    compute-0-0.local
+    compute-0-1.local
+    compute-0-2.local
+    --snip--
 
   Here is an example of starting the peer server on compute-0-0.cs.iit.edu with
   index server running on "csrocks" :
 
     -- snip --
-    $ ./obtain_server compute-0-0 relay-test/compute-0-0.peers data/share0
+    $ ./obtain_server  relay-test/compute-0-0.peers data/share0
     Registering file : file-2k to the index-server : csrocks
     Registering file : file-10k to the index-server : csrocks
     Registering file : file-1k to the index-server : csrocks
@@ -85,30 +95,28 @@ Steps to use the peer client :
 - The peer client (obtain_client) takes the following arguments :
     -- snip --
     $ ./obtain_client
-     Usage : ./obtain_client [-f] <file-name> <localhost-name> <dest-dir>
+     Usage : ./obtain_client [-f] <file-name> <dest-dir>
 
      -f : With this option it fetches the file from the first available peer
      file-name : name of the file that you are searching 
-     localhost-name : Hostname of the local machine from where the search will start
      dest-dir : Destination directory where you want to copy the fetched file
     -- snip --
 
 - Example of fetching a file with interactive option :
   Assuming :
     - we are looking for the file "file-1k". 
-    - the local host name is "csrocks"
     - we want to save the fetched file in "/tmp"
     Here is how the client is executed :
 
     -- snip --
-    $ ./obtain_client file-1k csrocks /tmp
+    $ ./obtain_client file-1k /tmp
     Created the client
     searching(file-1k) 
     Time taken by index server = 0 secs
     Total number of peers serving file-1k = 2
     Peers service  192.168.0.102 are :
-        0 : compute-0-0 
-        1 : compute-0-1
+        0 : compute-0-0.local
+        1 : compute-0-1.local
     Pick the peer from which you want to fetch from : 1
     obtain_1_svc() : Served 1053 bytes from ./share1/file-1k at offset : 0
     Time taken to fetch the file = 0 secs
@@ -130,14 +138,14 @@ Steps to use the peer client :
   pick the first listed peer and then fetches it from that peer.
 
     -- snip --
-    $ ./obtain_client -f file-1k csrocks /tmp
+    $ ./obtain_client -f file-1k /tmp
     Created the client
     searching(file-1k) 
     Time taken by index server = 0 secs
     Total number of peers serving file-1k = 2
     Peers service  192.168.0.102 are :
-        0 : compute-0-0
-        1 : compute-0-1
+        0 : compute-0-0.local
+        1 : compute-0-1.local
     Time taken to fetch the file = 0 secs
     -- snip --
 
@@ -146,14 +154,14 @@ Steps to use the peer client :
   server which is serving it
 
     -- snip --
-    $ ./obtain_client -f file-1k csrocks /tmp
+    $ ./obtain_client -f file-1k /tmp
     Created the client
     searching(file-1k) 
     Time taken by index server = 0 secs
     Total number of peers serving file-1k = 2
     Peers service  192.168.0.128 are :
-        0 : compute-0-0
-        1 : compute-0-1 
+        0 : compute-0-0.local
+        1 : compute-0-1.local 
     compute-0-0 :  RPC: Remote system error - Connection refused
     Failed to fetch the file from host:compute-0-0                  <-------******* Retry in action
     Trying next server                                              <-------*******
