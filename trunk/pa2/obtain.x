@@ -1,7 +1,7 @@
 const SIZE = 4096;
 const MAXNAME = 128;
 const MAXCOUNT = 16;
-const MAXHOSTNAME = 16;
+const MAXHOSTNAME = 32;
 const BUFSIZE = 512; /* MAXHOSTNAME * MAXCOUNT */
 
 /*
