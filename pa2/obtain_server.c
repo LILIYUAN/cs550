@@ -467,7 +467,14 @@ b_query_propagate(b_query_req *argp, int flag)
             /*
              * Check if we have already an entry for this peer cached.
              * If yes, continue to the next peer.
+             * Also, Skip the uphost from whom we received this query.
              */
+            if (strcmp(peers.peer[i], argp->uphost) == 0) {
+#ifdef DEBUG
+                printf("b_query_propagate: Skipping the uphost %s\n", argp->uphost);
+#endif
+                continue;
+            }
 #ifdef DEBUG
             printf("b_query_propagate: Looking for %s in my_cache\n", peers.peer[i]);
 #endif
