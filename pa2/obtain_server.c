@@ -13,6 +13,8 @@
 #define UNLOCKED    0
 #define LOCKED      1
 
+#define WAITTIME    1
+
 extern peers_t          peers;
 extern pending_req_t    pending;
 extern char             *localhostname;
@@ -174,7 +176,9 @@ obtain_1_svc(request *argp, readfile_res *result, struct svc_req *rqstp)
     result->error = 0;
     fclose(file);
 
+#ifdef DEBUG
     printf("obtain_1_svc() : Served %d bytes from %s at offset : %d\n", bytes, filepath, argp->seek_bytes);
+#endif
     return (TRUE);
 
 }
@@ -527,6 +531,13 @@ b_query_propagate(b_query_req *argp, int flag)
     }
 
     /*
+     * Free up memory from my_cache.
+     */
+    for (i = 0; i < my_cache.count; i++) {
+        free(my_cache.peer[i]);
+    }
+
+    /*
      * If the caller does not wanted the node locked.
      */
     if (flag == UNLOCKED) {
@@ -583,13 +594,17 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     if (node) { 
         if (node->sent) {
             /*
-             * We now wait for a max of 5 seconds on the CV (allhome_cv).
+             * We now wait for a max of WAITTIME (1 second) on the CV (allhome_cv).
              * And the b_hitquery_reply() signals the CV when all the
              * peers that we had queried have reponded back. However, if no one
-             * responds back we bail out in 5 secs.
+             * responds back we bail out in 1 secs.
+             *
+             * NOTE : This timeout may be short for large number of nodes.
+             * However, for the current set up of upto to 12 nodes this is
+             * reasonable.
              */
             gettimeofday(&now, NULL);
-            timeout.tv_sec = now.tv_sec + 5;
+            timeout.tv_sec = now.tv_sec + WAITTIME;
             timeout.tv_nsec = now.tv_usec *1000;
 
             pthread_cond_timedwait(&node->allhome_cv, &node->node_lock, &timeout);
@@ -699,6 +714,9 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
     int ret;
     int broadcast = 0;
 
+#ifdef DEBUG
+    printf("b_hitquery_1_svc() : Received b_hitquery for %s\n", argp->fname);
+#endif
     /*
      * Search for the msg_id in the pending queue.
      */
@@ -810,7 +828,7 @@ reaper_thread(void *unused)
         /*
          * Build the delete list.
          */
-        while (pending.head && (ts - p->ts) > TIMEOUT) {
+        while (pending.head && (ts - pending.head->ts) > TIMEOUT) {
             p = pending.head;
             pending.head = pending.head->next;
 
@@ -818,7 +836,7 @@ reaper_thread(void *unused)
              * If this is the last node make sure the tail of updated as well.
              */
             if (pending.tail == p){
-                pending.tail = pending.head->next;
+                pending.tail = pending.head;
             }
 
             p->next = NULL;
