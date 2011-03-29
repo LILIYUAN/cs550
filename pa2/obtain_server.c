@@ -157,7 +157,7 @@ obtain_1_svc(request *argp, readfile_res *result, struct svc_req *rqstp)
     char filepath[MAXPATHLEN];
 
 #ifdef DEBUG
-    printf("obtain_1_svc() : Entered : filepath : %s/%s\n", sharedir, argp->name);
+    printf("obtain_1_svc() %s  : Entered : filepath : %s/%s\n", localhostname, sharedir, argp->name);
 #endif
 
     sprintf(filepath, "%s/%s", sharedir, argp->name);
@@ -190,7 +190,7 @@ build_peers_from_cache(char *fname, peers_t *resp)
     char host[MAXHOSTNAME+2];
 
 #ifdef DEBUG
-    printf("build_peers_from_cache : Processing query for file : %s\n", fname);
+    printf("build_peers_from_cache %s : Processing query for file : %s\n", localhostname, fname);
 #endif
 
     resp->count = 0;
@@ -544,7 +544,7 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     struct timespec timeout;
 
 #ifdef DEBUG
-    printf("search_1_svc() : Received request for file : %s\n", argp->fname);
+    printf("search_1_svc() %s  : Received request for file : %s\n", localhostname, argp->fname);
 #endif
 
     /*
