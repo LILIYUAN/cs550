@@ -34,4 +34,4 @@ typedef struct pending_req {
 #define MAXTTL  5
 #define SERVER_DIR "/tmp/indsvr/"
 
-#define DEBUG 0
+#define DEBUG 1 
