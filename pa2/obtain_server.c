@@ -400,7 +400,7 @@ b_query_propagate(b_query_req *argp, int flag)
     if (node) {
         pthread_mutex_unlock(&node->node_lock);
 #ifdef DEBUG
-        printf("b_query_propagate: This request for file %s is already processed\n", argp->fname);
+        printf("b_query_propagate: This request for file %s from %s is already processed\n", argp->fname, argp->uphost);
 #endif
         return (NULL);
     }
