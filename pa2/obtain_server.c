@@ -346,6 +346,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     }
 
     flock(fd, LOCK_UN);
+    fclose(fh);
 
     if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
         printf("Failed to set the timeout value to zero\n");
