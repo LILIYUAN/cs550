@@ -84,13 +84,12 @@ service_request(void *data )
     _xdr_result = tdata_p->_xdr_result;
 
 #ifdef DEBUG
-    printf("rq_proc = %d\n", (int)rqstp->rq_proc);
-    printf("Calling the service routine\n");
+    printf("Calling the service routine : rq_proc = %d\n", (int)rqstp->rq_proc);
 #endif
 
     retval = (bool_t) (*local)((char *)argument, (void *)result, rqstp);
 #ifdef DEBUG
-    printf("Returned from the service routine\n");
+    printf("Returned from the service routine : rq_proc = %d\n", (int)rqstp->rq_proc);
 #endif
 
     /*
