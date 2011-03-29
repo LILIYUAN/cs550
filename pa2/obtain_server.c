@@ -399,6 +399,9 @@ b_query_propagate(b_query_req *argp, int flag)
      */
     if (node) {
         pthread_mutex_unlock(&node->node_lock);
+#ifdef DEBUG
+        printf("b_query_propagate: This request for file %s is already processed\n", argp->fname);
+#endif
         return (NULL);
     }
 
@@ -490,7 +493,6 @@ b_query_propagate(b_query_req *argp, int flag)
              */
 #ifdef DEBUG
             printf("b_query_propagate(): Relaying query to %s for file %s\n", peers.peer[i], argp->fname);
-            printf("b_query_propagate(): Another printf\n");
 #endif
             if (!peers.clnt[i]) {
                 peers.clnt[i] = clnt_create(peers.peer[i], OBTAINPROG, OBTAINVER, "tcp");
