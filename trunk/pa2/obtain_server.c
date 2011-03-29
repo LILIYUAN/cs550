@@ -345,6 +345,8 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
         p += MAXHOSTNAME;
     }
 
+    flock(fd, LOCK_UN);
+
     if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
         printf("Failed to set the timeout value to zero\n");
         printf("Cannot make one-way RPC call :-(\n");
