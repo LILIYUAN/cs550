@@ -234,6 +234,7 @@ build_peers_from_cache(char *fname, peers_t *resp)
 
     flock(fd, LOCK_UN);
     fclose(fh);
+    close(fd);
 
 #ifdef DEBUG
     {
@@ -309,6 +310,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     if (clnt == NULL) {
         clnt_pcreateerror(uphost);
         fclose(fh);
+        close(fd);
         printf("send_local_cache(): Failed to contact hitquery to : %s\n", uphost);
         return FAILED;
     }
@@ -337,7 +339,6 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
             ret = b_hitquery_1(&res, &tmp, clnt);
             if (ret != RPC_SUCCESS && ret != RPC_TIMEDOUT) {
                 clnt_perror(clnt, "b_hitquery failed");
-                continue;
             }
             res.cnt = 0;
             flock(fd, LOCK_SH);
@@ -347,6 +348,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
 
     flock(fd, LOCK_UN);
     fclose(fh);
+    close(fd);
 
     if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
         printf("Failed to set the timeout value to zero\n");
@@ -502,6 +504,9 @@ b_query_propagate(b_query_req *argp, int flag)
             printf("b_query_propagate(): Relaying query to %s for file %s\n", peers.peer[i], argp->fname);
 #endif
             if (!peers.clnt[i]) {
+#ifdef DEBUG
+                printf("Creating clnt handle for peer[%s]\n", peers.peer[i]);
+#endif
                 peers.clnt[i] = clnt_create(peers.peer[i], OBTAINPROG, OBTAINVER, "tcp");
                 if (peers.clnt[i] == NULL) {
                     clnt_pcreateerror (peers.peer[i]);
@@ -647,6 +652,7 @@ send_result:
         if (result->count == MAXCOUNT) {
             flock(fd, LOCK_UN);
             fclose(fh);
+            close(fd);
             result->eof = 0;
             return retval;
         }
@@ -662,6 +668,7 @@ send_result:
 
     flock(fd, LOCK_UN);
     fclose(fh);
+    close(fd);
     result->eof = 1;
 #ifdef DEBUG
     printf("search_1_svc: Done. count = %d\n", result->count);
@@ -758,6 +765,8 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
         }
 
     }
+
+    clnt_destroy(clnt);
 
     /*
      * Record the results in the local cache (/tmp/indsvr/) so that we can reuse

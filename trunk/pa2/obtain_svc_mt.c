@@ -298,6 +298,7 @@ int add_peer (char *fname, char *peername)
 
     flock(fd, LOCK_UN);
     fclose(fh);
+    close(fd);
 
     return (0);
 }
