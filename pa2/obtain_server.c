@@ -766,7 +766,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
 
     }
 
-    clnt_destroy(clnt);
+    /*clnt_destroy(clnt);*/
 
     /*
      * Record the results in the local cache (/tmp/indsvr/) so that we can reuse
