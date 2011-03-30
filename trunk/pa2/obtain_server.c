@@ -499,35 +499,32 @@ b_query_propagate(b_query_req *argp, int flag)
              */
 #ifdef DEBUG
             printf("b_query_propagate(): Relaying query to %s for file %s\n", peers.peer[i], argp->fname);
+            printf("Creating clnt handle for peer[%s]\n", peers.peer[i]);
 #endif
-            if (!peers.clnt[i]) {
-#ifdef DEBUG
-                printf("Creating clnt handle for peer[%s]\n", peers.peer[i]);
-#endif
-                peers.clnt[i] = clnt_create(peers.peer[i], OBTAINPROG, OBTAINVER, "tcp");
-                if (peers.clnt[i] == NULL) {
-                    clnt_pcreateerror (peers.peer[i]);
-                    /*
-                     * Make a call only if we have a valid handle. We try to create
-                     * a handle above. Ideally that should succeed. But, if we
-                     * failed to create a client handle possible the peer is having
-                     * problems. Hence ignore it and continue.
-                     */
-                    continue;
-                }
+            clnt = clnt_create(peers.peer[i], OBTAINPROG, OBTAINVER, "tcp");
+            if (clnt == NULL) {
+                clnt_pcreateerror (peers.peer[i]);
+                /*
+                 * Make a call only if we have a valid handle. We try to create
+                 * a handle above. Ideally that should succeed. But, if we
+                 * failed to create a client handle possible the peer is having
+                 * problems. Hence ignore it and continue.
+                 */
+                continue;
             }
             /*
              * Now make a one-way RPC call to relay the message.
              */
-            if (clnt_control(peers.clnt[i], CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
+            if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
                 printf("Failed to set the timeout value to zero\n");
                 printf("Cannot make oneway RPC calls and hence behaviour could be unpredictable\n");
             }
-            stat = b_query_1(&req, &ret, peers.clnt[i]);
+            stat = b_query_1(&req, &ret, clnt);
             if (stat != RPC_SUCCESS && stat != RPC_TIMEDOUT) {
-                clnt_perror(peers.clnt[i], "b_query failed");
+                clnt_perror(clnt, "b_query failed");
                 continue;
             }
+            clnt_destroy(clnt);
 #ifdef DEBUG
             printf("Called the b_query(%s)\n", peers.peer[i]);
 #endif
