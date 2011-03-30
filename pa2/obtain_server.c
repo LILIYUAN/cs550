@@ -315,6 +315,11 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
         return FAILED;
     }
 
+    if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
+        printf("Failed to set the timeout value to zero\n");
+        printf("Cannot make one-way RPC call :-(\n");
+    }
+
     flock(fd, LOCK_SH);
 
     res.id = id;
@@ -332,10 +337,6 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
 #ifdef DEBUG
             printf("send_local_cache: Sending response to %s for file %s\n", uphost, res.fname);
 #endif
-            if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
-                printf("Failed to set the timeout value to zero\n");
-                printf("Cannot make one-way RPC call :-(\n");
-            }
             ret = b_hitquery_1(&res, &tmp, clnt);
             if (ret != RPC_SUCCESS && ret != RPC_TIMEDOUT) {
                 clnt_perror(clnt, "b_hitquery failed");
@@ -350,10 +351,6 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     fclose(fh);
     close(fd);
 
-    if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
-        printf("Failed to set the timeout value to zero\n");
-        printf("Cannot make one-way RPC call :-(\n");
-    }
     ret = b_hitquery_1(&res, &tmp, clnt);
     if (ret != RPC_SUCCESS && ret != RPC_TIMEDOUT) {
         clnt_perror(clnt, "b_hitquery failed");
