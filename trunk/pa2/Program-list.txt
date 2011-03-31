@@ -33,9 +33,29 @@ other scripts   : There are other scripts like star-4node.sh, mesh-12n0de.sh et 
                   which are used to start the obtain server on multiple nodes with
                   their corresponding config files and shared data.
 
-Test files :
-------------
-The following directoties contains test files ranging from 1Kbytes to 11Kbytes
+Configurations  and scripts to start different configurations :
+----------------------------------------------------------------
+We have written scripts to start servers in a particular configurations.
+The following directories have the necessary configs and scripts :
+mesh-10node :  A mesh config with 10 nodes
+mesh-12node : A mesh config with 12 nodes
+relay-test : A relay config (ie. a string of 4 nodes)
+star-4node : A star config of 4 nodes
+star-10node : A star config of 10 nodes
+
+In each of these directories we have the following :
+    - A script to start servers for that configuration.
+      Eg : mesh-10node/mesh-10node.sh : Starts all the peer servers for the 10 node mesh config.
+    - The peer-list file for every node in that config.
+      Eg :
+      $ cat mesh-10node/compute-0-0.peers
+      compute-0-1.local
+      compute-0-3.local
+      $
+
+Data files for all the nodes:
+-----------------------------
+The following directories contains test files ranging from 1Kbytes to 11Kbytes
 and a large PDF file (pa1.pdf) of size 512kbytes :
     - data/share1
     - data/share2
