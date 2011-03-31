@@ -87,7 +87,26 @@ Steps to start the peer server :
             use the same RPC program number and hence would overwrite the
             registration with rpcbind (ie. rpc port mapper).
 
+Steps to start the different configurations :
+---------------------------------------------
 
+- We have scripts to start the peer servers on different machine and configure them
+  for star, mesh and other configurations. 
+
+- clear_all.sh   : This script is to clean up the environment. It kills the
+                   previous instance of any peer server if running. Even the config 
+		   files are cleaned up. This script can be used to clean the environment
+		   while testing multiple setup's. 
+- relay-test.sh  : This script is used to start the peer server on 4 nodes in relay configuration.
+                   File is placed in relay-test folder.
+- star-4node.sh  : This script is used to start the peer server on 4 nodes in star configuration.
+                   File is placed in star-4node folder. 
+- star-10node.sh : This script is used to start the peer server on 10 nodes in star configuration.
+                   File is placed in star-10node folder
+- mesh-4node.sh  : This script is used to start the peer server on 4 nodes in mesh configuration.
+                   File is placed in mesh-4node folder.
+- mesh-10node.sh : This script is used to start the peer server on 4 nodes in mesh configuration.
+                   File is placed in mesh-10node folder.
 
 Steps to use the peer client :
 ------------------------------
