@@ -3,7 +3,7 @@
 
 # Parameters
 
-CLIENT = ds_client
+CLIENT = pnfs_client
 SERVER = ds_server
 
 SOURCES_CLNT.c = 
@@ -12,18 +12,18 @@ SOURCES_SVC.c =
 SOURCES_SVC.h = 
 SOURCES.x = ds.x
 
-TARGETS_SVC.c = ds_svc.c ds_server.c ds_xdr.c 
-TARGETS_CLNT.c = ds_clnt.c ds_client.c ds_xdr.c 
-TARGETS = ds.h ds_xdr.c ds_clnt.c ds_svc.c ds_client.c ds_server.c
+TARGETS_SVC.c = ds_svc_mt.c ds_server.c ds_xdr.c 
+TARGETS_CLNT.c = ds_clnt.c ds_client.c pnfs_client.c ds_xdr.c 
+TARGETS = ds.h ds_xdr.c ds_clnt.c ds_svc_mt.c ds_client.c ds_server.c pnfs_client.c
 
 OBJECTS_CLNT = $(SOURCES_CLNT.c:%.c=%.o) $(TARGETS_CLNT.c:%.c=%.o)
 OBJECTS_SVC = $(SOURCES_SVC.c:%.c=%.o) $(TARGETS_SVC.c:%.c=%.o)
 # Compiler flags 
 
 CPPFLAGS += -D_REENTRANT
-CFLAGS += -g 
+CFLAGS += -g -D_FILE_OFFSET_BITS=64 
 LDLIBS += -lnsl -lpthread 
- RPCGENFLAGS = 
+RPCGENFLAGS = -M
 
 # Targets 
 
@@ -37,7 +37,7 @@ $(OBJECTS_CLNT) : $(SOURCES_CLNT.c) $(SOURCES_CLNT.h) $(TARGETS_CLNT.c)
 $(OBJECTS_SVC) : $(SOURCES_SVC.c) $(SOURCES_SVC.h) $(TARGETS_SVC.c) 
 
 $(CLIENT) : $(OBJECTS_CLNT) 
-	$(LINK.c) -o $(CLIENT) $(OBJECTS_CLNT) $(LDLIBS) 
+	$(LINK.c) -o $(CLIENT) $(OBJECTS_CLNT) $(LDLIBS) -lfuse
 
 $(SERVER) : $(OBJECTS_SVC) 
 	$(LINK.c) -o $(SERVER) $(OBJECTS_SVC) $(LDLIBS)

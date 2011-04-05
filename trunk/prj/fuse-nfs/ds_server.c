@@ -4,7 +4,7 @@
  * as a guideline for developing your own functions.
  */
 
-#include "ds.h"
+#include "ds_misc.h"
 #include <sys/vfs.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -12,7 +12,7 @@
 #include <dirent.h>
 #include <unistd.h>
 
-extern __thread int errno;
+/*extern __thread int errno;*/
 
 extern ds_t ds;
 extern mds_t mds;

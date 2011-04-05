@@ -15,7 +15,6 @@
  */
 #define MAX_DS  16
 #define MAXADDR  128
-#define MAXPATHLEN 255
 
 typedef struct server {
     char    *mds_name;
@@ -88,7 +87,7 @@ static int pnfs_mkdir(const char *dname, mode_t mode)
     return (ret);
 }
 
-static int unlink(char *fname)
+static int pnfs_unlink(char *fname)
 {
     int ret;
     char name[MAXPATHLEN];
