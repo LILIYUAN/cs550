@@ -22,7 +22,7 @@
 #include <dirent.h>
 #include <unistd.h>
 
-typeder	union argument {
+typedef	union argument {
     getattr_req getattr_ds_1_arg;
     readdir_req readdir_ds_1_arg;
     mkdir_req mkdir_ds_1_arg;
@@ -156,7 +156,7 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
     }
 
     datap->rqstp = rqstp;
-    data->transp = transp;
+    datap->transp = transp;
 
 	switch (rqstp->rq_proc) {
 	case NULLPROC:
@@ -287,8 +287,8 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		svcerr_noproc (transp);
 		return;
 	}
-	memset ((char *)&argument, 0, sizeof (argument));
-	if (!svc_getargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) &argument)) {
+	memset ((char *)&datap->argument, 0, sizeof (datap->argument));
+	if (!svc_getargs (transp, (xdrproc_t) datap->_xdr_argument, (caddr_t) &(datap->argument))) {
 		svcerr_decode (transp);
 		return;
 	}
@@ -329,7 +329,7 @@ init_ds(char *mds, char *dir, fsid_t fsid)
         return (errno);
     }
 
-    if (!ISDIR(sbuf.st_mode)) {
+    if (!S_ISDIR(sbuf.st_mode)) {
         printf("%s is not a directory\n", dir);
         return (ENOTDIR);
     }
@@ -359,7 +359,7 @@ main (int argc, char **argv)
      */
     dir = argv[2];
     mds = argv[4];
-    fsid = atoi(argv[6]);
+    fsid.__val[0] = atoi(argv[6]);
     if (init_ds(dir, mds, fsid) != 0) {
         return (1);
     }

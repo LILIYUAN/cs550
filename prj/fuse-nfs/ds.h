@@ -50,7 +50,10 @@ typedef int my_time_t;
 
 typedef int my_nlink_t;
 
-typedef int my_fsid_t;
+struct nfs_fsid {
+	int __val[2];
+};
+typedef struct nfs_fsid nfs_fsid;
 
 struct my_stat {
 	my_dev_t stat_dev;
@@ -77,7 +80,7 @@ struct my_statfs {
 	long f_bavail;
 	long f_files;
 	long f_ffree;
-	my_fsid_t f_fsid;
+	nfs_fsid f_fsid;
 	long f_namelen;
 };
 typedef struct my_statfs my_statfs;
@@ -319,6 +322,17 @@ struct readlink_req {
 };
 typedef struct readlink_req readlink_req;
 
+struct mount_req {
+	pathname name;
+};
+typedef struct mount_req mount_req;
+
+struct mount_res {
+	int res;
+	nfs_fsid fsid;
+};
+typedef struct mount_res mount_res;
+
 #define DSPROG 0x20000011
 #define DSVERS 1
 
@@ -383,9 +397,9 @@ extern  bool_t symlink_ds_1_svc(symlink_req *, symlink_res *, struct svc_req *);
 #define readlink_ds 20
 extern  enum clnt_stat readlink_ds_1(readlink_req *, readlink_res *, CLIENT *);
 extern  bool_t readlink_ds_1_svc(readlink_req *, readlink_res *, struct svc_req *);
-#define mount 21
-extern  enum clnt_stat mount_1(mount_req *, mount_res *, CLIENT *);
-extern  bool_t mount_1_svc(mount_req *, mount_res *, struct svc_req *);
+#define mount_mds 21
+extern  enum clnt_stat mount_mds_1(mount_req *, mount_res *, CLIENT *);
+extern  bool_t mount_mds_1_svc(mount_req *, mount_res *, struct svc_req *);
 extern int dsprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -449,9 +463,9 @@ extern  bool_t symlink_ds_1_svc();
 #define readlink_ds 20
 extern  enum clnt_stat readlink_ds_1();
 extern  bool_t readlink_ds_1_svc();
-#define mount 21
-extern  enum clnt_stat mount_1();
-extern  bool_t mount_1_svc();
+#define mount_mds 21
+extern  enum clnt_stat mount_mds_1();
+extern  bool_t mount_mds_1_svc();
 extern int dsprog_1_freeresult ();
 #endif /* K&R C */
 
@@ -471,7 +485,7 @@ extern  bool_t xdr_my_blksize_t (XDR *, my_blksize_t*);
 extern  bool_t xdr_my_blkcnt_t (XDR *, my_blkcnt_t*);
 extern  bool_t xdr_my_time_t (XDR *, my_time_t*);
 extern  bool_t xdr_my_nlink_t (XDR *, my_nlink_t*);
-extern  bool_t xdr_my_fsid_t (XDR *, my_fsid_t*);
+extern  bool_t xdr_nfs_fsid (XDR *, nfs_fsid*);
 extern  bool_t xdr_my_stat (XDR *, my_stat*);
 extern  bool_t xdr_my_statfs (XDR *, my_statfs*);
 extern  bool_t xdr_my_dirent (XDR *, my_dirent*);
@@ -515,6 +529,8 @@ extern  bool_t xdr_symlink_res (XDR *, symlink_res*);
 extern  bool_t xdr_symlink_req (XDR *, symlink_req*);
 extern  bool_t xdr_readlink_res (XDR *, readlink_res*);
 extern  bool_t xdr_readlink_req (XDR *, readlink_req*);
+extern  bool_t xdr_mount_req (XDR *, mount_req*);
+extern  bool_t xdr_mount_res (XDR *, mount_res*);
 
 #else /* K&R C */
 extern bool_t xdr_filename ();
@@ -530,7 +546,7 @@ extern bool_t xdr_my_blksize_t ();
 extern bool_t xdr_my_blkcnt_t ();
 extern bool_t xdr_my_time_t ();
 extern bool_t xdr_my_nlink_t ();
-extern bool_t xdr_my_fsid_t ();
+extern bool_t xdr_nfs_fsid ();
 extern bool_t xdr_my_stat ();
 extern bool_t xdr_my_statfs ();
 extern bool_t xdr_my_dirent ();
@@ -574,6 +590,8 @@ extern bool_t xdr_symlink_res ();
 extern bool_t xdr_symlink_req ();
 extern bool_t xdr_readlink_res ();
 extern bool_t xdr_readlink_req ();
+extern bool_t xdr_mount_req ();
+extern bool_t xdr_mount_res ();
 
 #endif /* K&R C */
 

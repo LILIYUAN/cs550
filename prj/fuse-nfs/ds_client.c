@@ -234,11 +234,11 @@ int readdir_c(char *ds_svr, char *path, int offset, struct dirent *dentry)
 
     // individually copy the items
     //*dentry = res.dent;
-    dentry->d_ino = res->dent.d_ino;
-    dentry->d_off = res->dent.d_off;
-    dentry->d_reclen = res->dent.d_reclen;
-    dentry->d_type = res->dent.d_type;
-    strcpy(dentry->d_name, res->dent.d_name);
+    dentry->d_ino = res.dent.d_ino;
+    dentry->d_off = res.dent.d_off;
+    dentry->d_reclen = res.dent.d_reclen;
+    dentry->d_type = res.dent.d_type;
+    strcpy(dentry->d_name, res.dent.d_name);
 
     clnt_destroy(clnt);
     return res.res;
@@ -816,7 +816,7 @@ int readlink_c(char *ds_svr, char *path, int bufsize, char *buf)
 }
 
 
-
+/*
 int
 main (int argc, char *argv[])
 {
@@ -830,3 +830,4 @@ main (int argc, char *argv[])
 	dsprog_1 (host);
 exit (0);
 }
+*/

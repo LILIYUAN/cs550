@@ -196,9 +196,9 @@ readlink_ds_1(readlink_req *argp, readlink_res *clnt_res, CLIENT *clnt)
 }
 
 enum clnt_stat 
-mount_1(mount_req *argp, mount_res *clnt_res, CLIENT *clnt)
+mount_mds_1(mount_req *argp, mount_res *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, mount,
+	return (clnt_call(clnt, mount_mds,
 		(xdrproc_t) xdr_mount_req, (caddr_t) argp,
 		(xdrproc_t) xdr_mount_res, (caddr_t) clnt_res,
 		TIMEOUT));

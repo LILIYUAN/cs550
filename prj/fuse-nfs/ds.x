@@ -26,7 +26,10 @@ typedef int my_blksize_t;
 typedef int my_blkcnt_t;
 typedef int my_time_t;
 typedef int my_nlink_t;
-typedef int my_fsid_t;
+
+struct nfs_fsid {
+    int __val[2];
+};
 
 struct my_stat {
        my_dev_t     stat_dev;     /* ID of device containing file */
@@ -52,7 +55,7 @@ struct my_statfs {
        long    f_bavail;   /* free blocks avail to non-superuser */
        long    f_files;    /* total file nodes in file system */
        long    f_ffree;    /* free file nodes in fs */
-       my_fsid_t  f_fsid;     /* file system id */
+       nfs_fsid  f_fsid;     /* file system id */
        long    f_namelen;  /* maximum length of filenames */
 };
 
@@ -257,6 +260,14 @@ struct readlink_req {
 	int bufsize;
 };
 
+struct mount_req {
+    pathname name;
+};
+
+struct mount_res {
+    int         res;
+    nfs_fsid    fsid;
+};
 
 program DSPROG {
     version DSVERS {
@@ -283,7 +294,7 @@ program DSPROG {
 	link_res	link_ds(link_req *)	= 18;
 	symlink_res	symlink_ds(symlink_req *)	= 19;
 	readlink_res	readlink_ds(readlink_req *)= 20;
-    mount_res   mount(mount_req *) = 21;
+    mount_res   mount_mds(mount_req *) = 21;
     } = 1;
 } = 0x20000011;
 

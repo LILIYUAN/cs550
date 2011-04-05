@@ -46,7 +46,7 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		link_req link_ds_1_arg;
 		symlink_req symlink_ds_1_arg;
 		readlink_req readlink_ds_1_arg;
-		mount_req mount_1_arg;
+		mount_req mount_mds_1_arg;
 	} argument;
 	union {
 		getattr_res getattr_ds_1_res;
@@ -69,7 +69,7 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		link_res link_ds_1_res;
 		symlink_res symlink_ds_1_res;
 		readlink_res readlink_ds_1_res;
-		mount_res mount_1_res;
+		mount_res mount_mds_1_res;
 	} result;
 	bool_t retval;
 	xdrproc_t _xdr_argument, _xdr_result;
@@ -200,10 +200,10 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		local = (bool_t (*) (char *, void *,  struct svc_req *))readlink_ds_1_svc;
 		break;
 
-	case mount:
+	case mount_mds:
 		_xdr_argument = (xdrproc_t) xdr_mount_req;
 		_xdr_result = (xdrproc_t) xdr_mount_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))mount_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))mount_mds_1_svc;
 		break;
 
 	default:
