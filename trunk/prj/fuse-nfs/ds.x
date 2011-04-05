@@ -5,13 +5,14 @@
 %#include <dirent.h>
 %#include <unistd.h>
 
-const MAXNAME = 128;
+const MAXNAMELEN = 128;
 const SIZE = 4096;
+const MAXDS = 16;
 
 /*
  * Type for storing path . Assuming max file path length to be 1024
  */
-typedef string filename<MAXNAME>;
+typedef string filename<MAXNAMELEN>;
 typedef string pathname<MAXPATHLEN>;
 typedef opaque filedata[SIZE];
 
@@ -282,6 +283,7 @@ program DSPROG {
 	link_res	link_ds(link_req *)	= 18;
 	symlink_res	symlink_ds(symlink_req *)	= 19;
 	readlink_res	readlink_ds(readlink_req *)= 20;
+    mount_res   mount(mount_req *) = 21;
     } = 1;
 } = 0x20000011;
 

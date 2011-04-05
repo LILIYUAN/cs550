@@ -14,6 +14,9 @@
 
 extern __thread int errno;
 
+extern ds_t ds;
+extern mds_t mds;
+
 bool_t
 getattr_ds_1_svc(getattr_req *argp, getattr_res *result, struct svc_req *rqstp)
 {

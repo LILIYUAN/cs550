@@ -20,7 +20,6 @@ typedef struct server {
     char    *mds_name;
     char    *local_mntpt;
     char    *remote_mntpt;
-    fsid_t  fsid;
 /*    CLIENT  *mds_clnt; */
     int     n_ds;
     char    *ds_name[MAX_DS];
@@ -38,7 +37,7 @@ static int pnfs_getattr(const char *path, struct stat *stbuf)
     char name[MAXPATHLEN];
 
     sprintf(name, "%s/%s", server.remote_mntpt, path);
-	res = getattr_c(server.mds_name, name, stbuf); 
+	res = stat(name, stbuf); 
 	printf("getattr : path %s res = %d\n", name, res);
 
     return res;
@@ -67,36 +66,12 @@ static int pnfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	while (res) {
 		printf("dirent : %s\n", dent.d_name);
 		filler(buf, dent.d_name, NULL, 0);
-		ret = readdir_c(server.mds_name, name, offset, &dent);
+		ret = readdir_r(dfd, &dent, &res);
 	} 
 
 	closedir(dfd);
 
     return 0;
-}
-
-static int pnfs_mkdir(const char *dname, mode_t mode)
-{
-    int ret;
-    char name[MAXPATHLEN];
-
-    sprintf(name, "%s/%s", server.remote_mntpt, dname);
-
-    ret = mkdir_c(server.mds_name, name, mode);
-
-    return (ret);
-}
-
-static int unlink(char *fname)
-{
-    int ret;
-    char name[MAXPATHLEN];
-
-    sprintf(name, "%s/%s", server.remote_mntpt, fname);
-
-    ret = unlink_c(server.mds_name, name);
-
-    return (ret);
 }
 
 static int pnfs_open(const char *path, struct fuse_file_info *fi)
@@ -115,10 +90,6 @@ static int pnfs_open(const char *path, struct fuse_file_info *fi)
 	close(fd);
 
     return (0);
-}
-
-static int pnfs_rmdir()
-{
 }
 
 static int pnfs_read(const char *path, char *buf, size_t size, off_t offset,
