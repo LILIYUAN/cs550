@@ -344,7 +344,8 @@ statfs_ds_1_svc(statfs_req *argp, statfs_res *result, struct svc_req *rqstp)
     result->stat.f_bavail = sbuf.f_bavail;   /* free blocks avail to unprivileged user */
     result->stat.f_files = sbuf.f_files;    /* total file nodes in file system */
     result->stat.f_ffree = sbuf.f_ffree;    /* free file nodes in fs */
-    /* result->stat.f_fsid = (my_fsid_t) sbuf.f_fsid; */     /* file system id */
+    result->stat.f_fsid.__val[0] = sbuf.f_fsid.__val[0]; /* file system id */
+    result->stat.f_fsid.__val[1] = sbuf.f_fsid.__val[1]; /* file system id */
     result->stat.f_namelen = sbuf.f_namelen;  /* maximum length of filenames */
     
 	return retval;

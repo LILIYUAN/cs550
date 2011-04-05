@@ -88,6 +88,41 @@ static int pnfs_unlink(char *fname)
     return (ret);
 }
 
+static int pnfs_rmdir(const char *name)
+{
+    return(rmdir_c(server.mds_name, name));
+}
+
+static int pnfs_symlink(const char *old, const char *new)
+{
+    return(symlink_c(server.mds_name, old, new)); 
+}
+
+static int pnfs_rename(const char *old, const char *new)
+{
+    return(rename_c(server.mds_name, old, new));
+}
+
+static int pnfs_link(const char *old, const char *new)
+{
+    return(link_c(server.mds_name, old, new));
+}
+
+static int pnfs_chmod(const char *name, mode_t mode)
+{
+    return(chmod_c(server.mds_name, name, mode));
+}
+
+static int pnfs_chown(const char *name, uid_t uid, gid_t gid)
+{
+    return(chown_c(server.mds_name, name, uid, gid));
+}
+
+static int pnfs_truncate(const char *name, off_t off)
+{
+    return(truncate_c(server.mds_name, name, off));
+}
+
 static int pnfs_open(const char *name, struct fuse_file_info *fi)
 {
 	int fd;
@@ -104,25 +139,33 @@ static int pnfs_open(const char *name, struct fuse_file_info *fi)
     return (0);
 }
 
-static int pnfs_rmdir()
-{
-}
-
-static int pnfs_read(const char *path, char *buf, size_t size, off_t offset,
+static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
                     struct fuse_file_info *fi)
 {
     size_t len;
-	int fd;
-    char name[MAXPATHLEN];
-
     (void) fi;
 
-    sprintf(name, "%s/%s", server.remote_mntpt, path);
-	fd = open(name, O_RDONLY);
-	len = pread(fd, buf, size, offset);
-	close(fd);
-	printf("read(%s) offset : %d size %d buf = %s\n", name, (int) offset, len, buf);
+	len = read_c(server.mds_name, name, offset, size, buf);
+	printf("read(%s) offset : %d size %d buf = %s\n", name,
+            (int) offset, len, buf);
     return len;
+}
+
+static int pnfs_write(const char *name, const char *buf, size_t size,
+        off_t offset, struct fuse_file_info *fi)
+{
+    size_t len;
+    (void) fi;
+
+	len = write_c(server.mds_name, name, offset, size, buf);
+	printf("write(%s) offset : %d size %d buf = %s\n", name,
+            (int) offset, len, buf);
+    return len;
+}
+
+static int pnfs_statfs(const char *name, struct statvfs *buf)
+{
+    return(statfs_c(server.mds_name, name, buf));
 }
 
 int 
