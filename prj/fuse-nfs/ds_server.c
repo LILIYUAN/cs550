@@ -22,8 +22,11 @@ getattr_ds_1_svc(getattr_req *argp, getattr_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     struct stat sbuf;
+    char name[MAXPATHLEN];
 
-    result->res = stat(argp->name, &sbuf);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    result->res = stat(name, &sbuf);
 
     if (result->res != 0) {
         result->res = -errno;
@@ -51,15 +54,14 @@ readdir_ds_1_svc(readdir_req *argp, readdir_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int ret;
-
     DIR *dirp;
     struct dirent dent;
     struct dirent *p = NULL;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
-    dirp = opendir(argp->name);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    dirp = opendir(name);
     if (dirp == NULL) {
         result->res = -errno;
         return retval;
@@ -94,8 +96,11 @@ mkdir_ds_1_svc(mkdir_req *argp, mkdir_res *result, struct svc_req *rqstp)
 {
     bool_t retval = TRUE;
     int ret;
+    char name[MAXPATHLEN];
 
-    ret = mkdir((const char *)argp->name, (mode_t)argp->mode);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = mkdir((const char *)name, (mode_t)argp->mode);
     if (ret != 0) 
         result->res = -errno;
     else 
@@ -109,8 +114,11 @@ unlink_ds_1_svc(unlink_req *argp, unlink_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int ret;
+    char name[MAXPATHLEN];
 
-    ret = unlink(argp->name);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = unlink(name);
     if (ret != 0) 
         result->res = -errno;
     else 
@@ -124,8 +132,11 @@ rmdir_ds_1_svc(rmdir_req *argp, rmdir_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int ret;
+    char name[MAXPATHLEN];
 
-    ret = rmdir(argp->name);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = rmdir(name);
     if (ret != 0) 
         result->res = -errno;
     else 
@@ -139,8 +150,14 @@ rename_ds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int ret;
+    char old[MAXPATHLEN];
+    char new[MAXPATHLEN];
 
-    ret = rename(argp->old, argp->new);
+    sprintf(old, "%s/%s", mds.dir, argp->old);
+    sprintf(new, "%s/%s", mds.dir, argp->new);
+
+
+    ret = rename(old, new);
     if (ret != 0) 
         result->res = -errno;
     else 
@@ -154,8 +171,11 @@ mknod_ds_1_svc(mknod_req *argp, mknod_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int ret;
+    char name[MAXPATHLEN];
 
-    ret = mknod(argp->name, argp->mode, argp->dev);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = mknod(name, argp->mode, argp->dev);
     if (ret != 0) 
         result->res = -errno;
     else 
@@ -169,8 +189,11 @@ create_ds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int ret;
+    char name[MAXPATHLEN];
 
-    ret = creat(argp->name, argp->mode);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = creat(name, argp->mode);
     if (ret != 0) 
         result->res = -errno;
     else 
@@ -184,8 +207,11 @@ open_ds_1_svc(open_req *argp, open_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int fd;
+    char name[MAXPATHLEN];
 
-    fd = open(argp->name, argp->flags, argp->mode);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    fd = open(name, argp->flags, argp->mode);
     if (fd < 0) 
         result->res = -errno;
     else 
@@ -214,8 +240,11 @@ read_ds_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
 	bool_t retval = TRUE;
     int ret;
     int fd;
+    char name[MAXPATHLEN];
 
-    fd = open(argp->name, O_RDONLY);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    fd = open(name, O_RDONLY);
     if (fd  < 0) {
         printf("Failed to open(%s) : errno %d\n", argp->name, errno);
         result->res = -errno;
@@ -239,8 +268,11 @@ write_ds_1_svc(write_req *argp, write_res *result, struct svc_req *rqstp)
 	bool_t retval = TRUE;
     int ret;
     int fd;
+    char name[MAXPATHLEN];
 
-    fd = open(argp->name, O_RDWR);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    fd = open(name, O_RDWR);
     if (fd  < 0) {
         printf("Failed to open(%s) : errno %d\n", argp->name, errno);
         result->res = -errno;
@@ -275,8 +307,11 @@ truncate_ds_1_svc(truncate_req *argp, truncate_res *result, struct svc_req *rqst
 {
 	bool_t retval = TRUE;
     int res;
+    char name[MAXPATHLEN];
 
-    res = truncate(argp->name, argp->len);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    res = truncate(name, argp->len);
     if (res < 0) 
         result->res = -errno;
     else
@@ -291,8 +326,11 @@ statfs_ds_1_svc(statfs_req *argp, statfs_res *result, struct svc_req *rqstp)
 	bool_t retval;
     struct statfs sbuf;
     int ret;
+    char name[MAXPATHLEN];
 
-    ret = statfs(argp->name, &sbuf);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = statfs(name, &sbuf);
 
     if (ret < 0)
         result->res = -errno;
@@ -317,8 +355,11 @@ chmod_ds_1_svc(chmod_req *argp, chmod_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int ret;
+    char name[MAXPATHLEN];
 
-    ret = chmod(argp->name, argp->mode);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = chmod(name, argp->mode);
     if (ret < 0)
         result->res = -errno;
     else
@@ -332,8 +373,11 @@ chown_ds_1_svc(chown_req *argp, chown_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int ret;
+    char name[MAXPATHLEN];
 
-    ret = chown(argp->name, argp->uid, argp->gid);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = chown(name, argp->uid, argp->gid);
     if (ret < 0)
         result->res = -errno;
     else
@@ -348,8 +392,13 @@ link_ds_1_svc(link_req *argp, link_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int ret;
+    char old[MAXPATHLEN];
+    char new[MAXPATHLEN];
 
-    ret = link(argp->old, argp->new);
+    sprintf(old, "%s/%s", mds.dir, argp->old);
+    sprintf(new, "%s/%s", mds.dir, argp->new);
+
+    ret = link(old, new);
     if (ret < 0)
         result->res = -errno;
     else
@@ -363,8 +412,13 @@ symlink_ds_1_svc(symlink_req *argp, symlink_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     int ret;
+    char old[MAXPATHLEN];
+    char new[MAXPATHLEN];
 
-    ret = symlink(argp->old, argp->new);
+    sprintf(old, "%s/%s", mds.dir, argp->old);
+    sprintf(new, "%s/%s", mds.dir, argp->new);
+
+    ret = symlink(old, new);
     if (ret < 0)
         result->res = -errno;
     else
@@ -378,8 +432,10 @@ readlink_ds_1_svc(readlink_req *argp, readlink_res *result, struct svc_req *rqst
 {
 	bool_t retval = TRUE;
     int ret;
+    char name[MAXPATHLEN];
 
-    ret = readlink(argp->name, result->buf, argp->bufsize);
+    sprintf(name, "%s/%s", mds.dir, name);
+    ret = readlink(name, result->buf, argp->bufsize);
     if (ret < 0)
         result->res = -errno;
     else

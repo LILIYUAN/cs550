@@ -32,19 +32,17 @@ typedef struct server {
  */
 server_t server;
 
-static int pnfs_getattr(const char *path, struct stat *stbuf)
+static int pnfs_getattr(const char *name, struct stat *stbuf)
 {
     int res = 0;
-    char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", server.remote_mntpt, path);
 	res = getattr_c(server.mds_name, name, stbuf); 
 	printf("getattr : path %s res = %d\n", name, res);
 
     return res;
 }
 
-static int pnfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
+static int pnfs_readdir(const char *name, void *buf, fuse_fill_dir_t filler,
                        off_t offset, struct fuse_file_info *fi)
 {
 /*
@@ -55,15 +53,12 @@ static int pnfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	DIR *dfd;
 	struct dirent dent;
 	struct dirent *res = NULL;
-    char name[MAXPATHLEN];
 
     (void) offset;
     (void) fi;
 
-    sprintf(name, "%s/%s", server.remote_mntpt, path);
     printf("pnfs_readdir(%s)\n", name);
-	dfd = opendir(name);	
-	ret = readdir_r(dfd, &dent, &res);
+	ret = readdir_c(server.mds_name, name, offset, &dent);
 	while (res) {
 		printf("dirent : %s\n", dent.d_name);
 		filler(buf, dent.d_name, NULL, 0);
@@ -78,11 +73,8 @@ static int pnfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 static int pnfs_mkdir(const char *dname, mode_t mode)
 {
     int ret;
-    char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", server.remote_mntpt, dname);
-
-    ret = mkdir_c(server.mds_name, name, mode);
+    ret = mkdir_c(server.mds_name, dname, mode);
 
     return (ret);
 }
@@ -90,21 +82,16 @@ static int pnfs_mkdir(const char *dname, mode_t mode)
 static int pnfs_unlink(char *fname)
 {
     int ret;
-    char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", server.remote_mntpt, fname);
-
-    ret = unlink_c(server.mds_name, name);
+    ret = unlink_c(server.mds_name, fname);
 
     return (ret);
 }
 
-static int pnfs_open(const char *path, struct fuse_file_info *fi)
+static int pnfs_open(const char *name, struct fuse_file_info *fi)
 {
 	int fd;
-    char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", server.remote_mntpt, path);
     printf("pnfs_open(%s)\n", name);
     /*
      * TODO : We could fetch the layout of the file as part of this access.
