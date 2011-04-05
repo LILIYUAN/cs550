@@ -20,8 +20,9 @@ extern "C" {
 #include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
-#define MAXNAME 128
+#define MAXNAMELEN 128
 #define SIZE 4096
+#define MAXDS 16
 
 typedef char *filename;
 
@@ -382,6 +383,9 @@ extern  bool_t symlink_ds_1_svc(symlink_req *, symlink_res *, struct svc_req *);
 #define readlink_ds 20
 extern  enum clnt_stat readlink_ds_1(readlink_req *, readlink_res *, CLIENT *);
 extern  bool_t readlink_ds_1_svc(readlink_req *, readlink_res *, struct svc_req *);
+#define mount 21
+extern  enum clnt_stat mount_1(mount_req *, mount_res *, CLIENT *);
+extern  bool_t mount_1_svc(mount_req *, mount_res *, struct svc_req *);
 extern int dsprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -445,6 +449,9 @@ extern  bool_t symlink_ds_1_svc();
 #define readlink_ds 20
 extern  enum clnt_stat readlink_ds_1();
 extern  bool_t readlink_ds_1_svc();
+#define mount 21
+extern  enum clnt_stat mount_1();
+extern  bool_t mount_1_svc();
 extern int dsprog_1_freeresult ();
 #endif /* K&R C */
 

@@ -16,7 +16,7 @@ xdr_filename (XDR *xdrs, filename *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_string (xdrs, objp, MAXNAME))
+	 if (!xdr_string (xdrs, objp, MAXNAMELEN))
 		 return FALSE;
 	return TRUE;
 }
