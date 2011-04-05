@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include "ds_misc.h"
 
 
 /*
