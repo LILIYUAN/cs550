@@ -493,7 +493,7 @@ int close_c(char *ds_svr, char *path)
     return res.res;
 }
 
-int read_c(char *ds_svr, char *path, int offset, int count, char *buf, int *bytes)
+int read_c(char *ds_svr, char *path, int offset, int count, char *buf)
 {
     read_req req;
     read_res res;
@@ -529,7 +529,7 @@ int read_c(char *ds_svr, char *path, int offset, int count, char *buf, int *byte
     return res.res;
 }
 
-int write_c(char *ds_svr, char *path, char *data, int offset, int count)
+int write_c(char *ds_svr, char *path, int offset, int count, char *buf)
 {
     write_req req;
     write_res res;
@@ -651,7 +651,17 @@ int statfs_c(char *ds_svr, char *path, struct my_statfs *buf)
     }
 
     // individually copy the items
-    //*buf = res.stat;
+    //
+    buf->f_type = res.stat.f_type;
+    buf->f_bsize = res.stat.f_bsize;
+    buf->f_blocks = res.stat.f_blocks;
+    buf->f_bfree = res.stat.f_bfree;
+    buf->f_bavail = res.stat.f_bavail;
+    buf->f_files = res.stat.f_files;
+    buf->f_ffree = res.stat.f_ffree;
+    buf->f_fsid.__val[0] = res.stat.f_fsid.__val[0];
+    buf->f_fsid.__val[1] = res.stat.f_fsid.__val[1];
+    buf->f_namelen = res.stat.f_namelen;
 
     clnt_destroy(clnt);
     return res.res;
