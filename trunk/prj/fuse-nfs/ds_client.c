@@ -4,15 +4,13 @@
  * as a guideline for developing your own functions.
  */
 
-#include "ds.h"
+#include "ds_misc.h"
 #include <sys/vfs.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
-
-extern __thread int errno;
 
 void
 dsprog_1(char *host)
@@ -179,6 +177,9 @@ int getattr_c(char *ds_svr, char *path, struct stat *buf)
     CLIENT *clnt;
     bool_t ret;
 
+#ifdef DEBUG
+    printf("getattr_c(ds_svr=%s, path=%s, sbuf)\n", ds_svr, path);
+#endif
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
         return(-1);
