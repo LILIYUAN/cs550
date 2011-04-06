@@ -46,6 +46,9 @@ getattr_ds_1_svc(getattr_req *argp, getattr_res *result, struct svc_req *rqstp)
         result->sbuf.stat_ctime = sbuf.st_ctime;
     }
 
+#ifdef DEBUG
+    printf("getattr_ds_1_svc: name: %s resi: %d\n", name, result->res);
+#endif
 	return retval;
 }
 
@@ -87,6 +90,9 @@ readdir_ds_1_svc(readdir_req *argp, readdir_res *result, struct svc_req *rqstp)
     else 
         result->eof = 0;
 
+#ifdef DEBUG
+    printf("readdir_1_svc: dir=%s d_name=%s d_off=%d d_reclen=%d\n", name, dent.d_name, (int)dent.d_off, dent.d_reclen);
+#endif
     closedir(dirp);
 	return retval;
 }

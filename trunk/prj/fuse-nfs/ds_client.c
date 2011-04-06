@@ -197,10 +197,23 @@ int getattr_c(char *ds_svr, char *path, struct stat *buf)
     if (res.res  < 0) {
         errno = -(res.res);
         return (-1);
-    }
+    } else
+        errno = 0;
 
     // individually copy the items
-    //*buf = res.sbuf;
+    buf->st_dev = res.sbuf.stat_dev;
+    buf->st_ino = res.sbuf.stat_ino;
+    buf->st_mode = res.sbuf.stat_mode;
+    buf->st_nlink = res.sbuf.stat_nlink; 
+    buf->st_uid = res.sbuf.stat_uid; 
+    buf->st_gid = res.sbuf.stat_gid;
+    buf->st_rdev = res.sbuf.stat_rdev; 
+    buf->st_size = res.sbuf.stat_size;
+    buf->st_blksize = res.sbuf.stat_blksize;
+    buf->st_blocks =  res.sbuf.stat_blocks;
+    buf->st_atime = res.sbuf.stat_atime;
+    buf->st_mtime = res.sbuf.stat_mtime;
+    buf->st_ctime = res.sbuf.stat_ctime;
 
     clnt_destroy(clnt);
     return res.res;

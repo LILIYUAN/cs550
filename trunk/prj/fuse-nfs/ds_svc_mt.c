@@ -317,14 +317,16 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 }
 
 int
-init_ds(char *dir, char *mds, fsid_t fsid)
+init_ds(char *dir, char *mds_name, fsid_t fsid)
 {
     struct stat sbuf;
     int ret;
 
-    strcpy(ds.md_server, mds);
+    strcpy(ds.md_server, mds_name);
     strcpy(ds.dir, dir);
     ds.fsid = fsid;
+    strcpy(mds.md_server, mds_name);
+    strcpy(mds.dir, dir);
 
     ret = stat(dir, &sbuf);
 
