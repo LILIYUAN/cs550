@@ -140,11 +140,12 @@ service_request(void *data )
 }
 
 
+pthread_t threadp;
+pthread_attr_t attr;
+
 static void
 dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
-    pthread_t threadp;
-    pthread_attr_t attr;
     tdata_t *datap = (tdata_t *)malloc(sizeof (tdata_t));
 
     /*
@@ -158,6 +159,9 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
     datap->rqstp = rqstp;
     datap->transp = transp;
 
+#ifdef DEBUG
+    printf("dsprog_1 : Got a call for rq_proc = %d\n", (int)rqstp->rq_proc);
+#endif
 	switch (rqstp->rq_proc) {
 	case NULLPROC:
 		(void) svc_sendreply (transp, (xdrproc_t) xdr_void, (char *)NULL);
@@ -313,7 +317,7 @@ dsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 }
 
 int
-init_ds(char *mds, char *dir, fsid_t fsid)
+init_ds(char *dir, char *mds, fsid_t fsid)
 {
     struct stat sbuf;
     int ret;
@@ -352,6 +356,11 @@ main (int argc, char **argv)
 	register SVCXPRT *transp;
     char *dir, *mds;
     fsid_t fsid;
+
+    if (argc != 7) {
+        usage(argv[0]);
+        return (1);
+    }
 
     /*
      * TODO :

@@ -36,8 +36,9 @@ static int pnfs_getattr(const char *name, struct stat *stbuf)
 {
     int res = 0;
 
+	printf("pnfs_getattr : path %s Calling getattr_c\n", name);
 	res = getattr_c(server.mds_name, name, stbuf); 
-	printf("getattr : path %s res = %d\n", name, res);
+	printf("pnfs_getattr : path %s res = %d\n", name, res);
 
     return res;
 }
@@ -175,7 +176,7 @@ init_server(char *servername, char *remote_fs, char *local_fs)
     server.remote_mntpt = remote_fs;
     server.local_mntpt = local_fs;
 
-    printf("init_server : local_mntpt = %s\n", server.local_mntpt);
+    printf("init_server : local_mntpt=%s mds_name=%s\n", server.local_mntpt, server.mds_name);
 
     /*
      * Contact the server and make sure the remote-fs has been shared.
@@ -227,11 +228,11 @@ int main(int argc, char *argv[])
      * Add the getopt code to fetch the options.
      * Right now we hard code the arguments.
      */
-    server = argv[2];
+    server = "indus";
     remote_fs = "/var/tmp/mnt1-back"; 
-    local_fs = argv[3];
+    local_fs = argv[1];
 
-    printf("remote_sf %s\n", remote_fs);
+    printf("remote_sf %s server %s\n", remote_fs, server);
 
     ret = init_server(server, remote_fs, local_fs);
 
