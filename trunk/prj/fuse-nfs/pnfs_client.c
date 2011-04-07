@@ -43,33 +43,79 @@ static int pnfs_getattr(const char *name, struct stat *stbuf)
     return res;
 }
 
+/*
 static int pnfs_readdir(const char *name, void *buf, fuse_fill_dir_t filler,
                        off_t offset, struct fuse_file_info *fi)
 {
-/*
-    md_readdir_req req;
-    md_readir_res res;
-*/
     int ret;
 	DIR *dfd;
-	struct dirent dent;
-	struct dirent *res = NULL;
+	readdir_res dent; 
+    off_t off = offset;
 
     (void) offset;
     (void) fi;
 
-    printf("pnfs_readdir(%s)\n", name);
-	ret = readdir_c(server.mds_name, name, offset, &dent);
-	while (res) {
-		printf("dirent : %s\n", dent.d_name);
-		filler(buf, dent.d_name, NULL, 0);
-		ret = readdir_c(server.mds_name, name, offset, &dent);
+    printf("pnfs_readdir(%s, offset=%d)\n", name, offset);
+	ret = readdir_c(server.mds_name, name, offset, dent);
+	while (ret == 0) {
+		printf("dirent : %s\n", dent->d_name);
+		filler(buf, dent->d_name, NULL, 0);
+		ret = readdir_c(server.mds_name, name, offset, dent);
+	} 
+
+	closedir(dfd);
+
+    free(dent);
+    return 0;
+}
+*/
+static int pnfs_readdir(const char *name, void *buf, fuse_fill_dir_t filler,
+                       off_t offset, struct fuse_file_info *fi)
+{
+	DIR *dfd;
+    readdir_req req;
+	readdir_res res; 
+    off_t off = offset;
+    bool_t ret;
+    CLIENT *clnt;
+
+    (void) offset;
+    (void) fi;
+
+    printf("pnfs_readdir(%s, offset=%d)\n", name, offset);
+
+    if ((clnt = clnt_create(server.mds_name, DSPROG, DSVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(server.mds_name);
+        return(-1);
+    }
+
+    req.name = name;
+    req.d_off = offset;
+
+	ret = readdir_ds_1(&req, &res, clnt);
+    if (ret != RPC_SUCCESS) {
+        printf("ret = %d\n",ret);
+        clnt_perror(clnt, "call failed");
+        return (-1);
+    }
+
+	while (res.res == 0) {
+		printf("dirent : %s\n", res.dent.d_name);
+		filler(buf, res.dent.d_name, NULL, 0);
+        req.d_off = res.dent.d_off;
+		ret = readdir_ds_1(&req, &res, clnt); 
+        if (ret != RPC_SUCCESS) {
+            printf("ret = %d\n",ret);
+            clnt_perror(clnt, "call failed");
+            return (-1);
+        }
 	} 
 
 	closedir(dfd);
 
     return 0;
 }
+
 
 static int pnfs_mkdir(const char *dname, mode_t mode)
 {

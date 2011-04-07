@@ -64,7 +64,8 @@ static int pnfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	dfd = opendir(name);	
 	ret = readdir_r(dfd, &dent, &res);
 	while (res) {
-		printf("dirent : %s\n", dent.d_name);
+		printf("dirent : %s d_ino %d d_off %d d_reclen %d d_type %d\n",
+                dent.d_name, dent.d_ino, dent.d_off, dent.d_reclen, dent.d_type);
 		filler(buf, dent.d_name, NULL, 0);
 		ret = readdir_r(dfd, &dent, &res);
 	} 
