@@ -236,6 +236,9 @@ int readdir_c(char *ds_svr, char *path, int offset, struct dirent *dentry)
 
     ret = readdir_ds_1(&req,&res,clnt);
 
+#ifdef DEBUG
+    printf("readdir_c: Returned from readdir_ds_1()\n");
+#endif
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
         clnt_perror(clnt, "call failed");
@@ -246,13 +249,23 @@ int readdir_c(char *ds_svr, char *path, int offset, struct dirent *dentry)
         return (-1);
     }
 
+#ifdef DEBUG
+    printf("readdir_c : d_name=%s d_ino=%d d_off=%d d_reclen=%d d_type=%d\n",
+            res.dent.d_name, res.dent.d_ino, res.dent.d_off, res.dent.d_reclen, res.dent.d_type);
+#endif
     // individually copy the items
-    //*dentry = res.dent;
-    dentry->d_ino = res.dent.d_ino;
-    dentry->d_off = res.dent.d_off;
+    printf(" Here 0\n");
+    dentry->d_ino = (int) res.dent.d_ino;
+    dentry->d_ino = 0;
+    printf(" Here 1\n");
+    dentry->d_off = (int) res.dent.d_off;
+    printf(" Here 2\n");
     dentry->d_reclen = res.dent.d_reclen;
+    printf(" Here 3\n");
     dentry->d_type = res.dent.d_type;
+    printf(" Here 4\n");
     strcpy(dentry->d_name, res.dent.d_name);
+    printf(" Here 5\n");
 
     clnt_destroy(clnt);
     return res.res;
