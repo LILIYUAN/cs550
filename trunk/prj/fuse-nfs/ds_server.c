@@ -84,6 +84,7 @@ readdir_ds_1_svc(readdir_req *argp, readdir_res *result, struct svc_req *rqstp)
     result->dent.d_reclen = dent.d_reclen;
     result->dent.d_type = dent.d_type;
     strcpy(result->dent.d_name, dent.d_name);
+    result->res = 0;
 
     if (p == NULL)
         result->eof = 1;
@@ -259,6 +260,11 @@ read_ds_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
 
     ret = pread(fd, result->data, argp->count, argp->offset);
     close(fd);
+
+#ifdef DEBUG
+    printf("read_ds_1_svc: name=%s count=%d offset=%d ret=%d data=%s\n",
+            name, argp->count, argp->offset, ret, result->data);
+#endif
 
     if (ret < 0)
         result->res = -errno;

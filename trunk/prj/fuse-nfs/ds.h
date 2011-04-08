@@ -30,25 +30,27 @@ typedef char *pathname;
 
 typedef char filedata[SIZE];
 
-typedef int my_dev_t;
+typedef u_long my_dev_t;
 
-typedef int my_ino_t;
+typedef u_long my_ino_t;
 
-typedef int my_mode_t;
+typedef u_int my_mode_t;
 
-typedef int my_uid_t;
+typedef u_int my_uid_t;
 
-typedef int my_gid_t;
+typedef u_int my_gid_t;
 
-typedef int my_off_t;
+typedef long my_off_t;
 
-typedef int my_blksize_t;
+typedef long my_size_t;
 
-typedef int my_blkcnt_t;
+typedef u_long my_blksize_t;
 
-typedef int my_time_t;
+typedef long my_blkcnt_t;
 
-typedef int my_nlink_t;
+typedef u_long my_time_t;
+
+typedef u_long my_nlink_t;
 
 struct nfs_fsid {
 	int __val[2];
@@ -114,7 +116,7 @@ typedef struct readdir_res readdir_res;
 
 struct readdir_req {
 	pathname name;
-	int d_off;
+	my_off_t d_off;
 };
 typedef struct readdir_req readdir_req;
 
@@ -215,8 +217,8 @@ typedef struct read_res read_res;
 
 struct read_req {
 	pathname name;
-	int offset;
-	int count;
+	my_off_t offset;
+	my_size_t count;
 };
 typedef struct read_req read_req;
 
@@ -228,8 +230,8 @@ typedef struct write_res write_res;
 struct write_req {
 	pathname name;
 	filedata data;
-	int count;
-	int offset;
+	my_size_t count;
+	my_off_t offset;
 };
 typedef struct write_req write_req;
 
@@ -250,7 +252,7 @@ typedef struct truncate_res truncate_res;
 
 struct truncate_req {
 	pathname name;
-	int len;
+	my_off_t len;
 };
 typedef struct truncate_req truncate_req;
 
@@ -481,6 +483,7 @@ extern  bool_t xdr_my_mode_t (XDR *, my_mode_t*);
 extern  bool_t xdr_my_uid_t (XDR *, my_uid_t*);
 extern  bool_t xdr_my_gid_t (XDR *, my_gid_t*);
 extern  bool_t xdr_my_off_t (XDR *, my_off_t*);
+extern  bool_t xdr_my_size_t (XDR *, my_size_t*);
 extern  bool_t xdr_my_blksize_t (XDR *, my_blksize_t*);
 extern  bool_t xdr_my_blkcnt_t (XDR *, my_blkcnt_t*);
 extern  bool_t xdr_my_time_t (XDR *, my_time_t*);
@@ -542,6 +545,7 @@ extern bool_t xdr_my_mode_t ();
 extern bool_t xdr_my_uid_t ();
 extern bool_t xdr_my_gid_t ();
 extern bool_t xdr_my_off_t ();
+extern bool_t xdr_my_size_t ();
 extern bool_t xdr_my_blksize_t ();
 extern bool_t xdr_my_blkcnt_t ();
 extern bool_t xdr_my_time_t ();
