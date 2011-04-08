@@ -157,6 +157,7 @@ int main(int argc, char *argv[])
     char *local_fs;
     char *remote_fs;
     int ret;
+    int i;
 
     /*
     if (argc != 6) {
@@ -176,6 +177,12 @@ int main(int argc, char *argv[])
     printf("remote_sf %s\n", remote_fs);
 
     ret = init_server(server, remote_fs, local_fs);
+
+    printf("Fuse arguments : argc=%d argv = [ ", argc);
+    for (i = 0; i < argc; i++) {
+        printf("%s ,", argv[i]);
+    }
+    printf("]\n");
 
     return fuse_main(argc, argv, &pnfs_oper, NULL);
 }

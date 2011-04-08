@@ -89,7 +89,7 @@ static int pnfs_readdir(const char *name, void *buf, fuse_fill_dir_t filler,
         return(-1);
     }
 
-    req.name = name;
+    req.name = (pathname) name;
     req.d_off = offset;
 
     do {
@@ -259,30 +259,67 @@ void usage(char *name)
  */
 int main(int argc, char *argv[])
 {
-    char *server;
-    char *local_fs;
-    char *remote_fs;
-    int ret;
+    char *server = NULL;
+    char *local_fs = NULL;
+    char *remote_fs = NULL;
+    int ret, opt, i, debug = 0;
+    int fuseargc = 0;
+    char *fuseargv[50];
 
-    /*
-    if (argc != 6) {
+    if (argc < 6) {
         usage(argv[0]);
+        return (1);
     }
-    */
 
-    /*
-     * TODO:
-     * Add the getopt code to fetch the options.
-     * Right now we hard code the arguments.
-     */
-    server = "127.0.0.1";
-    remote_fs = "/var/tmp/mnt1-back"; 
-    local_fs = argv[1];
 
-    printf("remote_sf %s server %s\n", remote_fs, server);
+    while ((opt = getopt(argc, argv, "S:f:d")) != -1) {
+        switch (opt) {
+            case 'S':
+                server = optarg;
+                break;
+            case 'f':
+                remote_fs = optarg;
+                break;
+            case 'd':
+                debug = 1;
+                break;
+        }
+    }
+
+    local_fs = argv[optind];
+    printf("server = %s remote_fs = %s local_fs = %s\n",
+            server, remote_fs, local_fs);
+
+    if (!server || !remote_fs || !local_fs) {
+        usage(argv[0]);
+        return (1);
+    }
 
     ret = init_server(server, remote_fs, local_fs);
 
-    return fuse_main(argc, argv, &pnfs_oper, NULL);
+    /*
+     * Copy the remaining arguments to fuseargs for it to process
+     */
+    fuseargv[fuseargc] = argv[0]; fuseargc++;
+    if (debug) {
+        fuseargv[fuseargc] = "-d";
+        fuseargc++;
+    }
+
+    for (i = optind+1; i < argc; i++) {
+        fuseargv[fuseargc] = argv[i];
+        fuseargc++;
+    }
+    fuseargv[fuseargc] = local_fs; fuseargc++;
+
+#ifdef DEBUG
+    printf("Fuse arguments : fuseargc=%d fuseargv = [ ", fuseargc);
+    for (i = 0; i < fuseargc; i++) {
+        printf("%s ,", fuseargv[i]);
+    }
+    printf("]\n");
+#endif
+
+    return fuse_main(fuseargc, fuseargv, &pnfs_oper, NULL);
 }
 
