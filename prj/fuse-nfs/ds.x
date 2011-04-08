@@ -16,16 +16,17 @@ typedef string filename<MAXNAMELEN>;
 typedef string pathname<MAXPATHLEN>;
 typedef opaque filedata[SIZE];
 
-typedef int my_dev_t;
-typedef int my_ino_t;
-typedef int my_mode_t;
-typedef int my_uid_t;
-typedef int my_gid_t;
-typedef int my_off_t;
-typedef int my_blksize_t;
-typedef int my_blkcnt_t;
-typedef int my_time_t;
-typedef int my_nlink_t;
+typedef unsigned long my_dev_t;
+typedef unsigned long my_ino_t;
+typedef unsigned int my_mode_t;
+typedef unsigned int my_uid_t;
+typedef unsigned int my_gid_t;
+typedef long my_off_t;
+typedef long my_size_t;
+typedef unsigned long my_blksize_t;
+typedef long my_blkcnt_t;
+typedef unsigned long my_time_t;
+typedef unsigned long my_nlink_t;
 
 struct nfs_fsid {
     int __val[2];
@@ -85,7 +86,7 @@ struct readdir_res {
 
 struct readdir_req {
 	pathname name;
-	int d_off;
+	my_off_t d_off;
 };
 
 struct mkdir_res {
@@ -171,8 +172,8 @@ struct read_res {
 
 struct read_req {
 	pathname name;
-	int offset;
-	int count;
+	my_off_t offset;
+	my_size_t count;
 };
 
 struct write_res {
@@ -183,8 +184,8 @@ struct write_res {
 struct write_req {
 	pathname name;
 	filedata data;
-	int count;
-	int offset;
+	my_size_t count;
+	my_off_t offset;
 };
 
 struct lookup_res {
@@ -201,7 +202,7 @@ struct truncate_res {
 
 struct truncate_req {
 	pathname name;
-	int len;
+	my_off_t len;
 };
 
 struct statfs_res {

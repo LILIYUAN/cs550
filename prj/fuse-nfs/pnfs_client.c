@@ -82,7 +82,7 @@ static int pnfs_readdir(const char *name, void *buf, fuse_fill_dir_t filler,
     (void) offset;
     (void) fi;
 
-    printf("pnfs_readdir(%s, offset=%d)\n", name, offset);
+    printf("pnfs_readdir(%s, offset=%d)\n", name, (int)offset);
 
     if ((clnt = clnt_create(server.mds_name, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(server.mds_name);
@@ -92,26 +92,26 @@ static int pnfs_readdir(const char *name, void *buf, fuse_fill_dir_t filler,
     req.name = name;
     req.d_off = offset;
 
-	ret = readdir_ds_1(&req, &res, clnt);
-    if (ret != RPC_SUCCESS) {
-        printf("ret = %d\n",ret);
-        clnt_perror(clnt, "call failed");
-        return (-1);
-    }
-
-	while (res.res == 0) {
-		printf("dirent : %s\n", res.dent.d_name);
-		filler(buf, res.dent.d_name, NULL, 0);
-        req.d_off = res.dent.d_off;
-		ret = readdir_ds_1(&req, &res, clnt); 
+    do {
+        printf("pnfs_readdir: Before readdir_ds_1\n");
+        ret = readdir_ds_1(&req, &res, clnt);
+        printf("pnfs_readdir: Finished readdir_ds_1\n");
         if (ret != RPC_SUCCESS) {
             printf("ret = %d\n",ret);
             clnt_perror(clnt, "call failed");
             return (-1);
         }
-	} 
 
-	closedir(dfd);
+        if (res.eof != 1) {
+            printf("dirent : %s eof = %d\n", res.dent.d_name, res.eof);
+            printf("dirent : res.res = %d\n", res.res);
+            filler(buf, res.dent.d_name, NULL, 0);
+        }
+        req.d_off = res.dent.d_off;
+        printf("pnfs_readdir: next iteration\n");
+    } while (res.res == 0 && res.eof != 1);
+
+    clnt_destroy(clnt);
 
     return 0;
 }
@@ -192,6 +192,7 @@ static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
     size_t len;
     (void) fi;
 
+	printf("read(%s) offset : %d size %d\n", name, (int) offset, size);
 	len = read_c(server.mds_name, name, offset, size, buf);
 	printf("read(%s) offset : %d size %d buf = %s\n", name,
             (int) offset, len, buf);

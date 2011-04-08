@@ -219,7 +219,7 @@ int getattr_c(char *ds_svr, char *path, struct stat *buf)
     return res.res;
 }
 
-int readdir_c(char *ds_svr, char *path, int offset, struct dirent *dentry)
+int readdir_c(char *ds_svr, char *path, off_t offset, struct dirent *dentry)
 {
     readdir_req req;
     readdir_res res;
@@ -250,8 +250,10 @@ int readdir_c(char *ds_svr, char *path, int offset, struct dirent *dentry)
     }
 
 #ifdef DEBUG
-    printf("readdir_c : d_name=%s d_ino=%d d_off=%d d_reclen=%d d_type=%d\n",
+    /*
+    printf("readdir_c : d_name=%s d_ino=%ul d_off=%l d_reclen=%d d_type=%d\n",
             res.dent.d_name, res.dent.d_ino, res.dent.d_off, res.dent.d_reclen, res.dent.d_type);
+            */
 #endif
     // individually copy the items
     printf(" Here 0\n");
@@ -520,7 +522,7 @@ int close_c(char *ds_svr, char *path)
     return res.res;
 }
 
-int read_c(char *ds_svr, char *path, int offset, int count, char *buf)
+int read_c(char *ds_svr, char *path, off_t offset, size_t size, char *buf)
 {
     read_req req;
     read_res res;
@@ -534,8 +536,11 @@ int read_c(char *ds_svr, char *path, int offset, int count, char *buf)
 
     req.name = path;
     req.offset = offset;
-    req.count = count;
-
+    req.count = size;
+#ifdef DEBUG
+    printf("read_c: path=%s offset=%ul res.count=%ul size=%ul\n", path,
+            (unsigned long)req.offset, (unsigned long)req.count, (unsigned long)size);
+#endif
     ret = read_ds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
@@ -549,14 +554,16 @@ int read_c(char *ds_svr, char *path, int offset, int count, char *buf)
     }
 
     // individually copy the items
-    //*buf = res.data;
-    //*bytes = res.bytes;
-
+    //
+    memcpy(buf, res.data, res.res);
+#ifdef DEBUG
+    printf("read_c: res.res=%d res.data=%s\n", res.res, res.data);
+#endif
     clnt_destroy(clnt);
     return res.res;
 }
 
-int write_c(char *ds_svr, char *path, int offset, int count, char *buf)
+int write_c(char *ds_svr, char *path, off_t offset, size_t count, char *buf)
 {
     write_req req;
     write_res res;
@@ -620,7 +627,7 @@ int lookup_c(char *ds_svr, char *path)
     return res.res;
 }
 
-int truncate_c(char *ds_svr, char *path, int length)
+int truncate_c(char *ds_svr, char *path, off_t length)
 {
     truncate_req req;
     truncate_res res;

@@ -46,7 +46,7 @@ xdr_my_dev_t (XDR *xdrs, my_dev_t *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, objp))
+	 if (!xdr_u_long (xdrs, objp))
 		 return FALSE;
 	return TRUE;
 }
@@ -56,7 +56,7 @@ xdr_my_ino_t (XDR *xdrs, my_ino_t *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, objp))
+	 if (!xdr_u_long (xdrs, objp))
 		 return FALSE;
 	return TRUE;
 }
@@ -66,7 +66,7 @@ xdr_my_mode_t (XDR *xdrs, my_mode_t *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, objp))
+	 if (!xdr_u_int (xdrs, objp))
 		 return FALSE;
 	return TRUE;
 }
@@ -76,7 +76,7 @@ xdr_my_uid_t (XDR *xdrs, my_uid_t *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, objp))
+	 if (!xdr_u_int (xdrs, objp))
 		 return FALSE;
 	return TRUE;
 }
@@ -86,7 +86,7 @@ xdr_my_gid_t (XDR *xdrs, my_gid_t *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, objp))
+	 if (!xdr_u_int (xdrs, objp))
 		 return FALSE;
 	return TRUE;
 }
@@ -96,7 +96,17 @@ xdr_my_off_t (XDR *xdrs, my_off_t *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, objp))
+	 if (!xdr_long (xdrs, objp))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_my_size_t (XDR *xdrs, my_size_t *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_long (xdrs, objp))
 		 return FALSE;
 	return TRUE;
 }
@@ -106,7 +116,7 @@ xdr_my_blksize_t (XDR *xdrs, my_blksize_t *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, objp))
+	 if (!xdr_u_long (xdrs, objp))
 		 return FALSE;
 	return TRUE;
 }
@@ -116,7 +126,7 @@ xdr_my_blkcnt_t (XDR *xdrs, my_blkcnt_t *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, objp))
+	 if (!xdr_long (xdrs, objp))
 		 return FALSE;
 	return TRUE;
 }
@@ -126,7 +136,7 @@ xdr_my_time_t (XDR *xdrs, my_time_t *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, objp))
+	 if (!xdr_u_long (xdrs, objp))
 		 return FALSE;
 	return TRUE;
 }
@@ -136,7 +146,7 @@ xdr_my_nlink_t (XDR *xdrs, my_nlink_t *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, objp))
+	 if (!xdr_u_long (xdrs, objp))
 		 return FALSE;
 	return TRUE;
 }
@@ -380,7 +390,7 @@ xdr_readdir_req (XDR *xdrs, readdir_req *objp)
 
 	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->d_off))
+	 if (!xdr_my_off_t (xdrs, &objp->d_off))
 		 return FALSE;
 	return TRUE;
 }
@@ -582,9 +592,9 @@ xdr_read_req (XDR *xdrs, read_req *objp)
 
 	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->offset))
+	 if (!xdr_my_off_t (xdrs, &objp->offset))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->count))
+	 if (!xdr_my_size_t (xdrs, &objp->count))
 		 return FALSE;
 	return TRUE;
 }
@@ -608,9 +618,9 @@ xdr_write_req (XDR *xdrs, write_req *objp)
 		 return FALSE;
 	 if (!xdr_filedata (xdrs, objp->data))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->count))
+	 if (!xdr_my_size_t (xdrs, &objp->count))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->offset))
+	 if (!xdr_my_off_t (xdrs, &objp->offset))
 		 return FALSE;
 	return TRUE;
 }
@@ -652,7 +662,7 @@ xdr_truncate_req (XDR *xdrs, truncate_req *objp)
 
 	 if (!xdr_pathname (xdrs, &objp->name))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->len))
+	 if (!xdr_my_off_t (xdrs, &objp->len))
 		 return FALSE;
 	return TRUE;
 }
