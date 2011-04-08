@@ -1,0 +1,2 @@
+ds_server -d /var/tmp/mnt1-back/ -s indus - 0
+./pnfs_client -d -s /var/tmp/mnt1

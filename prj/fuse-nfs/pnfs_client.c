@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
      * Add the getopt code to fetch the options.
      * Right now we hard code the arguments.
      */
-    server = "indus";
+    server = "127.0.0.1";
     remote_fs = "/var/tmp/mnt1-back"; 
     local_fs = argv[1];
 
