@@ -182,7 +182,7 @@ int getattr_c(char *ds_svr, char *path, struct stat *buf)
 #endif
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -196,7 +196,7 @@ int getattr_c(char *ds_svr, char *path, struct stat *buf)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     } else
         errno = 0;
 
@@ -228,7 +228,7 @@ int readdir_c(char *ds_svr, char *path, off_t offset, struct dirent *dentry)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -246,7 +246,7 @@ int readdir_c(char *ds_svr, char *path, off_t offset, struct dirent *dentry)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
 #ifdef DEBUG
@@ -282,7 +282,7 @@ int mkdir_c(char *ds_svr, char *path, mode_t mode)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -297,7 +297,7 @@ int mkdir_c(char *ds_svr, char *path, mode_t mode)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -313,7 +313,7 @@ int unlink_c(char *ds_svr, char *path)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -327,7 +327,7 @@ int unlink_c(char *ds_svr, char *path)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -344,7 +344,7 @@ int rmdir_c(char *ds_svr, char *path)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -358,7 +358,7 @@ int rmdir_c(char *ds_svr, char *path)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -374,7 +374,7 @@ int rename_c(char *ds_svr, char *oldpath, char *newpath)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.old = oldpath;
@@ -389,7 +389,7 @@ int rename_c(char *ds_svr, char *oldpath, char *newpath)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -405,7 +405,7 @@ int mknod_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -421,7 +421,7 @@ int mknod_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -437,7 +437,7 @@ int create_c(char *ds_svr, char *path, mode_t mode)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -452,7 +452,7 @@ int create_c(char *ds_svr, char *path, mode_t mode)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -468,7 +468,7 @@ int open_c(char *ds_svr, char *path, int flags, mode_t mode)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -484,7 +484,7 @@ int open_c(char *ds_svr, char *path, int flags, mode_t mode)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -500,7 +500,7 @@ int close_c(char *ds_svr, char *path)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -514,7 +514,7 @@ int close_c(char *ds_svr, char *path)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -530,7 +530,7 @@ int read_c(char *ds_svr, char *path, off_t offset, size_t size, char *buf)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -549,7 +549,7 @@ int read_c(char *ds_svr, char *path, off_t offset, size_t size, char *buf)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     // individually copy the items
@@ -571,7 +571,7 @@ int write_c(char *ds_svr, char *path, off_t offset, size_t count, char *buf)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -589,7 +589,7 @@ int write_c(char *ds_svr, char *path, off_t offset, size_t count, char *buf)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -605,7 +605,7 @@ int lookup_c(char *ds_svr, char *path)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -619,7 +619,7 @@ int lookup_c(char *ds_svr, char *path)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -635,7 +635,7 @@ int truncate_c(char *ds_svr, char *path, off_t length)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -650,7 +650,7 @@ int truncate_c(char *ds_svr, char *path, off_t length)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -666,7 +666,7 @@ int statfs_c(char *ds_svr, char *path, struct my_statfs *buf)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -680,7 +680,7 @@ int statfs_c(char *ds_svr, char *path, struct my_statfs *buf)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     // individually copy the items
@@ -709,7 +709,7 @@ int chmod_c(char *ds_svr, char *path, mode_t mode)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -723,7 +723,7 @@ int chmod_c(char *ds_svr, char *path, mode_t mode)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -739,7 +739,7 @@ int chown_c(char *ds_svr, char *path, uid_t uid, gid_t gid)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -755,7 +755,7 @@ int chown_c(char *ds_svr, char *path, uid_t uid, gid_t gid)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -771,7 +771,7 @@ int link_c(char *ds_svr, char *old, char *new)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.old = old;
@@ -786,7 +786,7 @@ int link_c(char *ds_svr, char *old, char *new)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -802,7 +802,7 @@ int symlink_c(char *ds_svr, char *old, char * new)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.old = old;
@@ -817,7 +817,7 @@ int symlink_c(char *ds_svr, char *old, char * new)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     clnt_destroy(clnt);
@@ -833,7 +833,7 @@ int readlink_c(char *ds_svr, char *path, char *buf, size_t bufsize)
 
     if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
         clnt_pcreateerror(ds_svr);
-        return(-1);
+        return(res.res);
     }
 
     req.name = path;
@@ -848,7 +848,7 @@ int readlink_c(char *ds_svr, char *path, char *buf, size_t bufsize)
 
     if (res.res  < 0) {
         errno = -(res.res);
-        return (-1);
+        return (res.res);
     }
 
     /*
