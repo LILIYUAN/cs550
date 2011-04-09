@@ -1,0 +1,21 @@
+1000-req-local-local-1k
+1000-req-local-local-2k
+1000-req-local-local-8k
+
+1000-req-remote-1k
+1000-req-remote-2k
+1000-req-remote-8k
+
+1000-req-remote-1k-3parallel
+1000-req-remote-2k-2parallel
+1000-req-remote-8k-2parallel
+
+parallel tests
+
+512k file p2p from 1 peer
+512k file p2p from 2 peer
+512k file p2p from 3 peer
+512k file p2p from 4 peer
+512k file p2p from 5 peer
+
+
