@@ -5,10 +5,12 @@
 %#include <dirent.h>
 %#include <unistd.h>
 
+const MAXHOSTNAME = 32;
 const MAXNAMELEN = 128;
 const SIZE = 4096;
 const STRIPE_SZ = 16384;
 const MAXDS = 16;
+const MAXCOUNT = 32;
 
 /*
  * Type for storing path . Assuming max file path length to be 1024
@@ -273,12 +275,6 @@ struct mount_res {
 /*
  * Metadata Server request and result data structures.
  */
-struct registry_rec {
-    string  peer<MAXNAME>;
-    string  fname<MAXNAME>;
-    int     ret;
-};
-
 struct layout_rec {
     char    dsname[MAXHOSTNAME];
     int     offset;
@@ -286,7 +282,7 @@ struct layout_rec {
 };
 
 struct getlayout_req {
-    string      fname<MAXNAME>;
+    string      fname<MAXNAMELEN>;
     my_off_t    offset;
     my_size_t   len;
     int         op;
@@ -294,7 +290,7 @@ struct getlayout_req {
 
 struct getlayout_res {
     int             cnt;
-    layout_rec_t    recs[MAXCOUNT];
+    layout_rec      recs[MAXCOUNT];
     int             more_recs;
 };
 

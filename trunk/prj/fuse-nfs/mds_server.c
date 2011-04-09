@@ -36,60 +36,43 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
 }
 
 /*
- * NOT needed. 
- */
-bool_t
-access_1_svc(access_req *argp, access_res *result, struct svc_req *rqstp)
-{
-	bool_t retval;
-
-	/*
-	 * insert server code here
-	 */
-
-	return retval;
-}
-
-/*
  * Same as ds_server
  */
 bool_t
-create_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
+create_mds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = creat(name, argp->mode);
+    if (ret != 0) 
+        result->res = -errno;
+    else 
+        result->res = 0;
 
 	return retval;
 }
 
 /*
- * NOT needed.
+ * The size of the file is saved as the first line of the file.
+ * This routine opens the file and returns the size of the file.
  */
-bool_t
-search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
+size_t
+getsize(char *name)
 {
-	bool_t retval;
+    FILE *fh;
+    size_t sz;
 
-	/*
-	 * insert server code here
-	 */
+    if ((fd = fopen(name, "r")) == NULL) {
+        return (0);
+    }
 
-	return retval;
-}
-
-int
-mdprog_1_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t result)
-{
-	xdr_free (xdr_result, result);
-
-	/*
-	 * Insert additional freeing code here, if needed
-	 */
-
-	return 1;
+    fscanf(fh, "%lu", &sz);
+    fclose(fh);
+    return(sz);
 }
 
 /*
@@ -100,12 +83,35 @@ mdprog_1_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t result)
 bool_t
 getattr_mds_1_svc(getattr_req *argp, getattr_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    struct stat sbuf;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
 
+    result->res = stat(name, &sbuf);
+
+    if (result->res != 0) {
+        result->res = -errno;
+    } else {
+        result->sbuf.stat_dev = sbuf.st_dev;
+        result->sbuf.stat_ino = sbuf.st_ino;
+        result->sbuf.stat_mode = sbuf.st_mode;
+        result->sbuf.stat_nlink = sbuf.st_nlink;
+        result->sbuf.stat_uid = sbuf.st_uid;
+        result->sbuf.stat_gid = sbuf.st_gid;
+        result->sbuf.stat_rdev = sbuf.st_rdev;
+        result->sbuf.stat_blksize = sbuf.st_blksize;
+        result->sbuf.stat_blocks = sbuf.st_blocks;
+        result->sbuf.stat_atime = sbuf.st_atime;
+        result->sbuf.stat_mtime = sbuf.st_mtime;
+        result->sbuf.stat_ctime = sbuf.st_ctime;
+        result->sbuf.stat_size = getsize(name); 
+    }
+
+#ifdef DEBUG
+    printf("getattr_mds_1_svc: name: %s resi: %d\n", name, result->res);
+#endif
 	return retval;
 }
 
@@ -130,12 +136,46 @@ readdir_mds_1_svc(readdir_req *argp, readdir_res *result, struct svc_req *rqstp)
 bool_t
 mkdir_mds_1_svc(mkdir_req *argp, mkdir_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+    DIR *dirp;
+    struct dirent dent;
+    struct dirent *p = NULL;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
 
+    dirp = opendir(name);
+    if (dirp == NULL) {
+        result->res = -errno;
+        return retval;
+    }
+
+    seekdir(dirp, argp->d_off);
+    ret = readdir_r(dirp, &dent, &p);
+
+    if (ret != 0) {
+        result->res = -errno;
+        closedir(dirp);
+        return retval;
+    }
+
+    result->dent.d_ino = dent.d_ino;
+    result->dent.d_off = dent.d_off;
+    result->dent.d_reclen = dent.d_reclen;
+    result->dent.d_type = dent.d_type;
+    strcpy(result->dent.d_name, dent.d_name);
+    result->res = 0;
+
+    if (p == NULL)
+        result->eof = 1;
+    else 
+        result->eof = 0;
+
+#ifdef DEBUG
+    printf("readdir_mds_1_svc: dir=%s d_name=%s d_off=%d d_reclen=%d\n", name, dent.d_name, (int)dent.d_off, dent.d_reclen);
+#endif
+    closedir(dirp);
 	return retval;
 }
 
@@ -193,11 +233,17 @@ rename_mds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
 bool_t
 mknod_mds_1_svc(mknod_req *argp, mknod_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = mknod(name, argp->mode, argp->dev);
+    if (ret != 0) 
+        result->res = -errno;
+    else 
+        result->res = 0;
 
 	return retval;
 }
@@ -208,11 +254,17 @@ mknod_mds_1_svc(mknod_req *argp, mknod_res *result, struct svc_req *rqstp)
 bool_t
 create_mds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = creat(name, argp->mode);
+    if (ret != 0) 
+        result->res = -errno;
+    else 
+        result->res = 0;
 
 	return retval;
 }
@@ -223,11 +275,19 @@ create_mds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
 bool_t
 open_mds_1_svc(open_req *argp, open_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int fd;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    fd = open(name, argp->flags, argp->mode);
+    if (fd < 0) 
+        result->res = -errno;
+    else 
+        result->res = fd;
+
+    close(fd);
 
 	return retval;
 }
@@ -321,11 +381,30 @@ bool_t
 statfs_mds_1_svc(statfs_req *argp, statfs_res *result, struct svc_req *rqstp)
 {
 	bool_t retval;
+    struct statfs sbuf;
+    int ret;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
 
+    ret = statfs(name, &sbuf);
+
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
+
+    result->stat.f_type = sbuf.f_type;     /* type of file system (see below) */
+    result->stat.f_bsize = sbuf.f_bsize;    /* optimal transfer block size */
+    result->stat.f_blocks = sbuf.f_blocks;   /* total data blocks in file system */
+    result->stat.f_bfree = sbuf.f_bfree;    /* free blocks in fs */
+    result->stat.f_bavail = sbuf.f_bavail;   /* free blocks avail to unprivileged user */
+    result->stat.f_files = sbuf.f_files;    /* total file nodes in file system */
+    result->stat.f_ffree = sbuf.f_ffree;    /* free file nodes in fs */
+    result->stat.f_fsid.__val[0] = sbuf.f_fsid.__val[0]; /* file system id */
+    result->stat.f_fsid.__val[1] = sbuf.f_fsid.__val[1]; /* file system id */
+    result->stat.f_namelen = sbuf.f_namelen;  /* maximum length of filenames */
+    
 	return retval;
 }
 
@@ -335,11 +414,17 @@ statfs_mds_1_svc(statfs_req *argp, statfs_res *result, struct svc_req *rqstp)
 bool_t
 chmod_mds_1_svc(chmod_req *argp, chmod_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = chmod(name, argp->mode);
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
 
 	return retval;
 }
@@ -350,11 +435,17 @@ chmod_mds_1_svc(chmod_req *argp, chmod_res *result, struct svc_req *rqstp)
 bool_t
 chown_mds_1_svc(chown_req *argp, chown_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = chown(name, argp->uid, argp->gid);
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
 
 	return retval;
 }
@@ -365,11 +456,19 @@ chown_mds_1_svc(chown_req *argp, chown_res *result, struct svc_req *rqstp)
 bool_t
 link_mds_1_svc(link_req *argp, link_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+    char old[MAXPATHLEN];
+    char new[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(old, "%s/%s", mds.dir, argp->old);
+    sprintf(new, "%s/%s", mds.dir, argp->new);
+
+    ret = link(old, new);
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
 
 	return retval;
 }
@@ -381,11 +480,19 @@ link_mds_1_svc(link_req *argp, link_res *result, struct svc_req *rqstp)
 bool_t
 symlink_mds_1_svc(symlink_req *argp, symlink_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+    char old[MAXPATHLEN];
+    char new[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(old, "%s/%s", mds.dir, argp->old);
+    sprintf(new, "%s/%s", mds.dir, argp->new);
+
+    ret = symlink(old, new);
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
 
 	return retval;
 }
@@ -397,11 +504,16 @@ symlink_mds_1_svc(symlink_req *argp, symlink_res *result, struct svc_req *rqstp)
 bool_t
 readlink_mds_1_svc(readlink_req *argp, readlink_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    int ret;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, name);
+    ret = readlink(name, result->buf, argp->bufsize);
+    if (ret < 0)
+        result->res = -errno;
+    else
+        result->res = 0;
 
 	return retval;
 }
@@ -418,3 +530,14 @@ mount_mds_1_svc(mount_req *argp, mount_res *result, struct svc_req *rqstp)
 	return retval;
 }
 
+int
+mdsprog_1_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t result)
+{
+	xdr_free (xdr_result, result);
+
+	/*
+	 * Insert additional freeing code here, if needed
+	 */
+
+	return 1;
+}

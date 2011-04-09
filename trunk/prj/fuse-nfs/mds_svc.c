@@ -26,77 +26,6 @@ static void
 mdprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
 	union {
-		getlayout_req getlayout_1_arg;
-		access_req access_1_arg;
-		create_req create_1_arg;
-		query_req search_1_arg;
-	} argument;
-	union {
-		getlayout_res getlayout_1_res;
-		access_res access_1_res;
-		create_res create_1_res;
-		query_rec search_1_res;
-	} result;
-	bool_t retval;
-	xdrproc_t _xdr_argument, _xdr_result;
-	bool_t (*local)(char *, void *, struct svc_req *);
-
-	switch (rqstp->rq_proc) {
-	case NULLPROC:
-		(void) svc_sendreply (transp, (xdrproc_t) xdr_void, (char *)NULL);
-		return;
-
-	case getlayout:
-		_xdr_argument = (xdrproc_t) xdr_getlayout_req;
-		_xdr_result = (xdrproc_t) xdr_getlayout_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))getlayout_1_svc;
-		break;
-
-	case access:
-		_xdr_argument = (xdrproc_t) xdr_access_req;
-		_xdr_result = (xdrproc_t) xdr_access_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))access_1_svc;
-		break;
-
-	case create:
-		_xdr_argument = (xdrproc_t) xdr_create_req;
-		_xdr_result = (xdrproc_t) xdr_create_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))create_1_svc;
-		break;
-
-	case search:
-		_xdr_argument = (xdrproc_t) xdr_query_req;
-		_xdr_result = (xdrproc_t) xdr_query_rec;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))search_1_svc;
-		break;
-
-	default:
-		svcerr_noproc (transp);
-		return;
-	}
-	memset ((char *)&argument, 0, sizeof (argument));
-	if (!svc_getargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) &argument)) {
-		svcerr_decode (transp);
-		return;
-	}
-	retval = (bool_t) (*local)((char *)&argument, (void *)&result, rqstp);
-	if (retval > 0 && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)&result)) {
-		svcerr_systemerr (transp);
-	}
-	if (!svc_freeargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) &argument)) {
-		fprintf (stderr, "%s", "unable to free arguments");
-		exit (1);
-	}
-	if (!mdprog_1_freeresult (transp, _xdr_result, (caddr_t) &result))
-		fprintf (stderr, "%s", "unable to free results");
-
-	return;
-}
-
-static void
-mdprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
-{
-	union {
 		getattr_req getattr_mds_1_arg;
 		readdir_req readdir_mds_1_arg;
 		mkdir_req mkdir_mds_1_arg;
@@ -314,7 +243,6 @@ main (int argc, char **argv)
 	register SVCXPRT *transp;
 
 	pmap_unset (MDPROG, MDVERS);
-	pmap_unset (MDPROG, MDVERS);
 
 	transp = svcudp_create(RPC_ANYSOCK);
 	if (transp == NULL) {
@@ -325,18 +253,10 @@ main (int argc, char **argv)
 		fprintf (stderr, "%s", "unable to register (MDPROG, MDVERS, udp).");
 		exit(1);
 	}
-	if (!svc_register(transp, MDPROG, MDVERS, mdprog_1, IPPROTO_UDP)) {
-		fprintf (stderr, "%s", "unable to register (MDPROG, MDVERS, udp).");
-		exit(1);
-	}
 
 	transp = svctcp_create(RPC_ANYSOCK, 0, 0);
 	if (transp == NULL) {
 		fprintf (stderr, "%s", "cannot create tcp service.");
-		exit(1);
-	}
-	if (!svc_register(transp, MDPROG, MDVERS, mdprog_1, IPPROTO_TCP)) {
-		fprintf (stderr, "%s", "unable to register (MDPROG, MDVERS, tcp).");
 		exit(1);
 	}
 	if (!svc_register(transp, MDPROG, MDVERS, mdprog_1, IPPROTO_TCP)) {

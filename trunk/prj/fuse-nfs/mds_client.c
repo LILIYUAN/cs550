@@ -18,53 +18,6 @@ mdprog_1(char *host)
 {
 	CLIENT *clnt;
 	enum clnt_stat retval_1;
-	getlayout_res result_1;
-	getlayout_req  getlayout_1_arg;
-	enum clnt_stat retval_2;
-	access_res result_2;
-	access_req  access_1_arg;
-	enum clnt_stat retval_3;
-	create_res result_3;
-	create_req  create_1_arg;
-	enum clnt_stat retval_4;
-	query_rec result_4;
-	query_req  search_1_arg;
-
-#ifndef	DEBUG
-	clnt = clnt_create (host, MDPROG, MDVERS, "udp");
-	if (clnt == NULL) {
-		clnt_pcreateerror (host);
-		exit (1);
-	}
-#endif	/* DEBUG */
-
-	retval_1 = getlayout_1(&getlayout_1_arg, &result_1, clnt);
-	if (retval_1 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_2 = access_1(&access_1_arg, &result_2, clnt);
-	if (retval_2 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_3 = create_1(&create_1_arg, &result_3, clnt);
-	if (retval_3 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_4 = search_1(&search_1_arg, &result_4, clnt);
-	if (retval_4 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-#ifndef	DEBUG
-	clnt_destroy (clnt);
-#endif	 /* DEBUG */
-}
-
-
-void
-mdprog_1(char *host)
-{
-	CLIENT *clnt;
-	enum clnt_stat retval_1;
 	getattr_res result_1;
 	getattr_req  getattr_mds_1_arg;
 	enum clnt_stat retval_2;
@@ -243,7 +196,6 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 	host = argv[1];
-	mdprog_1 (host);
 	mdprog_1 (host);
 exit (0);
 }
