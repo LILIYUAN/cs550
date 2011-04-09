@@ -69,6 +69,12 @@ static int pnfs_readdir(const char *name, void *buf, fuse_fill_dir_t filler,
     return 0;
 }
 */
+
+static int pnfs_readlink(const char *name, char *buf, size_t size)
+{
+    return(readlink_c(server.mds_name, name, buf, size));
+}
+
 static int pnfs_readdir(const char *name, void *buf, fuse_fill_dir_t filler,
                        off_t offset, struct fuse_file_info *fi)
 {
@@ -116,6 +122,10 @@ static int pnfs_readdir(const char *name, void *buf, fuse_fill_dir_t filler,
     return 0;
 }
 
+static int pnfs_mknode(const char *name, mode_t mode, dev_t dev)
+{
+    return(mknod_c(server.mds_name, name, mode, dev));
+}
 
 static int pnfs_mkdir(const char *dname, mode_t mode)
 {
@@ -168,6 +178,11 @@ static int pnfs_chown(const char *name, uid_t uid, gid_t gid)
 static int pnfs_truncate(const char *name, off_t off)
 {
     return(truncate_c(server.mds_name, name, off));
+}
+
+static int pnfs_create(const char *name, mode_t mode, struct fuse_file_info *fi)
+{
+    return(create_c(server.mds_name, name, mode));
 }
 
 static int pnfs_open(const char *name, struct fuse_file_info *fi)
@@ -244,9 +259,26 @@ init_server(char *servername, char *remote_fs, char *local_fs)
 
 static struct fuse_operations pnfs_oper = {
   .getattr   = pnfs_getattr,
-  .readdir = pnfs_readdir,
-  .open   = pnfs_open,
-  .read   = pnfs_read,
+  .readlink = pnfs_readlink,
+  .readdir  = pnfs_readdir,
+  .mknod    = pnfs_mknode,
+  .mkdir    = pnfs_mkdir,
+  .unlink   = pnfs_unlink,
+  .rmdir    = pnfs_rmdir,
+  .symlink  = pnfs_symlink,
+  .rename   = pnfs_rename,
+  .link     = pnfs_link,
+  .chmod    = pnfs_chmod,
+  .chown    = pnfs_chown,
+  .truncate = pnfs_truncate,
+
+  .create   = pnfs_create,
+  .open     = pnfs_open,
+  .read     = pnfs_read,
+  .write    = pnfs_write,
+  .statfs   = pnfs_statfs,
+/*  .lookup   = pnfs_lookup,*/
+  /*.close    = pnfs_close,*/
 };
 
 void usage(char *name)

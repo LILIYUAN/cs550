@@ -522,8 +522,6 @@ xdr_create_req (XDR *xdrs, create_req *objp)
 		 return FALSE;
 	 if (!xdr_my_mode_t (xdrs, &objp->mode))
 		 return FALSE;
-	 if (!xdr_my_dev_t (xdrs, &objp->dev))
-		 return FALSE;
 	return TRUE;
 }
 

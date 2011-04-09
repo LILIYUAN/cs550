@@ -428,7 +428,7 @@ int mknod_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
     return res.res;
 }
 
-int create_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
+int create_c(char *ds_svr, char *path, mode_t mode)
 {
     create_req req;
     create_res res;
@@ -442,7 +442,6 @@ int create_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
 
     req.name = path;
     req.mode = mode;
-    req.dev = dev;
 
     ret = create_ds_1(&req,&res,clnt);
 
@@ -825,7 +824,7 @@ int symlink_c(char *ds_svr, char *old, char * new)
     return res.res;
 }
 
-int readlink_c(char *ds_svr, char *path, int bufsize, char *buf)
+int readlink_c(char *ds_svr, char *path, char *buf, size_t bufsize)
 {
     readlink_req req;
     readlink_res res;
@@ -852,8 +851,10 @@ int readlink_c(char *ds_svr, char *path, int bufsize, char *buf)
         return (-1);
     }
 
-    //cast it before assigning
-    //*buf = res.buf;
+    /*
+     * Copy the result back to the buffer.
+     */
+    strcpy(buf, res.buf);
 
     clnt_destroy(clnt);
     return res.res;
