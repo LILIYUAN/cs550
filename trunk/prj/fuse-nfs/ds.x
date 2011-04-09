@@ -295,7 +295,7 @@ program DSPROG {
 	link_res	link_ds(link_req *)	= 18;
 	symlink_res	symlink_ds(symlink_req *)	= 19;
 	readlink_res	readlink_ds(readlink_req *)= 20;
-    mount_res   mount_mds(mount_req *) = 21;
+        mount_res   mount_mds(mount_req *) = 21;
     } = 1;
 } = 0x20000011;
 
