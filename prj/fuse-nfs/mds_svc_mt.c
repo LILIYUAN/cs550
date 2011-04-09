@@ -341,9 +341,10 @@ init_mds(char *dir, char *ds_file)
     FILE *fh;
     char *ds;
 
-    strcpy(mds.md_server, mds_name);
-    strcpy(mds.dir, dir);
-    strcpy(mds.md_server, mds_name);
+    if ( gethostname(mds.md_server, sizeof(mds.md_server)) != 0) {
+        printf("Unable to get the local hostname ! errno = %d\n", errno);
+        return (1);
+    }
     strcpy(mds.dir, dir);
 
     ret = stat(dir, &sbuf);
