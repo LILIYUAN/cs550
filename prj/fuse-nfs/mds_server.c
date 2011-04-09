@@ -4,13 +4,15 @@
  * as a guideline for developing your own functions.
  */
 
-#include "mds.h"
+#include "mds_misc.h"
 #include <sys/vfs.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
+
+extern mds_t mds;
 
 /*
  * READ : argp->op == READ request.
