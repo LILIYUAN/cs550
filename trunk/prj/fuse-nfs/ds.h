@@ -182,7 +182,6 @@ typedef struct create_res create_res;
 struct create_req {
 	pathname name;
 	my_mode_t mode;
-	my_dev_t dev;
 };
 typedef struct create_req create_req;
 
