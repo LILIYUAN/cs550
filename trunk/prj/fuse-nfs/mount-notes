@@ -1,0 +1,40 @@
+The server will be started with a directory to share.
+This limits the server to share just one directory at a time.
+Here is the config file of the share :
+
+    md_server -d <share-dir> -D <file-with-list-of-data-servers>
+
+    The <md_server> will start data-servers on all the dataservers before it
+    starts serving :
+         ds_server -d <share-dir> -s <mds-server> -i fsid
+
+NOTE : In this framework we are limiting the number of filesystems that can be
+shared to ONE. However, it is easily possible to share multiple filesystems by
+keeping their configs in a file and implementing the share command :
+    share -d <share-dir> -D <file-with-list-of-data-servers>
+
+    This will be a RPC service from the mds_server which will make sure that the
+    necessary dataservers are running. 
+
+    We are not implementing this to keep the current implementation simple.
+
+- The fuse client makes a mount call to the mds-server to check if the requested
+  FS is available. The mds_server does the following as part of mount call :
+    - Check if the requested path is being served by that server. If yes, it
+      returns the following :
+        - int fs_id /* This derived from statfs on the directory being shared */
+
+        NOTE : The mds_server should maintain the following for the shared
+        filesystem/directory :
+            {
+                char    path[MAXPATHLEN];
+                fsid_t  fsid;
+            }
+- The pnfs-client caches the information returned by the server.
+    - fsid with the rest of the information.
+
+- For all future calls to the server will send (both mds and ds) we pass the
+  fsid and the filename. The fsid is used by the dataserver and md-server to
+  make sure it is the right filesystem that the request is for.
+
+
