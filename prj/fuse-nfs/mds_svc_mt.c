@@ -3,7 +3,7 @@
  * It was generated using rpcgen.
  */
 
-#include "ds_misc.h"
+#include "mds_misc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <rpc/pmap_clnt.h>
@@ -86,7 +86,6 @@ typedef struct tdata {
 } tdata_t;
 
 mds_t   mds;
-ds_t    ds;
 
 /*
  * Modified service routine. This is the routine executed by the service threads
@@ -172,135 +171,135 @@ mdsprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		return;
 
 	case getattr_mds:
-		_xdr_argument = (xdrproc_t) xdr_getattr_req;
-		_xdr_result = (xdrproc_t) xdr_getattr_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))getattr_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_getattr_req;
+		datap->_xdr_result = (xdrproc_t) xdr_getattr_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))getattr_mds_1_svc;
 		break;
 
 	case readdir_mds:
-		_xdr_argument = (xdrproc_t) xdr_readdir_req;
-		_xdr_result = (xdrproc_t) xdr_readdir_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))readdir_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_readdir_req;
+		datap->_xdr_result = (xdrproc_t) xdr_readdir_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))readdir_mds_1_svc;
 		break;
 
 	case mkdir_mds:
-		_xdr_argument = (xdrproc_t) xdr_mkdir_req;
-		_xdr_result = (xdrproc_t) xdr_mkdir_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))mkdir_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_mkdir_req;
+		datap->_xdr_result = (xdrproc_t) xdr_mkdir_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))mkdir_mds_1_svc;
 		break;
 
 	case unlink_mds:
-		_xdr_argument = (xdrproc_t) xdr_unlink_req;
-		_xdr_result = (xdrproc_t) xdr_unlink_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))unlink_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_unlink_req;
+		datap->_xdr_result = (xdrproc_t) xdr_unlink_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))unlink_mds_1_svc;
 		break;
 
 	case rmdir_mds:
-		_xdr_argument = (xdrproc_t) xdr_rmdir_req;
-		_xdr_result = (xdrproc_t) xdr_rmdir_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))rmdir_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_rmdir_req;
+		datap->_xdr_result = (xdrproc_t) xdr_rmdir_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))rmdir_mds_1_svc;
 		break;
 
 	case rename_mds:
-		_xdr_argument = (xdrproc_t) xdr_rename_req;
-		_xdr_result = (xdrproc_t) xdr_rename_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))rename_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_rename_req;
+		datap->_xdr_result = (xdrproc_t) xdr_rename_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))rename_mds_1_svc;
 		break;
 
 	case mknod_mds:
-		_xdr_argument = (xdrproc_t) xdr_mknod_req;
-		_xdr_result = (xdrproc_t) xdr_mknod_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))mknod_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_mknod_req;
+		datap->_xdr_result = (xdrproc_t) xdr_mknod_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))mknod_mds_1_svc;
 		break;
 
 	case create_mds:
-		_xdr_argument = (xdrproc_t) xdr_create_req;
-		_xdr_result = (xdrproc_t) xdr_create_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))create_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_create_req;
+		datap->_xdr_result = (xdrproc_t) xdr_create_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))create_mds_1_svc;
 		break;
 
 	case open_mds:
-		_xdr_argument = (xdrproc_t) xdr_open_req;
-		_xdr_result = (xdrproc_t) xdr_open_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))open_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_open_req;
+		datap->_xdr_result = (xdrproc_t) xdr_open_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))open_mds_1_svc;
 		break;
 
 	case close_mds:
-		_xdr_argument = (xdrproc_t) xdr_close_req;
-		_xdr_result = (xdrproc_t) xdr_close_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))close_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_close_req;
+		datap->_xdr_result = (xdrproc_t) xdr_close_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))close_mds_1_svc;
 		break;
 
 	case read_mds:
-		_xdr_argument = (xdrproc_t) xdr_read_req;
-		_xdr_result = (xdrproc_t) xdr_read_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))read_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_read_req;
+		datap->_xdr_result = (xdrproc_t) xdr_read_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))read_mds_1_svc;
 		break;
 
 	case write_mds:
-		_xdr_argument = (xdrproc_t) xdr_write_req;
-		_xdr_result = (xdrproc_t) xdr_write_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))write_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_write_req;
+		datap->_xdr_result = (xdrproc_t) xdr_write_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))write_mds_1_svc;
 		break;
 
 	case lookup_mds:
-		_xdr_argument = (xdrproc_t) xdr_lookup_req;
-		_xdr_result = (xdrproc_t) xdr_lookup_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))lookup_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_lookup_req;
+		datap->_xdr_result = (xdrproc_t) xdr_lookup_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))lookup_mds_1_svc;
 		break;
 
 	case truncate_mds:
-		_xdr_argument = (xdrproc_t) xdr_truncate_req;
-		_xdr_result = (xdrproc_t) xdr_truncate_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))truncate_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_truncate_req;
+		datap->_xdr_result = (xdrproc_t) xdr_truncate_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))truncate_mds_1_svc;
 		break;
 
 	case statfs_mds:
-		_xdr_argument = (xdrproc_t) xdr_statfs_req;
-		_xdr_result = (xdrproc_t) xdr_statfs_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))statfs_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_statfs_req;
+		datap->_xdr_result = (xdrproc_t) xdr_statfs_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))statfs_mds_1_svc;
 		break;
 
 	case chmod_mds:
-		_xdr_argument = (xdrproc_t) xdr_chmod_req;
-		_xdr_result = (xdrproc_t) xdr_chmod_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))chmod_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_chmod_req;
+		datap->_xdr_result = (xdrproc_t) xdr_chmod_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))chmod_mds_1_svc;
 		break;
 
 	case chown_mds:
-		_xdr_argument = (xdrproc_t) xdr_chown_req;
-		_xdr_result = (xdrproc_t) xdr_chown_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))chown_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_chown_req;
+		datap->_xdr_result = (xdrproc_t) xdr_chown_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))chown_mds_1_svc;
 		break;
 
 	case link_mds:
-		_xdr_argument = (xdrproc_t) xdr_link_req;
-		_xdr_result = (xdrproc_t) xdr_link_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))link_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_link_req;
+		datap->_xdr_result = (xdrproc_t) xdr_link_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))link_mds_1_svc;
 		break;
 
 	case symlink_mds:
-		_xdr_argument = (xdrproc_t) xdr_symlink_req;
-		_xdr_result = (xdrproc_t) xdr_symlink_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))symlink_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_symlink_req;
+		datap->_xdr_result = (xdrproc_t) xdr_symlink_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))symlink_mds_1_svc;
 		break;
 
 	case readlink_mds:
-		_xdr_argument = (xdrproc_t) xdr_readlink_req;
-		_xdr_result = (xdrproc_t) xdr_readlink_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))readlink_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_readlink_req;
+		datap->_xdr_result = (xdrproc_t) xdr_readlink_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))readlink_mds_1_svc;
 		break;
 
 	case mount_mds:
-		_xdr_argument = (xdrproc_t) xdr_mount_req;
-		_xdr_result = (xdrproc_t) xdr_mount_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))mount_mds_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_mount_req;
+		datap->_xdr_result = (xdrproc_t) xdr_mount_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))mount_mds_1_svc;
 		break;
 
 	case getlayout:
-		_xdr_argument = (xdrproc_t) xdr_getlayout_req;
-		_xdr_result = (xdrproc_t) xdr_getlayout_res;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))getlayout_1_svc;
+		datap->_xdr_argument = (xdrproc_t) xdr_getlayout_req;
+		datap->_xdr_result = (xdrproc_t) xdr_getlayout_res;
+		datap->local = (bool_t (*) (char *, void *,  struct svc_req *))getlayout_1_svc;
 		break;
 
 	default:
@@ -404,7 +403,7 @@ int
 main (int argc, char **argv)
 {
 	register SVCXPRT *transp;
-    char *dir, *mds;
+    char *dir, *mds, *dsfile;
     fsid_t fsid;
     int opt;
 
@@ -435,15 +434,15 @@ main (int argc, char **argv)
         return (1);
     }
 
-	pmap_unset (DSPROG, DSVERS);
+	pmap_unset (MDPROG, MDVERS);
 
 	transp = svcudp_create(RPC_ANYSOCK);
 	if (transp == NULL) {
 		fprintf (stderr, "%s", "cannot create udp service.");
 		exit(1);
 	}
-	if (!svc_register(transp, DSPROG, DSVERS, dsprog_1, IPPROTO_UDP)) {
-		fprintf (stderr, "%s", "unable to register (DSPROG, DSVERS, udp).");
+	if (!svc_register(transp, MDPROG, MDVERS, mdsprog_1, IPPROTO_UDP)) {
+		fprintf (stderr, "%s", "unable to register (MDPROG, MDVERS, udp).");
 		exit(1);
 	}
 
@@ -452,8 +451,8 @@ main (int argc, char **argv)
 		fprintf (stderr, "%s", "cannot create tcp service.");
 		exit(1);
 	}
-	if (!svc_register(transp, DSPROG, DSVERS, dsprog_1, IPPROTO_TCP)) {
-		fprintf (stderr, "%s", "unable to register (DSPROG, DSVERS, tcp).");
+	if (!svc_register(transp, MDPROG, MDVERS, mdsprog_1, IPPROTO_TCP)) {
+		fprintf (stderr, "%s", "unable to register (MDPROG, MDVERS, tcp).");
 		exit(1);
 	}
 
