@@ -20,10 +20,12 @@ extern "C" {
 #include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
+#define MAXHOSTNAME 32
 #define MAXNAMELEN 128
 #define SIZE 4096
 #define STRIPE_SZ 16384
 #define MAXDS 16
+#define MAXCOUNT 32
 
 typedef char *filename;
 
@@ -335,13 +337,6 @@ struct mount_res {
 };
 typedef struct mount_res mount_res;
 
-struct registry_rec {
-	char *peer;
-	char *fname;
-	int ret;
-};
-typedef struct registry_rec registry_rec;
-
 struct layout_rec {
 	char dsname[MAXHOSTNAME];
 	int offset;
@@ -359,44 +354,10 @@ typedef struct getlayout_req getlayout_req;
 
 struct getlayout_res {
 	int cnt;
-	layout_rec_t recs[MAXCOUNT];
+	layout_rec recs[MAXCOUNT];
 	int more_recs;
 };
 typedef struct getlayout_res getlayout_res;
-
-#define MDPROG 0x20000001
-#define MDVERS 1
-
-#if defined(__STDC__) || defined(__cplusplus)
-#define getlayout 1
-extern  enum clnt_stat getlayout_1(getlayout_req *, getlayout_res *, CLIENT *);
-extern  bool_t getlayout_1_svc(getlayout_req *, getlayout_res *, struct svc_req *);
-#define access 2
-extern  enum clnt_stat access_1(access_req *, access_res *, CLIENT *);
-extern  bool_t access_1_svc(access_req *, access_res *, struct svc_req *);
-#define create 3
-extern  enum clnt_stat create_1(create_req *, create_res *, CLIENT *);
-extern  bool_t create_1_svc(create_req *, create_res *, struct svc_req *);
-#define search 2
-extern  enum clnt_stat search_1(query_req *, query_rec *, CLIENT *);
-extern  bool_t search_1_svc(query_req *, query_rec *, struct svc_req *);
-extern int mdprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
-
-#else /* K&R C */
-#define getlayout 1
-extern  enum clnt_stat getlayout_1();
-extern  bool_t getlayout_1_svc();
-#define access 2
-extern  enum clnt_stat access_1();
-extern  bool_t access_1_svc();
-#define create 3
-extern  enum clnt_stat create_1();
-extern  bool_t create_1_svc();
-#define search 2
-extern  enum clnt_stat search_1();
-extern  bool_t search_1_svc();
-extern int mdprog_1_freeresult ();
-#endif /* K&R C */
 
 #define MDPROG 0x20000001
 #define MDVERS 1
@@ -603,7 +564,6 @@ extern  bool_t xdr_readlink_res (XDR *, readlink_res*);
 extern  bool_t xdr_readlink_req (XDR *, readlink_req*);
 extern  bool_t xdr_mount_req (XDR *, mount_req*);
 extern  bool_t xdr_mount_res (XDR *, mount_res*);
-extern  bool_t xdr_registry_rec (XDR *, registry_rec*);
 extern  bool_t xdr_layout_rec (XDR *, layout_rec*);
 extern  bool_t xdr_getlayout_req (XDR *, getlayout_req*);
 extern  bool_t xdr_getlayout_res (XDR *, getlayout_res*);
@@ -669,7 +629,6 @@ extern bool_t xdr_readlink_res ();
 extern bool_t xdr_readlink_req ();
 extern bool_t xdr_mount_req ();
 extern bool_t xdr_mount_res ();
-extern bool_t xdr_registry_rec ();
 extern bool_t xdr_layout_rec ();
 extern bool_t xdr_getlayout_req ();
 extern bool_t xdr_getlayout_res ();

@@ -16,42 +16,6 @@
 static struct timeval TIMEOUT = { 25, 0 };
 
 enum clnt_stat 
-getlayout_1(getlayout_req *argp, getlayout_res *clnt_res, CLIENT *clnt)
-{
-	return (clnt_call(clnt, getlayout,
-		(xdrproc_t) xdr_getlayout_req, (caddr_t) argp,
-		(xdrproc_t) xdr_getlayout_res, (caddr_t) clnt_res,
-		TIMEOUT));
-}
-
-enum clnt_stat 
-access_1(access_req *argp, access_res *clnt_res, CLIENT *clnt)
-{
-	return (clnt_call(clnt, access,
-		(xdrproc_t) xdr_access_req, (caddr_t) argp,
-		(xdrproc_t) xdr_access_res, (caddr_t) clnt_res,
-		TIMEOUT));
-}
-
-enum clnt_stat 
-create_1(create_req *argp, create_res *clnt_res, CLIENT *clnt)
-{
-	return (clnt_call(clnt, create,
-		(xdrproc_t) xdr_create_req, (caddr_t) argp,
-		(xdrproc_t) xdr_create_res, (caddr_t) clnt_res,
-		TIMEOUT));
-}
-
-enum clnt_stat 
-search_1(query_req *argp, query_rec *clnt_res, CLIENT *clnt)
-{
-	return (clnt_call(clnt, search,
-		(xdrproc_t) xdr_query_req, (caddr_t) argp,
-		(xdrproc_t) xdr_query_rec, (caddr_t) clnt_res,
-		TIMEOUT));
-}
-
-enum clnt_stat 
 getattr_mds_1(getattr_req *argp, getattr_res *clnt_res, CLIENT *clnt)
 {
 	return (clnt_call(clnt, getattr_mds,
