@@ -537,7 +537,7 @@ int read_c(char *ds_svr, char *path, off_t offset, size_t size, char *buf)
     req.offset = offset;
     req.count = size;
 #ifdef DEBUG
-    printf("read_c: path=%s offset=%ul res.count=%ul size=%ul\n", path,
+    printf("read_c: path=%s offset=%lu res.count=%lu size=%lu\n", path,
             (unsigned long)req.offset, (unsigned long)req.count, (unsigned long)size);
 #endif
     ret = read_ds_1(&req,&res,clnt);
@@ -575,8 +575,7 @@ int write_c(char *ds_svr, char *path, off_t offset, size_t count, char *buf)
     }
 
     req.name = path;
-    //need to assign properly
-    //req.data =  data;
+    memcpy(req.data, buf, count); 
     req.offset = offset;
     req.count = count;
 
