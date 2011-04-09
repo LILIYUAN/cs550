@@ -713,6 +713,7 @@ int chmod_c(char *ds_svr, char *path, mode_t mode)
     }
 
     req.name = path;
+    req.mode = mode;
 
     ret = chmod_ds_1(&req,&res,clnt);
 
