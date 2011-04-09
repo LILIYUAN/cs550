@@ -38,27 +38,6 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
 }
 
 /*
- * Same as ds_server
- */
-bool_t
-create_mds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
-{
-	bool_t retval = TRUE;
-    int ret;
-    char name[MAXPATHLEN];
-
-    sprintf(name, "%s/%s", mds.dir, argp->name);
-
-    ret = creat(name, argp->mode);
-    if (ret != 0) 
-        result->res = -errno;
-    else 
-        result->res = 0;
-
-	return retval;
-}
-
-/*
  * The size of the file is saved as the first line of the file.
  * This routine opens the file and returns the size of the file.
  */
@@ -68,11 +47,11 @@ getsize(char *name)
     FILE *fh;
     size_t sz;
 
-    if ((fd = fopen(name, "r")) == NULL) {
+    if ((fh = fopen(name, "r")) == NULL) {
         return (0);
     }
 
-    fscanf(fh, "%lu", &sz);
+    fscanf(fh, "%lu", (unsigned long *)&sz);
     fclose(fh);
     return(sz);
 }
@@ -123,21 +102,6 @@ getattr_mds_1_svc(getattr_req *argp, getattr_res *result, struct svc_req *rqstp)
 bool_t
 readdir_mds_1_svc(readdir_req *argp, readdir_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
-
-	/*
-	 * insert server code here
-	 */
-
-	return retval;
-}
-
-/*
- * Same as ds_server.
- */
-bool_t
-mkdir_mds_1_svc(mkdir_req *argp, mkdir_res *result, struct svc_req *rqstp)
-{
 	bool_t retval = TRUE;
     int ret;
     DIR *dirp;
@@ -179,6 +143,27 @@ mkdir_mds_1_svc(mkdir_req *argp, mkdir_res *result, struct svc_req *rqstp)
 #endif
     closedir(dirp);
 	return retval;
+}
+
+/*
+ * Same as ds_server.
+ */
+bool_t
+mkdir_mds_1_svc(mkdir_req *argp, mkdir_res *result, struct svc_req *rqstp)
+{
+    bool_t retval = TRUE;
+    int ret;
+    char name[MAXPATHLEN];
+
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+
+    ret = mkdir((const char *)name, (mode_t)argp->mode);
+    if (ret != 0)
+        result->res = -errno;
+    else
+        result->res = 0;
+
+    return retval;
 }
 
 /*
