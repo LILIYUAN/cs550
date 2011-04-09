@@ -262,7 +262,7 @@ read_ds_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
     close(fd);
 
 #ifdef DEBUG
-    printf("read_ds_1_svc: name=%s count=%d offset=%d ret=%d data=%s\n",
+    printf("read_ds_1_svc: name=%s count=%lu offset=%lu ret=%d data=%s\n",
             name, argp->count, argp->offset, ret, result->data);
 #endif
 

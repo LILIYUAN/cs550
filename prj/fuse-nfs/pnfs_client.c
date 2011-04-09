@@ -204,26 +204,63 @@ static int pnfs_open(const char *name, struct fuse_file_info *fi)
 static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
                     struct fuse_file_info *fi)
 {
+    size_t count;
     size_t len;
+    off_t  cur_off;
     (void) fi;
+    char *bufp;
 
-	printf("read(%s) offset : %d size %d\n", name, (int) offset, size);
-	len = read_c(server.mds_name, name, offset, size, buf);
-	printf("read(%s) offset : %d size %d buf = %s\n", name,
-            (int) offset, len, buf);
-    return len;
+    /*
+     * Our RPC call supports 4K chunk reads. So, we break this len into 4K
+     * chunks.
+     */
+    count = size;
+    cur_off = offset;
+    bufp = buf;
+    while (count != 0) {
+        len = MIN(count, SIZE);
+        printf("read(%s) offset : %d size %d\n", name, (int) cur_off, len);
+        len = read_c(server.mds_name, name, cur_off, len, bufp);
+        printf("read(%s) offset : %d size %d buf = %s\n", name,
+                (int) cur_off, len, bufp);
+        if (len <= 0) 
+            break;
+
+        count -= len;
+        cur_off += len;
+        bufp += len;
+    }
+    return (size - count);
 }
 
 static int pnfs_write(const char *name, const char *buf, size_t size,
         off_t offset, struct fuse_file_info *fi)
 {
-    size_t len;
+    size_t  count;
+    size_t  len;
+    off_t   cur_off;
+    char *bufp;
     (void) fi;
 
-	len = write_c(server.mds_name, name, offset, size, buf);
-	printf("write(%s) offset : %d size %d buf = %s\n", name,
-            (int) offset, len, buf);
-    return len;
+    /*
+     * We write in chunks of 4K.
+     */
+    count = size;
+    cur_off = offset;
+    bufp = buf;
+    while (count != 0) {
+        len = MIN(count, SIZE);
+        len = write_c(server.mds_name, name, cur_off, len, bufp);
+        printf("write(%s) offset : %d size %d buf = %s\n", name,
+                (int) cur_off, len, bufp);
+        if (len <= 0)
+            break;
+
+        count -= len;
+        cur_off += len;
+        bufp += len;
+    }
+    return (size - count);
 }
 
 static int pnfs_statfs(const char *name, struct statvfs *buf)
@@ -277,7 +314,7 @@ static struct fuse_operations pnfs_oper = {
   .read     = pnfs_read,
   .write    = pnfs_write,
   .statfs   = pnfs_statfs,
-/*  .lookup   = pnfs_lookup,*/
+  /*.lookup   = pnfs_lookup,*/
   /*.close    = pnfs_close,*/
 };
 
