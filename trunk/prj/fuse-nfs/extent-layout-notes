@@ -29,3 +29,29 @@ NOTE : This style of mapping should not cause issues with file names as we
 always append the string ".extN" (where N represent the extent number) to the 
 name of the file.
 
+
+pnfs_read() {
+    count = size;
+
+    while (count != 0) {
+        - if the cur_off is not within the range of extent-record
+            - getlayout(cur_off) for the current offset;
+        - if we got a valid extent-record
+            - read_c() to the ds of that client in chunks of SIZE.
+            - update count;
+        - If we got an invalid extent-record
+            - exit from the call with the current amount read.
+    }
+}
+
+pnfs_write() {
+    while (count != 0) {
+        - if the cur_off is not within the range of the extent-record
+            - getlayout(cur_off, WRITE) for the offset;
+              (This will allocate a new extent of STRIPE_SZ if needed)
+              (Also getlayout will update the size of the file if needed).
+        - write_c() to the data-server in SIZE chunk
+            - Passes the following argument
+            - offset, len, extname (which is filename.ext returned by extent-record).
+    }
+}
