@@ -185,7 +185,50 @@ mdprog_1(char *host)
 #endif	 /* DEBUG */
 }
 
+int getlayout_c(char *mds_svr, char *fname, off_t off, size_t len, int op, size_t *sz, layout_rec *rec)
+{
+    getlayout_req req;
+    getlayout_res res;
+    CLIENT *clnt;
+    bool_t ret;
 
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(ds_svr);
+        return(res.res);
+    }
+
+    req.fname = fname;
+    req.offset = off;
+    req.len = len;
+    req.op = op;
+
+    ret = getlayout_1(&req, &res, clnt);
+
+    if (ret != RPC_SUCCESS) {
+        printf("ret = %d\n",ret);
+        clnt_perror(clnt, "call failed");
+        return (-EIO);
+    }
+
+    /*
+     * TODO :
+     * For now we just copy the first extent as that is the one which maps into
+     * the range that was asked for.
+     *
+     * As an optimization we could make pnfs_read() query the entire range that
+     * it needs instead of STRIPE_SZ.
+     */
+    if (res.cnt) {
+        rec->off = res.recs[0].off;
+        rec->len = res.recs[0].len;
+        strcpy(rec->dsname, res.recs[0].dsname);
+        strcpy(rec->extname, res.recs[0].extname);
+        *sz = res.sz;
+    }
+    return (0);
+}
+
+/*
 int
 main (int argc, char *argv[])
 {
@@ -199,3 +242,4 @@ main (int argc, char *argv[])
 	mdprog_1 (host);
 exit (0);
 }
+*/

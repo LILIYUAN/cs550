@@ -209,6 +209,9 @@ static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
     off_t  cur_off;
     (void) fi;
     char *bufp;
+    layout_rec ext;
+    getlayout_res layout;
+    getlayout_req req;
 
     /*
      * Our RPC call supports 4K chunk reads. So, we break this len into 4K
@@ -217,8 +220,17 @@ static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
     count = size;
     cur_off = offset;
     bufp = buf;
+    memset(ext, 0, sizeof (layout_rec));
     while (count != 0) {
         len = MIN(count, SIZE);
+
+        /*
+         * Check if the extent has mapping to the cur_off. If not fetch it using
+         * getlayout.
+         */
+        if (!(cur_off >= ext.off && (cur_off + len) < (ext.off + ext.len))) {
+            getlayout_c(server.mds_name, name, cur_off, len, &ext);
+        }
         printf("read(%s) offset : %d size %d\n", name, (int) cur_off, len);
         len = read_c(server.mds_name, name, cur_off, len, bufp);
         printf("read(%s) offset : %d size %d buf = %s\n", name,
