@@ -14,6 +14,18 @@
 
 extern mds_t mds;
 
+int
+get_alloc_ds_svr(void)
+{
+    return (mds.nxt_alloc_ds++ % mds.ds_cnt);
+}
+
+int 
+get_create_ds_svr(void)
+{
+    return (mds.nxt_create_ds++ % mds.ds_cnt);
+}
+
 /*
  * READ : argp->op == READ request.
  *  - This is a read request so, we open the corresponding file and then
@@ -24,16 +36,120 @@ extern mds_t mds;
  *  - Here we check if the record exists (just like for READ). If found return
  *  the entry.
  *  - If not found create a new record for the give length and return it.
+ *
+ * LOCKING :
+ * We lock the file on the metadata server as below :
+ * - We take a Shared lock if this is a READ operation
+ * - We take an exclusive lock if this is a WRITE operation.
  */ 
 bool_t
 getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    FILE *fh;
+    char name[MAXPATHLEN];
+    size_t sz;
+    int op = argp->op;
+    layout_rec rec;
+    off_t start = 0, end = 0;
+    off_t ds_start = 0, ds_end = 0;
+    int ds;
+    int fd;
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->fname);
+    if ((fh = fopen(name, "rw")) == NULL) {
+        result->cnt = -errno;
+        return (retval);
+    }
 
+    fd = fileno(fh);
+
+    if (argp->op == OPREAD)
+        flock(fd, LOCK_SH);
+    else 
+        flock(fd, LOCK_EX);
+
+    /*
+     * Read the size of the file in.
+     */
+    fscanf(fh, "%lu\n", &sz);
+
+    result->cnt = 0;
+    result->more_recs = 0;
+    while (!feof(fh) && result->cnt <= MAXCOUNT) {
+        fscanf(fh, "%lu %lu %s %s\n", rec.off, rec.len, rec.dsname,
+                rec.extname);
+
+#ifdef DEBUG
+        printf("rec : off=%lu len=%lu ds=%s extname=%s\n",
+                rec.off, rec.len, rec.dsname, rec.extname);
+
+        if (argp->offset >= rec.off && argp->len <= rec.len) {
+            /*
+             * Found a record. Copy it.
+             */
+            result->recs[result->cnt].off = rec.off;
+            result->recs[result->cnt].len = rec.len;
+            strcpy(result->recs[result->cnt].dsname, rec.dsname);
+            strcpy(result->recs[result->cnt].extname, rec.extname);
+            result->cnt++;
+
+            if (end < (rec.off + rec.len)) {
+                end = rec.off + rec.len;
+            }
+        } 
+    }
+
+    if (result->cnt > MAXCOUNT) {
+        result->more_recs = 1;
+    }
+
+    /*
+     * If this is a READ op we return the records that have found.
+     */
+    if (argp->op == OPREAD) {
+        goto windup; 
+    }
+
+    /*
+     * We reach here if this is a WRITE op.
+     * We check if we have found records for the requested range. If not we add
+     * a new extent record for the remaining range.
+     */
+    if (end >= (argp->offset + argp->len)) {
+        goto windup; 
+    }
+
+    /*
+     * We need to allocate a new extent for this file. So, we pick a ds server
+     * for it.
+     */
+    ds = get_alloc_ds_svr();
+
+    /*
+     * Now search for any existing extents for this file on that server.
+     * We look for the extent that at the end of the file. 
+     */
+    fseek(fh, 0, SEEK_SET);
+    fscanf(fh, "%lu\n", &sz);
+
+    while (!feof(fh)) {
+        fscanf(fh, "%lu %lu %s %lu %lu\n", rec.off, rec.len, rec.dsname,
+                rec.ds_off, rec.ds_len);
+        if (strcmp(rec.dsname, mds.ds[i]) == 0 && end < rec.) {
+
+
+
+
+
+
+    
+
+
+
+windup:
+    flock(fd, LOCK_UN);
+    fclose(fh);
 	return retval;
 }
 

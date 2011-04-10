@@ -1,0 +1,31 @@
+The following will be the layout of the metadata file :
+
+filename
+--------
+<size>
+<offset> <len> <dsname> <filename.ext1>
+<offset> <len> <dsname> <filename.ext2>
+<offset> <len> <dsname> <filename.ext2>
+<offset> <len> <dsname> <filename.ext2>
+
+To keep things simple we fix the size of the extent to STRIPE_SZ (which we have
+set to 16K).
+
+When a client asks for a write if we fail to find an extent we 
+allocate a new extent and return that to the server
+
+The client sends getlayout request in STRIPE_SZ sizes always.
+This makes it easy for the server to search for the extent in the file.
+And if not found we allocate an extent.
+
+Each extent is saved on the data server as a separate file with the name as
+follows :
+    <original-filename>.ext<n>
+
+    For example if the filename is file1, it's first extent will be 
+    "file1.ext1"
+
+NOTE : This style of mapping should not cause issues with file names as we
+always append the string ".extN" (where N represent the extent number) to the 
+name of the file.
+
