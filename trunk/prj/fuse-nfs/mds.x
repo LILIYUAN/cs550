@@ -11,6 +11,8 @@ const SIZE = 4096;
 const STRIPE_SZ = 16384;
 const MAXDS = 16;
 const MAXCOUNT = 32;
+const OPREAD = 0;
+const OPWRITE = 1;
 
 /*
  * Type for storing path . Assuming max file path length to be 1024
@@ -276,9 +278,10 @@ struct mount_res {
  * Metadata Server request and result data structures.
  */
 struct layout_rec {
-    char    dsname[MAXHOSTNAME];
-    int     offset;
-    int     len;
+    my_off_t    off;
+    my_size_t   len;
+    char        dsname[MAXHOSTNAME];
+    char        extname[MAXNAMELEN];
 };
 
 struct getlayout_req {
@@ -292,6 +295,7 @@ struct getlayout_res {
     int             cnt;
     layout_rec      recs[MAXCOUNT];
     int             more_recs;
+    my_size_t       sz;
 };
 
 program MDPROG {

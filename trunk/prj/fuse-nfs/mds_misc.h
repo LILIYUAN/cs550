@@ -10,7 +10,9 @@ typedef struct mds_struct {
     char    dir[MAXPATHLEN];        /* Name of the directory being shared */
     fsid_t  fsid;                   /* fsid of the directory */
     char    *ds[MAXDS];             /* pointers to the data-servers names */
-    int     ds_cnt;
+    int     ds_cnt;                 /* Count of the data servers for this filesystem. */
+    int     nxt_alloc_ds;           /* Index of the ds server to pick for extent allocation */
+    int     nxt_create_ds;          /* Index of the ds server to pick for file creation */
 } mds_t;
 
 #define DEBUG 1
