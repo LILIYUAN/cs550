@@ -55,6 +55,7 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     off_t ds_start = 0, ds_end = 0;
     int ds;
     int fd;
+    int recs = 0;
 
     sprintf(name, "%s/%s", mds.dir, argp->fname);
     if ((fh = fopen(name, "rw")) == NULL) {
@@ -76,7 +77,7 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
 
     result->cnt = 0;
     result->more_recs = 0;
-    while (!feof(fh) && result->cnt <= MAXCOUNT) {
+    while (!feof(fh)) {
         fscanf(fh, "%lu %lu %s %s\n", rec.off, rec.len, rec.dsname,
                 rec.extname);
 
@@ -98,10 +99,11 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
                 end = rec.off + rec.len;
             }
         } 
-    }
-
-    if (result->cnt > MAXCOUNT) {
-        result->more_recs = 1;
+        if (result->cnt >  MAXCOUNT) {
+            result->more_recs = 1;
+            break;
+        }
+        recs++;
     }
 
     /*
@@ -127,25 +129,28 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     ds = get_alloc_ds_svr();
 
     /*
-     * Now search for any existing extents for this file on that server.
-     * We look for the extent that at the end of the file. 
+     * We now allocate a new extent at the end of the file.
      */
-    fseek(fh, 0, SEEK_SET);
-    fscanf(fh, "%lu\n", &sz);
+    fseek(fh, 0, SEEK_END);
 
-    while (!feof(fh)) {
-        fscanf(fh, "%lu %lu %s %lu %lu\n", rec.off, rec.len, rec.dsname,
-                rec.ds_off, rec.ds_len);
-        if (strcmp(rec.dsname, mds.ds[i]) == 0 && end < rec.) {
+    while (end < (argp->offset + argp->len)) {
+        fprintf("%lu %lu %s %s.ext%d\n", end+1, STRIPE_SZ, mds.ds[ds], argp->fname, recs);
+        end += STRIPE_SZ;
+        recs++;
+        result->recs[result->cnt].off = rec.off;
+        result->recs[result->cnt].len = rec.len;
+        strcpy(result->recs[result->cnt].dsname, rec.dsname);
+        strcpy(result->recs[result->cnt].extname, rec.extname);
+        result->cnt++;
+    }
 
-
-
-
-
-
-    
-
-
+    /*
+     * Update the size of the file now.
+     */
+    if (sz < (argp->offset + argp->len)) {
+        fseek(fh, 0, SEEK_SET);
+        fprintf("%lu\n", (argp->offset + argp->len));
+    }
 
 windup:
     flock(fd, LOCK_UN);
