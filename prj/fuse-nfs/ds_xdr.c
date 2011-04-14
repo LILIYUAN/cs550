@@ -824,3 +824,56 @@ xdr_mount_res (XDR *xdrs, mount_res *objp)
 		 return FALSE;
 	return TRUE;
 }
+
+bool_t
+xdr_layout_rec (XDR *xdrs, layout_rec *objp)
+{
+	register int32_t *buf;
+
+	int i;
+	 if (!xdr_my_off_t (xdrs, &objp->off))
+		 return FALSE;
+	 if (!xdr_my_size_t (xdrs, &objp->len))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->dsname, MAXHOSTNAME,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->extname, MAXNAMELEN,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_getlayout_req (XDR *xdrs, getlayout_req *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_string (xdrs, &objp->fname, MAXNAMELEN))
+		 return FALSE;
+	 if (!xdr_my_off_t (xdrs, &objp->offset))
+		 return FALSE;
+	 if (!xdr_my_size_t (xdrs, &objp->len))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->op))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_getlayout_res (XDR *xdrs, getlayout_res *objp)
+{
+	register int32_t *buf;
+
+	int i;
+	 if (!xdr_int (xdrs, &objp->cnt))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->recs, MAXCOUNT,
+		sizeof (layout_rec), (xdrproc_t) xdr_layout_rec))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->more_recs))
+		 return FALSE;
+	 if (!xdr_my_size_t (xdrs, &objp->sz))
+		 return FALSE;
+	return TRUE;
+}

@@ -13,8 +13,8 @@ SOURCES_SVC.h =
 SOURCES.x = ds.x
 
 TARGETS_SVC.c = ds_svc_mt.c ds_server.c ds_xdr.c 
-TARGETS_CLNT.c = ds_clnt.c ds_client.c pnfs_client.c ds_xdr.c 
-TARGETS = ds.h ds_xdr.c ds_clnt.c ds_svc_mt.c ds_client.c ds_server.c pnfs_client.c
+TARGETS_CLNT.c = ds_clnt.c ds_client.c mds_client.c pnfs_client.c ds_xdr.c 
+TARGETS = ds.h ds_xdr.c ds_clnt.c ds_svc_mt.c ds_client.c ds_server.c mds_client.c pnfs_client.c
 
 OBJECTS_CLNT = $(SOURCES_CLNT.c:%.c=%.o) $(TARGETS_CLNT.c:%.c=%.o)
 OBJECTS_SVC = $(SOURCES_SVC.c:%.c=%.o) $(TARGETS_SVC.c:%.c=%.o)

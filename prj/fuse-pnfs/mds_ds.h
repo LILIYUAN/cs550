@@ -3,8 +3,8 @@
  * It was generated using rpcgen.
  */
 
-#ifndef _MDS_H_RPCGEN
-#define _MDS_H_RPCGEN
+#ifndef _MDS_DS_H_RPCGEN
+#define _MDS_DS_H_RPCGEN
 
 #include <rpc/rpc.h>
 
@@ -505,6 +505,142 @@ extern  bool_t getlayout_1_svc();
 extern int mdprog_1_freeresult ();
 #endif /* K&R C */
 
+#define DSPROG 0x20000011
+#define DSVERS 1
+
+#if defined(__STDC__) || defined(__cplusplus)
+#define getattr_ds 1
+extern  enum clnt_stat getattr_ds_1(getattr_req *, getattr_res *, CLIENT *);
+extern  bool_t getattr_ds_1_svc(getattr_req *, getattr_res *, struct svc_req *);
+#define readdir_ds 2
+extern  enum clnt_stat readdir_ds_1(readdir_req *, readdir_res *, CLIENT *);
+extern  bool_t readdir_ds_1_svc(readdir_req *, readdir_res *, struct svc_req *);
+#define mkdir_ds 3
+extern  enum clnt_stat mkdir_ds_1(mkdir_req *, mkdir_res *, CLIENT *);
+extern  bool_t mkdir_ds_1_svc(mkdir_req *, mkdir_res *, struct svc_req *);
+#define unlink_ds 4
+extern  enum clnt_stat unlink_ds_1(unlink_req *, unlink_res *, CLIENT *);
+extern  bool_t unlink_ds_1_svc(unlink_req *, unlink_res *, struct svc_req *);
+#define rmdir_ds 5
+extern  enum clnt_stat rmdir_ds_1(rmdir_req *, rmdir_res *, CLIENT *);
+extern  bool_t rmdir_ds_1_svc(rmdir_req *, rmdir_res *, struct svc_req *);
+#define rename_ds 6
+extern  enum clnt_stat rename_ds_1(rename_req *, rename_res *, CLIENT *);
+extern  bool_t rename_ds_1_svc(rename_req *, rename_res *, struct svc_req *);
+#define mknod_ds 7
+extern  enum clnt_stat mknod_ds_1(mknod_req *, mknod_res *, CLIENT *);
+extern  bool_t mknod_ds_1_svc(mknod_req *, mknod_res *, struct svc_req *);
+#define create_ds 8
+extern  enum clnt_stat create_ds_1(create_req *, create_res *, CLIENT *);
+extern  bool_t create_ds_1_svc(create_req *, create_res *, struct svc_req *);
+#define open_ds 9
+extern  enum clnt_stat open_ds_1(open_req *, open_res *, CLIENT *);
+extern  bool_t open_ds_1_svc(open_req *, open_res *, struct svc_req *);
+#define close_ds 10
+extern  enum clnt_stat close_ds_1(close_req *, close_res *, CLIENT *);
+extern  bool_t close_ds_1_svc(close_req *, close_res *, struct svc_req *);
+#define read_ds 11
+extern  enum clnt_stat read_ds_1(read_req *, read_res *, CLIENT *);
+extern  bool_t read_ds_1_svc(read_req *, read_res *, struct svc_req *);
+#define write_ds 12
+extern  enum clnt_stat write_ds_1(write_req *, write_res *, CLIENT *);
+extern  bool_t write_ds_1_svc(write_req *, write_res *, struct svc_req *);
+#define lookup_ds 13
+extern  enum clnt_stat lookup_ds_1(lookup_req *, lookup_res *, CLIENT *);
+extern  bool_t lookup_ds_1_svc(lookup_req *, lookup_res *, struct svc_req *);
+#define truncate_ds 14
+extern  enum clnt_stat truncate_ds_1(truncate_req *, truncate_res *, CLIENT *);
+extern  bool_t truncate_ds_1_svc(truncate_req *, truncate_res *, struct svc_req *);
+#define statfs_ds 15
+extern  enum clnt_stat statfs_ds_1(statfs_req *, statfs_res *, CLIENT *);
+extern  bool_t statfs_ds_1_svc(statfs_req *, statfs_res *, struct svc_req *);
+#define chmod_ds 16
+extern  enum clnt_stat chmod_ds_1(chmod_req *, chmod_res *, CLIENT *);
+extern  bool_t chmod_ds_1_svc(chmod_req *, chmod_res *, struct svc_req *);
+#define chown_ds 17
+extern  enum clnt_stat chown_ds_1(chown_req *, chown_res *, CLIENT *);
+extern  bool_t chown_ds_1_svc(chown_req *, chown_res *, struct svc_req *);
+#define link_ds 18
+extern  enum clnt_stat link_ds_1(link_req *, link_res *, CLIENT *);
+extern  bool_t link_ds_1_svc(link_req *, link_res *, struct svc_req *);
+#define symlink_ds 19
+extern  enum clnt_stat symlink_ds_1(symlink_req *, symlink_res *, CLIENT *);
+extern  bool_t symlink_ds_1_svc(symlink_req *, symlink_res *, struct svc_req *);
+#define readlink_ds 20
+extern  enum clnt_stat readlink_ds_1(readlink_req *, readlink_res *, CLIENT *);
+extern  bool_t readlink_ds_1_svc(readlink_req *, readlink_res *, struct svc_req *);
+#define mount_ds 21
+extern  enum clnt_stat mount_ds_1(mount_req *, mount_res *, CLIENT *);
+extern  bool_t mount_ds_1_svc(mount_req *, mount_res *, struct svc_req *);
+extern int dsprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
+
+#else /* K&R C */
+#define getattr_ds 1
+extern  enum clnt_stat getattr_ds_1();
+extern  bool_t getattr_ds_1_svc();
+#define readdir_ds 2
+extern  enum clnt_stat readdir_ds_1();
+extern  bool_t readdir_ds_1_svc();
+#define mkdir_ds 3
+extern  enum clnt_stat mkdir_ds_1();
+extern  bool_t mkdir_ds_1_svc();
+#define unlink_ds 4
+extern  enum clnt_stat unlink_ds_1();
+extern  bool_t unlink_ds_1_svc();
+#define rmdir_ds 5
+extern  enum clnt_stat rmdir_ds_1();
+extern  bool_t rmdir_ds_1_svc();
+#define rename_ds 6
+extern  enum clnt_stat rename_ds_1();
+extern  bool_t rename_ds_1_svc();
+#define mknod_ds 7
+extern  enum clnt_stat mknod_ds_1();
+extern  bool_t mknod_ds_1_svc();
+#define create_ds 8
+extern  enum clnt_stat create_ds_1();
+extern  bool_t create_ds_1_svc();
+#define open_ds 9
+extern  enum clnt_stat open_ds_1();
+extern  bool_t open_ds_1_svc();
+#define close_ds 10
+extern  enum clnt_stat close_ds_1();
+extern  bool_t close_ds_1_svc();
+#define read_ds 11
+extern  enum clnt_stat read_ds_1();
+extern  bool_t read_ds_1_svc();
+#define write_ds 12
+extern  enum clnt_stat write_ds_1();
+extern  bool_t write_ds_1_svc();
+#define lookup_ds 13
+extern  enum clnt_stat lookup_ds_1();
+extern  bool_t lookup_ds_1_svc();
+#define truncate_ds 14
+extern  enum clnt_stat truncate_ds_1();
+extern  bool_t truncate_ds_1_svc();
+#define statfs_ds 15
+extern  enum clnt_stat statfs_ds_1();
+extern  bool_t statfs_ds_1_svc();
+#define chmod_ds 16
+extern  enum clnt_stat chmod_ds_1();
+extern  bool_t chmod_ds_1_svc();
+#define chown_ds 17
+extern  enum clnt_stat chown_ds_1();
+extern  bool_t chown_ds_1_svc();
+#define link_ds 18
+extern  enum clnt_stat link_ds_1();
+extern  bool_t link_ds_1_svc();
+#define symlink_ds 19
+extern  enum clnt_stat symlink_ds_1();
+extern  bool_t symlink_ds_1_svc();
+#define readlink_ds 20
+extern  enum clnt_stat readlink_ds_1();
+extern  bool_t readlink_ds_1_svc();
+#define mount_ds 21
+extern  enum clnt_stat mount_ds_1();
+extern  bool_t mount_ds_1_svc();
+extern int dsprog_1_freeresult ();
+#endif /* K&R C */
+
 /* the xdr functions */
 
 #if defined(__STDC__) || defined(__cplusplus)
@@ -643,4 +779,4 @@ extern bool_t xdr_getlayout_res ();
 }
 #endif
 
-#endif /* !_MDS_H_RPCGEN */
+#endif /* !_MDS_DS_H_RPCGEN */
