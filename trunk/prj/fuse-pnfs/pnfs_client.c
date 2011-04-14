@@ -7,7 +7,8 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include "pnfs_misc.h"
+#include "mds_ds.h"
+#include "mds_ds_misc.h"
 
 
 /*
@@ -210,6 +211,7 @@ static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
     (void) fi;
     char *bufp;
     layout_rec ext;
+    layout_rec *extp = &ext;
     getlayout_res layout;
     getlayout_req req;
 
@@ -220,7 +222,7 @@ static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
     count = size;
     cur_off = offset;
     bufp = buf;
-    memset(ext, 0, sizeof (layout_rec));
+    memset((void *)extp, 0, sizeof (layout_rec));
     while (count != 0) {
         len = MIN(count, SIZE);
 

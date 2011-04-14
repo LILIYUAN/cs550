@@ -3,8 +3,7 @@
  * It was generated using rpcgen.
  */
 
-#include "mds.h"
-#include "mds_misc.h"
+#include "mds_ds_misc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <rpc/pmap_clnt.h>

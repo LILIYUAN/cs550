@@ -3,7 +3,7 @@
  * It was generated using rpcgen.
  */
 
-#include "mds.h"
+#include "mds_ds.h"
 #include <sys/vfs.h>
 #include <sys/types.h>
 #include <sys/stat.h>

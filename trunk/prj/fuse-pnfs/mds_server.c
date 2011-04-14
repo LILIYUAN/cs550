@@ -4,8 +4,7 @@
  * as a guideline for developing your own functions.
  */
 
-#include "mds.h"
-#include "mds_misc.h"
+#include "mds_ds_misc.h"
 #include <sys/vfs.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -74,17 +73,18 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     /*
      * Read the size of the file in.
      */
-    fscanf(fh, "%lu\n", &sz);
+    fscanf(fh, "%lu\n", (unsigned long *)&sz);
 
     result->cnt = 0;
     result->more_recs = 0;
     while (!feof(fh)) {
-        fscanf(fh, "%lu %lu %s %s\n", rec.off, rec.len, rec.dsname,
+        fscanf(fh, "%lu %lu %s %s\n", &rec.off, &rec.len, &rec.dsname,
                 rec.extname);
 
 #ifdef DEBUG
         printf("rec : off=%lu len=%lu ds=%s extname=%s\n",
                 rec.off, rec.len, rec.dsname, rec.extname);
+#endif
 
         if (argp->offset >= rec.off && argp->len <= rec.len) {
             /*
@@ -135,7 +135,7 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     fseek(fh, 0, SEEK_END);
 
     while (end < (argp->offset + argp->len)) {
-        fprintf("%lu %lu %s %s.ext%d\n", end+1, STRIPE_SZ, mds.ds[ds], argp->fname, recs);
+        fprintf(fh, "%lu %lu %s %s.ext%d\n", end+1, STRIPE_SZ, mds.ds[ds], argp->fname, recs);
         end += STRIPE_SZ;
         recs++;
         result->recs[result->cnt].off = rec.off;
@@ -150,7 +150,7 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
      */
     if (sz < (argp->offset + argp->len)) {
         fseek(fh, 0, SEEK_SET);
-        fprintf("%lu\n", (argp->offset + argp->len));
+        fprintf(fh, "%lu\n", (argp->offset + argp->len));
     }
 
 windup:

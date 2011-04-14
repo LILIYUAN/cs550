@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <errno.h>
 
 
 void
@@ -193,8 +194,8 @@ int getlayout_c(char *mds_svr, char *fname, off_t off, size_t len, int op, size_
     bool_t ret;
 
     if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
-        return(res.res);
+        clnt_pcreateerror(mds_svr);
+        return(-EIO);
     }
 
     req.fname = fname;
@@ -228,18 +229,3 @@ int getlayout_c(char *mds_svr, char *fname, off_t off, size_t len, int op, size_
     return (0);
 }
 
-/*
-int
-main (int argc, char *argv[])
-{
-	char *host;
-
-	if (argc < 2) {
-		printf ("usage: %s server_host\n", argv[0]);
-		exit (1);
-	}
-	host = argv[1];
-	mdprog_1 (host);
-exit (0);
-}
-*/

@@ -4,172 +4,14 @@
  * as a guideline for developing your own functions.
  */
 
-#include "ds_misc.h"
-#include "mds_misc.h"
+#include "mds_ds.h"
+#include "mds_ds_misc.h"
 #include <sys/vfs.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
-
-void
-dsprog_1(char *host)
-{
-	CLIENT *clnt;
-	enum clnt_stat retval_1;
-	getattr_res result_1;
-	getattr_req  getattr_ds_1_arg;
-	enum clnt_stat retval_2;
-	readdir_res result_2;
-	readdir_req  readdir_ds_1_arg;
-	enum clnt_stat retval_3;
-	mkdir_res result_3;
-	mkdir_req  mkdir_ds_1_arg;
-	enum clnt_stat retval_4;
-	unlink_res result_4;
-	unlink_req  unlink_ds_1_arg;
-	enum clnt_stat retval_5;
-	rmdir_res result_5;
-	rmdir_req  rmdir_ds_1_arg;
-	enum clnt_stat retval_6;
-	rename_res result_6;
-	rename_req  rename_ds_1_arg;
-	enum clnt_stat retval_7;
-	mknod_res result_7;
-	mknod_req  mknod_ds_1_arg;
-	enum clnt_stat retval_8;
-	create_res result_8;
-	create_req  create_ds_1_arg;
-	enum clnt_stat retval_9;
-	open_res result_9;
-	open_req  open_ds_1_arg;
-	enum clnt_stat retval_10;
-	close_res result_10;
-	close_req  close_ds_1_arg;
-	enum clnt_stat retval_11;
-	read_res result_11;
-	read_req  read_ds_1_arg;
-	enum clnt_stat retval_12;
-	write_res result_12;
-	write_req  write_ds_1_arg;
-	enum clnt_stat retval_13;
-	lookup_res result_13;
-	lookup_req  lookup_ds_1_arg;
-	enum clnt_stat retval_14;
-	truncate_res result_14;
-	truncate_req  truncate_ds_1_arg;
-	enum clnt_stat retval_15;
-	statfs_res result_15;
-	statfs_req  statfs_ds_1_arg;
-	enum clnt_stat retval_16;
-	chmod_res result_16;
-	chmod_req  chmod_ds_1_arg;
-	enum clnt_stat retval_17;
-	chown_res result_17;
-	chown_req  chown_ds_1_arg;
-	enum clnt_stat retval_18;
-	link_res result_18;
-	link_req  link_ds_1_arg;
-	enum clnt_stat retval_19;
-	symlink_res result_19;
-	symlink_req  symlink_ds_1_arg;
-	enum clnt_stat retval_20;
-	readlink_res result_20;
-	readlink_req  readlink_ds_1_arg;
-
-#ifndef	DEBUG
-	clnt = clnt_create (host, DSPROG, DSVERS, "udp");
-	if (clnt == NULL) {
-		clnt_pcreateerror (host);
-		exit (1);
-	}
-#endif	/* DEBUG */
-
-	retval_1 = getattr_ds_1(&getattr_ds_1_arg, &result_1, clnt);
-	if (retval_1 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_2 = readdir_ds_1(&readdir_ds_1_arg, &result_2, clnt);
-	if (retval_2 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_3 = mkdir_ds_1(&mkdir_ds_1_arg, &result_3, clnt);
-	if (retval_3 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_4 = unlink_ds_1(&unlink_ds_1_arg, &result_4, clnt);
-	if (retval_4 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_5 = rmdir_ds_1(&rmdir_ds_1_arg, &result_5, clnt);
-	if (retval_5 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_6 = rename_ds_1(&rename_ds_1_arg, &result_6, clnt);
-	if (retval_6 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_7 = mknod_ds_1(&mknod_ds_1_arg, &result_7, clnt);
-	if (retval_7 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_8 = create_ds_1(&create_ds_1_arg, &result_8, clnt);
-	if (retval_8 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_9 = open_ds_1(&open_ds_1_arg, &result_9, clnt);
-	if (retval_9 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_10 = close_ds_1(&close_ds_1_arg, &result_10, clnt);
-	if (retval_10 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_11 = read_ds_1(&read_ds_1_arg, &result_11, clnt);
-	if (retval_11 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_12 = write_ds_1(&write_ds_1_arg, &result_12, clnt);
-	if (retval_12 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_13 = lookup_ds_1(&lookup_ds_1_arg, &result_13, clnt);
-	if (retval_13 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_14 = truncate_ds_1(&truncate_ds_1_arg, &result_14, clnt);
-	if (retval_14 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_15 = statfs_ds_1(&statfs_ds_1_arg, &result_15, clnt);
-	if (retval_15 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_16 = chmod_ds_1(&chmod_ds_1_arg, &result_16, clnt);
-	if (retval_16 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_17 = chown_ds_1(&chown_ds_1_arg, &result_17, clnt);
-	if (retval_17 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_18 = link_ds_1(&link_ds_1_arg, &result_18, clnt);
-	if (retval_18 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_19 = symlink_ds_1(&symlink_ds_1_arg, &result_19, clnt);
-	if (retval_19 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-	retval_20 = readlink_ds_1(&readlink_ds_1_arg, &result_20, clnt);
-	if (retval_20 != RPC_SUCCESS) {
-		clnt_perror (clnt, "call failed");
-	}
-#ifndef	DEBUG
-	clnt_destroy (clnt);
-#endif	 /* DEBUG */
-}
 
 int getattr_c(char *ds_svr, char *path, struct stat *buf)
 {
@@ -862,19 +704,46 @@ int readlink_c(char *ds_svr, char *path, char *buf, size_t bufsize)
     return res.res;
 }
 
-
-/*
-int
-main (int argc, char *argv[])
+int getlayout_c(char *mds_svr, char *fname, off_t off, size_t len, int op, size_t *sz, layout_rec *rec)
 {
-	char *host;
+    getlayout_req req;
+    getlayout_res res;
+    CLIENT *clnt;
+    bool_t ret;
 
-	if (argc < 2) {
-		printf ("usage: %s server_host\n", argv[0]);
-		exit (1);
-	}
-	host = argv[1];
-	dsprog_1 (host);
-exit (0);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
+        return(-EIO);
+    }
+
+    req.fname = fname;
+    req.offset = off;
+    req.len = len;
+    req.op = op;
+
+    ret = getlayout_1(&req, &res, clnt);
+
+    if (ret != RPC_SUCCESS) {
+        printf("ret = %d\n",ret);
+        clnt_perror(clnt, "call failed");
+        return (-EIO);
+    }
+
+    /*
+     * TODO :
+     * For now we just copy the first extent as that is the one which maps into
+     * the range that was asked for.
+     *
+     * As an optimization we could make pnfs_read() query the entire range that
+     * it needs instead of STRIPE_SZ.
+     */
+    if (res.cnt) {
+        rec->off = res.recs[0].off;
+        rec->len = res.recs[0].len;
+        strcpy(rec->dsname, res.recs[0].dsname);
+        strcpy(rec->extname, res.recs[0].extname);
+        *sz = res.sz;
+    }
+    return (0);
 }
-*/
+

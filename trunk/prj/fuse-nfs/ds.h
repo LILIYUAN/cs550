@@ -20,9 +20,14 @@ extern "C" {
 #include <fcntl.h>
 #include <dirent.h>
 #include <unistd.h>
+#define MAXHOSTNAME 32
 #define MAXNAMELEN 128
 #define SIZE 4096
+#define STRIPE_SZ 16384
 #define MAXDS 16
+#define MAXCOUNT 32
+#define OPREAD 0
+#define OPWRITE 1
 
 typedef char *filename;
 
@@ -334,6 +339,30 @@ struct mount_res {
 };
 typedef struct mount_res mount_res;
 
+struct layout_rec {
+	my_off_t off;
+	my_size_t len;
+	char dsname[MAXHOSTNAME];
+	char extname[MAXNAMELEN];
+};
+typedef struct layout_rec layout_rec;
+
+struct getlayout_req {
+	char *fname;
+	my_off_t offset;
+	my_size_t len;
+	int op;
+};
+typedef struct getlayout_req getlayout_req;
+
+struct getlayout_res {
+	int cnt;
+	layout_rec recs[MAXCOUNT];
+	int more_recs;
+	my_size_t sz;
+};
+typedef struct getlayout_res getlayout_res;
+
 #define DSPROG 0x20000011
 #define DSVERS 1
 
@@ -533,6 +562,9 @@ extern  bool_t xdr_readlink_res (XDR *, readlink_res*);
 extern  bool_t xdr_readlink_req (XDR *, readlink_req*);
 extern  bool_t xdr_mount_req (XDR *, mount_req*);
 extern  bool_t xdr_mount_res (XDR *, mount_res*);
+extern  bool_t xdr_layout_rec (XDR *, layout_rec*);
+extern  bool_t xdr_getlayout_req (XDR *, getlayout_req*);
+extern  bool_t xdr_getlayout_res (XDR *, getlayout_res*);
 
 #else /* K&R C */
 extern bool_t xdr_filename ();
@@ -595,6 +627,9 @@ extern bool_t xdr_readlink_res ();
 extern bool_t xdr_readlink_req ();
 extern bool_t xdr_mount_req ();
 extern bool_t xdr_mount_res ();
+extern bool_t xdr_layout_rec ();
+extern bool_t xdr_getlayout_req ();
+extern bool_t xdr_getlayout_res ();
 
 #endif /* K&R C */
 
