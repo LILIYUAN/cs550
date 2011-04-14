@@ -5,7 +5,7 @@
 
 CLIENT = pnfs_client
 DS_SERVER = ds_server
-MDS_SERVER = mds_ds_server
+MDS_SERVER = mds_server
 
 SOURCES_CLNT.c = 
 SOURCES_CLNT.h = 
