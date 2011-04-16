@@ -366,6 +366,7 @@ create_mds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
 	bool_t retval = TRUE;
     int ret;
     char name[MAXPATHLEN];
+    FILE *fh;
 
     sprintf(name, "%s/%s", mds.dir, argp->name);
 
@@ -374,6 +375,12 @@ create_mds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
         result->res = -errno;
     else 
         result->res = 0;
+
+    /*
+     * Initialize the size to 0
+     */
+    fh = fopen(name, "w");
+    fprintf(fh, "0\n");
 
 	return retval;
 }
