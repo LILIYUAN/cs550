@@ -13,7 +13,7 @@
 #include <dirent.h>
 #include <unistd.h>
 
-int getattr_c(char *ds_svr, char *path, struct stat *buf)
+int getattr_c(char *mds_svr, char *path, struct stat *buf)
 {
     getattr_req req;
     getattr_res res;
@@ -21,16 +21,16 @@ int getattr_c(char *ds_svr, char *path, struct stat *buf)
     bool_t ret;
 
 #ifdef DEBUG
-    printf("getattr_c(ds_svr=%s, path=%s, sbuf)\n", ds_svr, path);
+    printf("getattr_c(mds_svr=%s, path=%s, sbuf)\n", mds_svr, path);
 #endif
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
 
-    ret = getattr_ds_1(&req,&res,clnt);
+    ret = getattr_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -62,25 +62,25 @@ int getattr_c(char *ds_svr, char *path, struct stat *buf)
     return res.res;
 }
 
-int readdir_c(char *ds_svr, char *path, off_t offset, struct dirent *dentry)
+int readdir_c(char *mds_svr, char *path, off_t offset, struct dirent *dentry)
 {
     readdir_req req;
     readdir_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
     req.d_off = offset;
 
-    ret = readdir_ds_1(&req,&res,clnt);
+    ret = readdir_mds_1(&req,&res,clnt);
 
 #ifdef DEBUG
-    printf("readdir_c: Returned from readdir_ds_1()\n");
+    printf("readdir_c: Returned from readdir_mds_1()\n");
 #endif
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -116,22 +116,22 @@ int readdir_c(char *ds_svr, char *path, off_t offset, struct dirent *dentry)
     return res.res;
 }
 
-int mkdir_c(char *ds_svr, char *path, mode_t mode)
+int mkdir_c(char *mds_svr, char *path, mode_t mode)
 {
     mkdir_req req;
     mkdir_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
     req.mode = mode;
 
-    ret = mkdir_ds_1(&req,&res,clnt);
+    ret = mkdir_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -147,21 +147,21 @@ int mkdir_c(char *ds_svr, char *path, mode_t mode)
     return res.res;
 }
 
-int unlink_c(char *ds_svr, char *path)
+int unlink_c(char *mds_svr, char *path)
 {
     unlink_req req;
     unlink_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
 
-    ret = unlink_ds_1(&req,&res,clnt);
+    ret = unlink_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -178,21 +178,21 @@ int unlink_c(char *ds_svr, char *path)
 }
 
 
-int rmdir_c(char *ds_svr, char *path)
+int rmdir_c(char *mds_svr, char *path)
 {
     rmdir_req req;
     rmdir_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
 
-    ret = rmdir_ds_1(&req,&res,clnt);
+    ret = rmdir_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -208,22 +208,22 @@ int rmdir_c(char *ds_svr, char *path)
     return res.res;
 }
 
-int rename_c(char *ds_svr, char *oldpath, char *newpath)
+int rename_c(char *mds_svr, char *oldpath, char *newpath)
 {
     rename_req req;
     rename_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.old = oldpath;
     req.new = newpath;
 
-    ret = rename_ds_1(&req,&res,clnt);
+    ret = rename_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -239,15 +239,15 @@ int rename_c(char *ds_svr, char *oldpath, char *newpath)
     return res.res;
 }
 
-int mknod_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
+int mknod_c(char *mds_svr, char *path, mode_t mode, dev_t dev)
 {
     mknod_req req;
     mknod_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
@@ -255,7 +255,7 @@ int mknod_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
     req.mode = mode;
     req.dev = dev;
 
-    ret = mknod_ds_1(&req,&res,clnt);
+    ret = mknod_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -271,22 +271,22 @@ int mknod_c(char *ds_svr, char *path, mode_t mode, dev_t dev)
     return res.res;
 }
 
-int create_c(char *ds_svr, char *path, mode_t mode)
+int create_c(char *mds_svr, char *path, mode_t mode)
 {
     create_req req;
     create_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
     req.mode = mode;
 
-    ret = create_ds_1(&req,&res,clnt);
+    ret = create_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -302,15 +302,15 @@ int create_c(char *ds_svr, char *path, mode_t mode)
     return res.res;
 }
 
-int open_c(char *ds_svr, char *path, int flags, mode_t mode)
+int open_c(char *mds_svr, char *path, int flags, mode_t mode)
 {
     open_req req;
     open_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
@@ -318,7 +318,7 @@ int open_c(char *ds_svr, char *path, int flags, mode_t mode)
     req.flags = flags;
     req.mode = mode;
 
-    ret = open_ds_1(&req,&res,clnt);
+    ret = open_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -334,21 +334,21 @@ int open_c(char *ds_svr, char *path, int flags, mode_t mode)
     return res.res;
 }
 
-int close_c(char *ds_svr, char *path)
+int close_c(char *mds_svr, char *path)
 {
     close_req req;
     close_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
 
-    ret = close_ds_1(&req,&res,clnt);
+    ret = close_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -439,21 +439,21 @@ int write_c(char *ds_svr, char *path, off_t offset, size_t count, char *buf)
     return res.res;
 }
 
-int lookup_c(char *ds_svr, char *path)
+int lookup_c(char *mds_svr, char *path)
 {
     lookup_req req;
     lookup_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
 
-    ret = lookup_ds_1(&req,&res,clnt);
+    ret = lookup_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -469,22 +469,22 @@ int lookup_c(char *ds_svr, char *path)
     return res.res;
 }
 
-int truncate_c(char *ds_svr, char *path, off_t length)
+int truncate_c(char *mds_svr, char *path, off_t length)
 {
     truncate_req req;
     truncate_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
     req.len = length;
 
-    ret = truncate_ds_1(&req,&res,clnt);
+    ret = truncate_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -500,21 +500,21 @@ int truncate_c(char *ds_svr, char *path, off_t length)
     return res.res;
 }
 
-int statfs_c(char *ds_svr, char *path, struct my_statfs *buf)
+int statfs_c(char *mds_svr, char *path, struct my_statfs *buf)
 {
     statfs_req req;
     statfs_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
 
-    ret = statfs_ds_1(&req,&res,clnt);
+    ret = statfs_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -543,22 +543,22 @@ int statfs_c(char *ds_svr, char *path, struct my_statfs *buf)
     return res.res;
 }
 
-int chmod_c(char *ds_svr, char *path, mode_t mode)
+int chmod_c(char *mds_svr, char *path, mode_t mode)
 {
     chmod_req req;
     chmod_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
     req.mode = mode;
 
-    ret = chmod_ds_1(&req,&res,clnt);
+    ret = chmod_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -574,15 +574,15 @@ int chmod_c(char *ds_svr, char *path, mode_t mode)
     return res.res;
 }
 
-int chown_c(char *ds_svr, char *path, uid_t uid, gid_t gid)
+int chown_c(char *mds_svr, char *path, uid_t uid, gid_t gid)
 {
     chown_req req;
     chown_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
@@ -590,7 +590,7 @@ int chown_c(char *ds_svr, char *path, uid_t uid, gid_t gid)
     req.uid = uid;
     req.gid = gid;
 
-    ret = chown_ds_1(&req,&res,clnt);
+    ret = chown_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -606,22 +606,22 @@ int chown_c(char *ds_svr, char *path, uid_t uid, gid_t gid)
     return res.res;
 }
 
-int link_c(char *ds_svr, char *old, char *new)
+int link_c(char *mds_svr, char *old, char *new)
 {
     link_req req;
     link_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.old = old;
     req.new = new;
 
-    ret = link_ds_1(&req,&res,clnt);
+    ret = link_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -637,22 +637,22 @@ int link_c(char *ds_svr, char *old, char *new)
     return res.res;
 }
 
-int symlink_c(char *ds_svr, char *old, char * new)
+int symlink_c(char *mds_svr, char *old, char * new)
 {
     symlink_req req;
     symlink_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.old = old;
     req.new = new;
 
-    ret = symlink_ds_1(&req,&res,clnt);
+    ret = symlink_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
@@ -668,22 +668,22 @@ int symlink_c(char *ds_svr, char *old, char * new)
     return res.res;
 }
 
-int readlink_c(char *ds_svr, char *path, char *buf, size_t bufsize)
+int readlink_c(char *mds_svr, char *path, char *buf, size_t bufsize)
 {
     readlink_req req;
     readlink_res res;
     CLIENT *clnt;
     bool_t ret;
 
-    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
-        clnt_pcreateerror(ds_svr);
+    if ((clnt = clnt_create(mds_svr, MDPROG, MDVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
         return(res.res);
     }
 
     req.name = path;
     req.bufsize = bufsize;
 
-    ret = readlink_ds_1(&req,&res,clnt);
+    ret = readlink_mds_1(&req,&res,clnt);
 
     if (ret != RPC_SUCCESS) {
         printf("ret = %d\n",ret);
