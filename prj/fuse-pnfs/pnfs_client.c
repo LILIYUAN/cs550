@@ -261,7 +261,7 @@ static int pnfs_write(const char *name, const char *buf, size_t size,
      */
     count = size;
     cur_off = offset;
-    bufp = buf;
+    *bufp = *buf;
     while (count != 0) {
         len = MIN(count, SIZE);
         len = write_c(server.mds_name, name, cur_off, len, bufp);
