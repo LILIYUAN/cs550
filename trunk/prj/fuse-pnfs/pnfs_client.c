@@ -91,7 +91,7 @@ static int pnfs_readdir(const char *name, void *buf, fuse_fill_dir_t filler,
 
     printf("pnfs_readdir(%s, offset=%d)\n", name, (int)offset);
 
-    if ((clnt = clnt_create(server.mds_name, DSPROG, DSVERS, "tcp")) == NULL) {
+    if ((clnt = clnt_create(server.mds_name, MDPROG, MDVERS, "tcp")) == NULL) {
         clnt_pcreateerror(server.mds_name);
         return(-1);
     }
