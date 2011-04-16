@@ -24,7 +24,7 @@ getattr_ds_1_svc(getattr_req *argp, getattr_res *result, struct svc_req *rqstp)
     struct stat sbuf;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     result->res = stat(name, &sbuf);
 
@@ -62,7 +62,7 @@ readdir_ds_1_svc(readdir_req *argp, readdir_res *result, struct svc_req *rqstp)
     struct dirent *p = NULL;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     dirp = opendir(name);
     if (dirp == NULL) {
@@ -105,7 +105,7 @@ mkdir_ds_1_svc(mkdir_req *argp, mkdir_res *result, struct svc_req *rqstp)
     int ret;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     ret = mkdir((const char *)name, (mode_t)argp->mode);
     if (ret != 0) 
@@ -123,7 +123,7 @@ unlink_ds_1_svc(unlink_req *argp, unlink_res *result, struct svc_req *rqstp)
     int ret;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     ret = unlink(name);
     if (ret != 0) 
@@ -141,7 +141,7 @@ rmdir_ds_1_svc(rmdir_req *argp, rmdir_res *result, struct svc_req *rqstp)
     int ret;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     ret = rmdir(name);
     if (ret != 0) 
@@ -160,8 +160,8 @@ rename_ds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
     char old[MAXPATHLEN];
     char new[MAXPATHLEN];
 
-    sprintf(old, "%s/%s", mds.dir, argp->old);
-    sprintf(new, "%s/%s", mds.dir, argp->new);
+    sprintf(old, "%s/%s", ds.dir, argp->old);
+    sprintf(new, "%s/%s", ds.dir, argp->new);
 
 
     ret = rename(old, new);
@@ -180,7 +180,7 @@ mknod_ds_1_svc(mknod_req *argp, mknod_res *result, struct svc_req *rqstp)
     int ret;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     ret = mknod(name, argp->mode, argp->dev);
     if (ret != 0) 
@@ -198,7 +198,7 @@ create_ds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
     int ret;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     ret = creat(name, argp->mode);
     if (ret != 0) 
@@ -216,7 +216,7 @@ open_ds_1_svc(open_req *argp, open_res *result, struct svc_req *rqstp)
     int fd;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     fd = open(name, argp->flags, argp->mode);
     if (fd < 0) 
@@ -249,7 +249,7 @@ read_ds_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
     int fd;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     fd = open(name, O_RDONLY);
     if (fd  < 0) {
@@ -274,6 +274,22 @@ read_ds_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
 	return retval;
 }
 
+/*
+ * TODO : This should recursively create the directory of it does not exist.
+ */
+int
+create_and_open(char *name)
+{
+    int fd;
+
+    fd = open(name, O_CREAT|O_RDWR, 0777);
+
+    if (fd < 0) {
+        printf("Failed to create the extent file : %s\n", name);
+    }
+    return (fd);
+}
+
 bool_t
 write_ds_1_svc(write_req *argp, write_res *result, struct svc_req *rqstp)
 {
@@ -282,13 +298,20 @@ write_ds_1_svc(write_req *argp, write_res *result, struct svc_req *rqstp)
     int fd;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     fd = open(name, O_RDWR);
     if (fd  < 0) {
-        printf("Failed to open(%s) : errno %d\n", argp->name, errno);
-        result->res = -errno;
-        return (TRUE);
+        /*
+         * If the file does not exist : it is being written for the first time.
+         * Hence, create it.
+         */
+        fd = create_and_open(name);
+        if (fd < 0) { 
+            printf("Failed to open(%s) : errno %d\n", argp->name, errno);
+            result->res = -errno;
+            return (TRUE);
+        }
     }
 
     ret = pwrite(fd, argp->data, argp->count, argp->offset);
@@ -321,7 +344,7 @@ truncate_ds_1_svc(truncate_req *argp, truncate_res *result, struct svc_req *rqst
     int res;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     res = truncate(name, argp->len);
     if (res < 0) 
@@ -340,7 +363,7 @@ statfs_ds_1_svc(statfs_req *argp, statfs_res *result, struct svc_req *rqstp)
     int ret;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     ret = statfs(name, &sbuf);
 
@@ -370,7 +393,7 @@ chmod_ds_1_svc(chmod_req *argp, chmod_res *result, struct svc_req *rqstp)
     int ret;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     ret = chmod(name, argp->mode);
     if (ret < 0)
@@ -388,7 +411,7 @@ chown_ds_1_svc(chown_req *argp, chown_res *result, struct svc_req *rqstp)
     int ret;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, argp->name);
+    sprintf(name, "%s/%s", ds.dir, argp->name);
 
     ret = chown(name, argp->uid, argp->gid);
     if (ret < 0)
@@ -408,8 +431,8 @@ link_ds_1_svc(link_req *argp, link_res *result, struct svc_req *rqstp)
     char old[MAXPATHLEN];
     char new[MAXPATHLEN];
 
-    sprintf(old, "%s/%s", mds.dir, argp->old);
-    sprintf(new, "%s/%s", mds.dir, argp->new);
+    sprintf(old, "%s/%s", ds.dir, argp->old);
+    sprintf(new, "%s/%s", ds.dir, argp->new);
 
     ret = link(old, new);
     if (ret < 0)
@@ -428,8 +451,8 @@ symlink_ds_1_svc(symlink_req *argp, symlink_res *result, struct svc_req *rqstp)
     char old[MAXPATHLEN];
     char new[MAXPATHLEN];
 
-    sprintf(old, "%s/%s", mds.dir, argp->old);
-    sprintf(new, "%s/%s", mds.dir, argp->new);
+    sprintf(old, "%s/%s", ds.dir, argp->old);
+    sprintf(new, "%s/%s", ds.dir, argp->new);
 
     ret = symlink(old, new);
     if (ret < 0)
@@ -447,7 +470,7 @@ readlink_ds_1_svc(readlink_req *argp, readlink_res *result, struct svc_req *rqst
     int ret;
     char name[MAXPATHLEN];
 
-    sprintf(name, "%s/%s", mds.dir, name);
+    sprintf(name, "%s/%s", ds.dir, name);
     ret = readlink(name, result->buf, argp->bufsize);
     if (ret < 0)
         result->res = -errno;

@@ -253,21 +253,40 @@ static int pnfs_write(const char *name, const char *buf, size_t size,
     size_t  count;
     size_t  len;
     off_t   cur_off;
-    char *bufp;
     (void) fi;
+    char *bufp;
+    layout_rec ext;
+    layout_rec *extp = &ext;
+    getlayout_res layout;
+    getlayout_req req;
+    size_t dummy;
 
     /*
      * We write in chunks of 4K.
      */
     count = size;
     cur_off = offset;
-    *bufp = *buf;
+    bufp = buf;
+    memset((void *)extp, 0, sizeof (layout_rec));
     while (count != 0) {
         len = MIN(count, SIZE);
-        len = write_c(server.mds_name, name, cur_off, len, bufp);
-        printf("write(%s) offset : %d size %d buf = %s\n", name,
+
+        printf("pnfs_write(%s) offset : %d len %d mds_name\n", name, (int) cur_off, len, server.mds_name);
+        /*
+         * Check if the extent has mapping to the cur_off. If not fetch it using
+         * getlayout.
+         */
+        if (!(cur_off >= ext.off && (cur_off + len) < (ext.off + ext.len))) {
+            getlayout_c(server.mds_name, name, cur_off, len, OPWRITE, &dummy, &ext);
+        }
+
+        printf("pnfs_write(%s) : After getlayout : off=%d len=%d dsname=%s extname=%s\n",
+                name, ext.off, ext.len, ext.dsname, ext.extname);
+
+        len = write_c(ext.dsname, ext.extname, cur_off - ext.off, len, bufp);
+        printf("write(%s) cur_off : %d len %d buf = %s\n", name,
                 (int) cur_off, len, bufp);
-        if (len <= 0)
+        if (len <= 0) 
             break;
 
         count -= len;

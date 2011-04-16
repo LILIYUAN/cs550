@@ -48,6 +48,7 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
 	bool_t retval = TRUE;
     FILE *fh;
     char name[MAXPATHLEN];
+    char recbuf[512];
     size_t sz;
     int op = argp->op;
     layout_rec rec;
@@ -56,9 +57,15 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     int ds;
     int fd;
     int recs = 0;
+    int bytes = 0;
+
+#ifdef DEBUG
+    printf("getlayout_1_svc(%s) off=%lu len=%lu op=%d\n",
+            argp->fname, argp->offset, argp->len, argp->op);
+#endif
 
     sprintf(name, "%s/%s", mds.dir, argp->fname);
-    if ((fh = fopen(name, "rw")) == NULL) {
+    if ((fh = fopen(name, "r+")) == NULL) {
         result->cnt = -errno;
         return (retval);
     }
@@ -78,8 +85,8 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     result->cnt = 0;
     result->more_recs = 0;
     while (!feof(fh)) {
-        fscanf(fh, "%lu %lu %s %s\n", &rec.off, &rec.len, &rec.dsname,
-                rec.extname);
+        fscanf(fh, "%lu %lu %s %s\n", &rec.off, &rec.len, (char *)rec.dsname,
+                (char *)rec.extname);
 
 #ifdef DEBUG
         printf("rec : off=%lu len=%lu ds=%s extname=%s\n",
@@ -128,14 +135,30 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
      * for it.
      */
     ds = get_alloc_ds_svr();
-
+#ifdef DEBUG
+    printf("getlayout_1_svc: picked ds server : %s\n", mds.ds[ds]);
+#endif
     /*
      * We now allocate a new extent at the end of the file.
      */
     fseek(fh, 0, SEEK_END);
 
+#ifdef DEBUG
+    printf("getlayout_1_svc: before while() end=%lu \n", end);
+#endif
     while (end < (argp->offset + argp->len)) {
-        fprintf(fh, "%lu %lu %s %s.ext%d\n", end+1, STRIPE_SZ, mds.ds[ds], argp->fname, recs);
+#ifdef DEBUG
+        printf("getlayout_1_svc: in while end=%lu \n", end);
+        printf("%lu %lu %s %s.ext%d\n", (long unsigned int)end,
+                (long unsigned int)STRIPE_SZ, mds.ds[ds], argp->fname, recs);
+#endif
+        bytes = fprintf(fh, "%lu %lu %s %s.ext%d\n", (long unsigned int)end,
+                (long unsigned int)STRIPE_SZ, mds.ds[ds], argp->fname, recs);
+/*        bytes = write(fd, recbuf, bytes+1); */
+
+#ifdef DEBUG
+        printf("bytes = %d\n", bytes);
+#endif
         end += STRIPE_SZ;
         recs++;
         result->recs[result->cnt].off = rec.off;
@@ -150,7 +173,8 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
      */
     if (sz < (argp->offset + argp->len)) {
         fseek(fh, 0, SEEK_SET);
-        fprintf(fh, "%lu\n", (argp->offset + argp->len));
+        bytes = fprintf(fh, "%lu\n", (argp->offset + argp->len));
+        printf("getlayout: wrote size : bytes = %d\n", bytes);
     }
 
 windup:
