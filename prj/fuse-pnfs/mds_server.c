@@ -381,6 +381,7 @@ create_mds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
      */
     fh = fopen(name, "w");
     fprintf(fh, "0\n");
+    fclose(fh);
 
 	return retval;
 }
