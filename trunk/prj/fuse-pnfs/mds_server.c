@@ -152,19 +152,22 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
         printf("%lu %lu %s %s.ext%d\n", (long unsigned int)end,
                 (long unsigned int)STRIPE_SZ, mds.ds[ds], argp->fname, recs);
 #endif
+        /*
+         * Initialize the rec with new extent.
+         */
+        result->recs[result->cnt].off = end;
+        result->recs[result->cnt].len = STRIPE_SZ;
+        strcpy(result->recs[result->cnt].dsname, mds.ds[ds]);
+        sprintf(result->recs[result->cnt].extname, "%s.ext%d", argp->fname, recs);
+
         bytes = fprintf(fh, "%lu %lu %s %s.ext%d\n", (long unsigned int)end,
                 (long unsigned int)STRIPE_SZ, mds.ds[ds], argp->fname, recs);
-/*        bytes = write(fd, recbuf, bytes+1); */
 
 #ifdef DEBUG
         printf("bytes = %d\n", bytes);
 #endif
         end += STRIPE_SZ;
         recs++;
-        result->recs[result->cnt].off = rec.off;
-        result->recs[result->cnt].len = rec.len;
-        strcpy(result->recs[result->cnt].dsname, rec.dsname);
-        strcpy(result->recs[result->cnt].extname, rec.extname);
         result->cnt++;
     }
 

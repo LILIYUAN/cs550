@@ -737,7 +737,12 @@ int getlayout_c(char *mds_svr, char *fname, off_t off, size_t len, int op, size_
      * As an optimization we could make pnfs_read() query the entire range that
      * it needs instead of STRIPE_SZ.
      */
+    printf("getlayout_c: res.cnt = %d\n", res.cnt);
     if (res.cnt) {
+#ifdef DEBUG
+        printf("getlayout_c(%s) : off=%lu len=%lu dsname=%s extname=%s\n",
+                fname, res.recs[0].off, res.recs[0].len, res.recs[0].extname);
+#endif
         rec->off = res.recs[0].off;
         rec->len = res.recs[0].len;
         strcpy(rec->dsname, res.recs[0].dsname);
