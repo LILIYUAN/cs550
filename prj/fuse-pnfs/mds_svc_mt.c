@@ -376,7 +376,7 @@ init_mds(char *dir, char *ds_file)
             printf("init_mds: Failed to allocate memory for ds names\n");
             return (ENOMEM);
         }
-        fscanf(fh, "%s", ds);
+        fscanf(fh, "%s\n", ds);
         mds.ds[mds.ds_cnt] = ds;
         mds.ds_cnt++;
         if (mds.ds_cnt > MAXDS) {
@@ -389,6 +389,8 @@ init_mds(char *dir, char *ds_file)
         }
     }
 
+    for (i = 0; i < mds.ds_cnt; i++) {
+    }
     return (0);
 }
 

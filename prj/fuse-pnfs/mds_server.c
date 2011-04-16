@@ -58,6 +58,7 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     int fd;
     int recs = 0;
     int bytes = 0;
+    long rec_off, rec_len;
 
 #ifdef DEBUG
     printf("getlayout_1_svc(%s) off=%lu len=%lu op=%d\n",
@@ -81,17 +82,26 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
      * Read the size of the file in.
      */
     fscanf(fh, "%lu\n", (unsigned long *)&sz);
+#ifdef DEBUG
+    printf("getlayout: size = %lu\n", (long unsigned int) sz);
+#endif
 
     result->cnt = 0;
     result->more_recs = 0;
     while (!feof(fh)) {
-        fscanf(fh, "%lu %lu %s %s\n", &rec.off, &rec.len, (char *)rec.dsname,
+        bytes = fscanf(fh, "%lu %lu %s %s\n", &rec_off, &rec_len, rec.dsname,
                 (char *)rec.extname);
-
 #ifdef DEBUG
-        printf("rec : off=%lu len=%lu ds=%s extname=%s\n",
-                rec.off, rec.len, rec.dsname, rec.extname);
+        printf("rec : bytes=%d off=%lu len=%lu ds=%s extname=%s\n",
+                bytes, rec_off, rec_len, rec.dsname, rec.extname);
 #endif
+
+        if (bytes == 0) {
+            break;
+        }
+
+        rec.off = rec_off;
+        rec.len = rec_len;
 
         if (argp->offset >= rec.off && argp->len <= rec.len) {
             /*
@@ -144,11 +154,11 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     fseek(fh, 0, SEEK_END);
 
 #ifdef DEBUG
-    printf("getlayout_1_svc: before while() end=%lu \n", end);
+    printf("getlayout_1_svc: before while() end=%lu \n", (long unsigned int)end);
 #endif
     while (end < (argp->offset + argp->len)) {
 #ifdef DEBUG
-        printf("getlayout_1_svc: in while end=%lu \n", end);
+        printf("getlayout_1_svc: in while end=%lu \n", (long unsigned int)end);
         printf("%lu %lu %s %s.ext%d\n", (long unsigned int)end,
                 (long unsigned int)STRIPE_SZ, mds.ds[ds], argp->fname, recs);
 #endif
@@ -171,16 +181,16 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
         result->cnt++;
     }
 
+windup:
     /*
      * Update the size of the file now.
      */
-    if (sz < (argp->offset + argp->len)) {
+    if (argp->op == OPWRITE && sz < (argp->offset + argp->len)) {
         fseek(fh, 0, SEEK_SET);
         bytes = fprintf(fh, "%lu\n", (argp->offset + argp->len));
-        printf("getlayout: wrote size : bytes = %d\n", bytes);
+        printf("getlayout: Updated size=%lu wrote size : bytes = %d\n", (argp->offset +argp->len), bytes);
     }
 
-windup:
     flock(fd, LOCK_UN);
     fclose(fh);
 	return retval;

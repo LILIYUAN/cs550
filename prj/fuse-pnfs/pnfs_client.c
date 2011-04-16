@@ -214,6 +214,7 @@ static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
     layout_rec *extp = &ext;
     getlayout_res layout;
     getlayout_req req;
+    size_t dummy;
 
     /*
      * Our RPC call supports 4K chunk reads. So, we break this len into 4K
@@ -226,16 +227,20 @@ static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
     while (count != 0) {
         len = MIN(count, SIZE);
 
+        printf("pnfs_read(%s) offset : %d len %d mds_name\n", name, (int) cur_off, len, server.mds_name);
         /*
          * Check if the extent has mapping to the cur_off. If not fetch it using
          * getlayout.
          */
         if (!(cur_off >= ext.off && (cur_off + len) < (ext.off + ext.len))) {
-            getlayout_c(server.mds_name, name, cur_off, len, &ext);
+            getlayout_c(server.mds_name, name, cur_off, len, OPREAD, &dummy, &ext);
         }
-        printf("read(%s) offset : %d size %d\n", name, (int) cur_off, len);
-        len = read_c(server.mds_name, name, cur_off, len, bufp);
-        printf("read(%s) offset : %d size %d buf = %s\n", name,
+
+        printf("pnfs_read(%s) : After getlayout : off=%d len=%d dsname=%s extname=%s\n",
+                name, (int) ext.off, (int) ext.len, ext.dsname, ext.extname);
+
+        len = read_c(ext.dsname, ext.extname, cur_off - ext.off, len, bufp);
+        printf("write(%s) cur_off : %d len %d buf = %s\n", name,
                 (int) cur_off, len, bufp);
         if (len <= 0) 
             break;
@@ -281,7 +286,7 @@ static int pnfs_write(const char *name, const char *buf, size_t size,
         }
 
         printf("pnfs_write(%s) : After getlayout : off=%d len=%d dsname=%s extname=%s\n",
-                name, ext.off, ext.len, ext.dsname, ext.extname);
+                name, (int) ext.off, (int) ext.len, ext.dsname, ext.extname);
 
         len = write_c(ext.dsname, ext.extname, cur_off - ext.off, len, bufp);
         printf("write(%s) cur_off : %d len %d buf = %s\n", name,
