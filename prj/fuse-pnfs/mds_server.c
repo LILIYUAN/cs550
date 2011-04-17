@@ -108,10 +108,15 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
         rec.off = rec_off;
         rec.len = rec_len;
 
-        if (argp->offset >= rec.off && argp->len <= rec.len) {
+        if (argp->offset >= rec.off &&
+            (argp->offset + argp->len) <= (rec.off + rec.len)) {
             /*
              * Found a record. Copy it.
              */
+#ifdef DEBUG
+        printf("MATCHED rec : bytes=%d off=%lu len=%lu ds=%s extname=%s\n",
+                bytes, rec_off, rec_len, rec.dsname, rec.extname);
+#endif
             result->recs[result->cnt].off = rec.off;
             result->recs[result->cnt].len = rec.len;
             strcpy(result->recs[result->cnt].dsname, rec.dsname);
@@ -146,22 +151,29 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     }
 
     /*
-     * We need to allocate a new extent for this file. So, we pick a ds server
-     * for it.
-     */
-    ds = get_alloc_ds_svr();
-#ifdef DEBUG
-    printf("getlayout_1_svc: picked ds server : %s\n", mds.ds[ds]);
-#endif
-    /*
      * We now allocate a new extent at the end of the file.
      */
     fseek(fh, 0, SEEK_END);
+
+    /*
+     * If end is still zero then there are two possibilities 
+     * a. We did not manage to fulfill any paritial range yet.
+     * b. The offset is really zero and this is a new file.
+     *
+     * In both the cases it is safe to set end to argp->offset.
+     */
+    if (end == 0) 
+        end = (argp->offset / STRIPE_SZ) * STRIPE_SZ;
 
 #ifdef DEBUG
     printf("getlayout_1_svc: before while() end=%lu \n", (long unsigned int)end);
 #endif
     while (end < (argp->offset + argp->len)) {
+        /*
+         * We need to allocate a new extent for this file. So, we pick a ds server
+         * for it.
+         */
+        ds = get_alloc_ds_svr();
 #ifdef DEBUG
         printf("getlayout_1_svc: in while end=%lu \n", (long unsigned int)end);
         printf("%lu %lu %s %s.ext%d\n", (long unsigned int)end,

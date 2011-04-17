@@ -400,7 +400,8 @@ int read_c(char *ds_svr, char *path, off_t offset, size_t size, char *buf)
     //
     memcpy(buf, res.data, res.res);
 #ifdef DEBUG
-    printf("read_c: res.res=%d res.data=%s\n", res.res, res.data);
+    /*printf("read_c: res.res=%d res.data=%s\n", res.res, res.data);*/
+    printf("read_c: res.res=%d\n", res.res);
 #endif
     clnt_destroy(clnt);
     return res.res;
@@ -741,7 +742,7 @@ int getlayout_c(char *mds_svr, char *fname, off_t off, size_t len, int op, size_
     if (res.cnt) {
 #ifdef DEBUG
         printf("getlayout_c(%s) : off=%lu len=%lu dsname=%s extname=%s\n",
-                fname, res.recs[0].off, res.recs[0].len, res.recs[0].extname);
+                fname, res.recs[0].off, res.recs[0].len, res.recs[0].dsname, res.recs[0].extname);
 #endif
         rec->off = res.recs[0].off;
         rec->len = res.recs[0].len;
