@@ -12,7 +12,12 @@
 #include <dirent.h>
 #include <unistd.h>
 
+#define SIZE_FMT    "%15lu\n"
+#define REC_WR_FMT     "%10lu %10lu %s %s.ext%d\n"
+#define REC_RD_FMT     "%10lu %10lu %s %s\n"
+
 extern mds_t mds;
+
 
 int
 get_alloc_ds_svr(void)
@@ -81,7 +86,7 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     /*
      * Read the size of the file in.
      */
-    fscanf(fh, "%lu\n", (unsigned long *)&sz);
+    fscanf(fh, SIZE_FMT, (unsigned long *)&sz);
 #ifdef DEBUG
     printf("getlayout: size = %lu\n", (long unsigned int) sz);
 #endif
@@ -89,7 +94,7 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
     result->cnt = 0;
     result->more_recs = 0;
     while (!feof(fh)) {
-        bytes = fscanf(fh, "%lu %lu %s %s\n", &rec_off, &rec_len, rec.dsname,
+        bytes = fscanf(fh, REC_RD_FMT, &rec_off, &rec_len, rec.dsname,
                 (char *)rec.extname);
 #ifdef DEBUG
         printf("rec : bytes=%d off=%lu len=%lu ds=%s extname=%s\n",
@@ -170,7 +175,7 @@ getlayout_1_svc(getlayout_req *argp, getlayout_res *result, struct svc_req *rqst
         strcpy(result->recs[result->cnt].dsname, mds.ds[ds]);
         sprintf(result->recs[result->cnt].extname, "%s.ext%d", argp->fname, recs);
 
-        bytes = fprintf(fh, "%lu %lu %s %s.ext%d\n", (long unsigned int)end,
+        bytes = fprintf(fh, REC_WR_FMT, (long unsigned int)end,
                 (long unsigned int)STRIPE_SZ, mds.ds[ds], argp->fname, recs);
 
 #ifdef DEBUG
@@ -187,7 +192,7 @@ windup:
      */
     if (argp->op == OPWRITE && sz < (argp->offset + argp->len)) {
         fseek(fh, 0, SEEK_SET);
-        bytes = fprintf(fh, "%lu\n", (argp->offset + argp->len));
+        bytes = fprintf(fh, SIZE_FMT, (argp->offset + argp->len));
         printf("getlayout: Updated size=%lu wrote size : bytes = %d\n", (argp->offset +argp->len), bytes);
     }
 
@@ -210,7 +215,7 @@ getsize(char *name)
         return (0);
     }
 
-    fscanf(fh, "%lu", (unsigned long *)&sz);
+    fscanf(fh, SIZE_FMT, (unsigned long *)&sz);
     fclose(fh);
     return(sz);
 }
@@ -417,7 +422,7 @@ create_mds_1_svc(create_req *argp, create_res *result, struct svc_req *rqstp)
      * Initialize the size to 0
      */
     fh = fopen(name, "w");
-    fprintf(fh, "0\n");
+    fprintf(fh, SIZE_FMT, (long unsigned int)0);
     fclose(fh);
 
 	return retval;

@@ -389,8 +389,11 @@ init_mds(char *dir, char *ds_file)
         }
     }
 
+#ifdef DEBUG
     for (i = 0; i < mds.ds_cnt; i++) {
+        printf("init_mds: ds[%d] = %s\n", i, mds.ds[i]);
     }
+#endif
     return (0);
 }
 
