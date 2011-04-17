@@ -236,12 +236,19 @@ static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
             getlayout_c(server.mds_name, name, cur_off, len, OPREAD, &dummy, &ext);
         }
 
+#ifdef DEBUG
         printf("pnfs_read(%s) : After getlayout : off=%d len=%d dsname=%s extname=%s\n",
                 name, (int) ext.off, (int) ext.len, ext.dsname, ext.extname);
+#endif
 
         len = read_c(ext.dsname, ext.extname, cur_off - ext.off, len, bufp);
-        printf("write(%s) cur_off : %d len %d buf = %s\n", name,
-                (int) cur_off, len, bufp);
+
+#ifdef DEBUG
+       /* printf("pnfs_read(%s) cur_off : %d len %d buf = %s\n", name,
+                (int) cur_off, len, bufp);*/
+        printf("pnfs_read(%s) cur_off : %d len %d\n", name,
+                (int) cur_off, len);
+#endif
         if (len <= 0) 
             break;
 
@@ -271,7 +278,7 @@ static int pnfs_write(const char *name, const char *buf, size_t size,
      */
     count = size;
     cur_off = offset;
-    bufp = buf;
+    bufp = (char *)buf;
     memset((void *)extp, 0, sizeof (layout_rec));
     while (count != 0) {
         len = MIN(count, SIZE);
@@ -285,12 +292,19 @@ static int pnfs_write(const char *name, const char *buf, size_t size,
             getlayout_c(server.mds_name, name, cur_off, len, OPWRITE, &dummy, &ext);
         }
 
+#ifdef DEBUG
         printf("pnfs_write(%s) : After getlayout : off=%d len=%d dsname=%s extname=%s\n",
                 name, (int) ext.off, (int) ext.len, ext.dsname, ext.extname);
+#endif
 
         len = write_c(ext.dsname, ext.extname, cur_off - ext.off, len, bufp);
-        printf("write(%s) cur_off : %d len %d buf = %s\n", name,
-                (int) cur_off, len, bufp);
+
+#ifdef DEBUG
+        /*printf("pnfs_write(%s) cur_off : %d len %d buf = %s\n", name,
+                (int) cur_off, len, bufp);*/
+        printf("pnfs_write(%s) cur_off : %d len %d\n", name,
+                (int) cur_off, len);
+#endif
         if (len <= 0) 
             break;
 
