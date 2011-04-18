@@ -349,12 +349,45 @@ mkdir_mds_1_svc(mkdir_req *argp, mkdir_res *result, struct svc_req *rqstp)
 bool_t
 unlink_mds_1_svc(unlink_req *argp, unlink_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    FILE *fh;
+    int fd;
+    char name[MAXPATHLEN];
+    size_t sz;
+    layout_rec rec;
+    int ret;
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->fname);
+    
+    if ((fh = fopen(name, "r+")) == NULL) {
+        result->cnt = -errno;
+        return (retval);
+    }
 
+    fd = fileno(fh);
+
+    flock(fd, LOCK_EX);
+
+    fscanf(fh, SIZE_FMT, (unsigned long *)&sz);
+
+    while (!feof(fh)) {
+        bytes = fscanf(fh, REC_RD_FMT, &rec_off, &rec_len, rec.dsname,
+              (char *)rec.extname);
+#ifdef DEBUG
+        printf("rec : bytes=%d off=%lu len=%lu ds=%s extname=%s\n",
+                bytes, rec_off, rec_len, rec.dsname, rec.extname);
+#endif
+       ret = unlink_ds(rec.dsname, rec.extname); 
+    }
+
+    ret = unlink(name);
+    if (ret != 0)
+        result->res = -errno;
+    else
+        result->res = 0;
+
+    flock(fh, LOCK_UN);
+    fclose(fh);
 	return retval;
 }
 
@@ -365,13 +398,19 @@ unlink_mds_1_svc(unlink_req *argp, unlink_res *result, struct svc_req *rqstp)
 bool_t
 rmdir_mds_1_svc(rmdir_req *argp, rmdir_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+    bool_t retval = TRUE;
+    int ret;
+    char name[MAXPATHLEN];
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
 
-	return retval;
+    ret = rmdir(name);
+    if (ret != 0)
+        result->res = -errno;
+    else
+        result->res = 0;
+
+    return retval;
 }
 
 /*
@@ -381,12 +420,74 @@ rmdir_mds_1_svc(rmdir_req *argp, rmdir_res *result, struct svc_req *rqstp)
 bool_t
 rename_mds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    FILE *fh, *nfh;
+    int fd, newfd;
+    char old[MAXPATHLEN];
+    char new[MAXPATHLEN];
+    char oldext[MAXPATHLEN];
+    char newext[MAXPATHLEN];
+    char *p;
+    size_t sz;
+    layout_rec rec;
+    int ret;
+    struct stat sbuf;
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(old, "%s/%s", mds.dir, argp->old);
+    sprintf(new, "%s/%s", mds.dir, argp->new);
+  
+    if ((result->res = stat(old, &sbuf)) != 0) {
+        return (retval);
+    }
+    /*
+     * Check if the new name exists.
+     */
+    if ((newfd = open(new, O_CREAT|O_EXCL, sbuf.st_mode)) < 0) {
+        result->res = -EEXIST;
+        return retval;
+    }
 
+    if ((nfh = fdopen(newfd, "r+")) == NULL) {
+        result->cnt = -errno;
+        return (retval);
+    }
+
+    if ((fh = fopen(old, "r+")) == NULL) {
+        result->cnt = -errno;
+        return (retval);
+    }
+
+    fd = fileno(fh);
+
+    flock(fd, LOCK_EX);
+    flock(nfd, LOCK_EX);
+
+    fscanf(fh, SIZE_FMT, (unsigned long *)&sz);
+    fprintf(nfh, SIZE_FMT, sz);
+
+    while (!feof(fh)) {
+        bytes = fscanf(fh, REC_RD_FMT, &rec_off, &rec_len, rec.dsname,
+                (char *)rec.extname);
+#ifdef DEBUG
+        printf("rec : bytes=%d off=%lu len=%lu ds=%s extname=%s\n",
+                bytes, rec_off, rec_len, rec.dsname, rec.extname);
+#endif
+        p = rindex(rec.extname, '.');
+
+        sprintf(newext, "%s%s", new, p); 
+        ret = rename_ds(rec.dsname, rec.extname, newext); 
+    }
+
+    ret = unlink(name);
+    if (ret != 0)
+        result->res = -errno;
+    else
+        result->res = 0;
+
+    flock(fh, LOCK_UN);
+    flock(nfh, LOCK_UN);
+    fclose(fh);
+    fclose(nfh);
 	return retval;
 }
 
