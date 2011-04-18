@@ -753,3 +753,64 @@ int getlayout_c(char *mds_svr, char *fname, off_t off, size_t len, int op, size_
     return (0);
 }
 
+
+int unlink_ds(char *ds_svr, char *path)
+{
+    unlink_req req;
+    unlink_res res;
+    CLIENT *clnt;
+    bool_t ret;
+
+    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
+        return(res.res);
+    }
+
+    req.name = path;
+
+    ret = unlink_ds_1(&req,&res,clnt);
+
+    if (ret != RPC_SUCCESS) {
+        printf("ret = %d\n",ret);
+        clnt_perror(clnt, "call failed");
+    }
+
+    if (res.res  < 0) {
+        errno = -(res.res);
+        return (res.res);
+    }
+
+    clnt_destroy(clnt);
+    return res.res;
+}
+
+int rename_ds(char *ds_svr, char *oldpath, char *newpath)
+{
+    rename_req req;
+    rename_res res;
+    CLIENT *clnt;
+    bool_t ret;
+
+    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(mds_svr);
+        return(res.res);
+    }
+
+    req.old = oldpath;
+    req.new = newpath;
+
+    ret = rename_ds_1(&req,&res,clnt);
+
+    if (ret != RPC_SUCCESS) {
+        printf("ret = %d\n",ret);
+        clnt_perror(clnt, "call failed");
+    }
+
+    if (res.res  < 0) {
+        errno = -(res.res);
+        return (res.res);
+    }
+
+    clnt_destroy(clnt);
+    return res.res;
+}
