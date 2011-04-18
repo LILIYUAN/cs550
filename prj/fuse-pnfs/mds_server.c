@@ -343,6 +343,39 @@ mkdir_mds_1_svc(mkdir_req *argp, mkdir_res *result, struct svc_req *rqstp)
 }
 
 /*
+ * Supporting routine to call the ds_servers to unlink the extents.
+ */
+int unlink_c_ds(char *ds_svr, char *path)
+{
+    unlink_req req;
+    unlink_res res;
+    CLIENT *clnt;
+    bool_t ret;
+
+    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(ds_svr);
+        return(res.res);
+    }
+
+    req.name = path;
+
+    ret = unlink_ds_1(&req,&res,clnt);
+
+    if (ret != RPC_SUCCESS) {
+        printf("ret = %d\n",ret);
+        clnt_perror(clnt, "call failed");
+    }
+
+    if (res.res  < 0) {
+        errno = -(res.res);
+        return (res.res);
+    }
+
+    clnt_destroy(clnt);
+    return res.res;
+}
+
+/*
  * We will need to parse the contents of the file to find all the ds_servers
  * that have the stripes of this file and unlink them.
  */
@@ -351,16 +384,17 @@ unlink_mds_1_svc(unlink_req *argp, unlink_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     FILE *fh;
-    int fd;
+    int fd, bytes = 0;
     char name[MAXPATHLEN];
     size_t sz;
     layout_rec rec;
     int ret;
+    long rec_off, rec_len;
 
-    sprintf(name, "%s/%s", mds.dir, argp->fname);
+    sprintf(name, "%s/%s", mds.dir, argp->name);
     
     if ((fh = fopen(name, "r+")) == NULL) {
-        result->cnt = -errno;
+        result->res = -errno;
         return (retval);
     }
 
@@ -377,7 +411,7 @@ unlink_mds_1_svc(unlink_req *argp, unlink_res *result, struct svc_req *rqstp)
         printf("rec : bytes=%d off=%lu len=%lu ds=%s extname=%s\n",
                 bytes, rec_off, rec_len, rec.dsname, rec.extname);
 #endif
-       ret = unlink_ds(rec.dsname, rec.extname); 
+       ret = unlink_c_ds(rec.dsname, rec.extname); 
     }
 
     ret = unlink(name);
@@ -414,6 +448,40 @@ rmdir_mds_1_svc(rmdir_req *argp, rmdir_res *result, struct svc_req *rqstp)
 }
 
 /*
+ * Supporting routine to call the ds_servers to rename the extents.
+ */
+int rename_c_ds(char *ds_svr, char *oldpath, char *newpath)
+{
+    rename_req req;
+    rename_res res;
+    CLIENT *clnt;
+    bool_t ret;
+
+    if ((clnt = clnt_create(ds_svr, DSPROG, DSVERS, "tcp")) == NULL) {
+        clnt_pcreateerror(ds_svr);
+        return(res.res);
+    }
+
+    req.old = oldpath;
+    req.new = newpath;
+
+    ret = rename_ds_1(&req,&res,clnt);
+
+    if (ret != RPC_SUCCESS) {
+        printf("ret = %d\n",ret);
+        clnt_perror(clnt, "call failed");
+    }
+
+    if (res.res  < 0) {
+        errno = -(res.res);
+        return (res.res);
+    }
+
+    clnt_destroy(clnt);
+    return res.res;
+}
+
+/*
  * We will need to parse the contents of the file to find all the ds_servers
  * that have the stripes of this file and rename them.
  */
@@ -422,7 +490,7 @@ rename_mds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
     FILE *fh, *nfh;
-    int fd, newfd;
+    int fd, nfd, bytes = 0;
     char old[MAXPATHLEN];
     char new[MAXPATHLEN];
     char oldext[MAXPATHLEN];
@@ -432,6 +500,7 @@ rename_mds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
     layout_rec rec;
     int ret;
     struct stat sbuf;
+    long rec_off, rec_len;
 
     sprintf(old, "%s/%s", mds.dir, argp->old);
     sprintf(new, "%s/%s", mds.dir, argp->new);
@@ -442,18 +511,18 @@ rename_mds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
     /*
      * Check if the new name exists.
      */
-    if ((newfd = open(new, O_CREAT|O_EXCL, sbuf.st_mode)) < 0) {
+    if ((nfd = open(new, O_CREAT|O_EXCL, sbuf.st_mode)) < 0) {
         result->res = -EEXIST;
         return retval;
     }
 
-    if ((nfh = fdopen(newfd, "r+")) == NULL) {
-        result->cnt = -errno;
+    if ((nfh = fdopen(nfd, "r+")) == NULL) {
+        result->res = -errno;
         return (retval);
     }
 
     if ((fh = fopen(old, "r+")) == NULL) {
-        result->cnt = -errno;
+        result->res = -errno;
         return (retval);
     }
 
@@ -475,10 +544,11 @@ rename_mds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
         p = rindex(rec.extname, '.');
 
         sprintf(newext, "%s%s", new, p); 
-        ret = rename_ds(rec.dsname, rec.extname, newext); 
+        ret = rename_c_ds(rec.dsname, rec.extname, newext); 
     }
 
-    ret = unlink(name);
+    ret = unlink(old);
+  
     if (ret != 0)
         result->res = -errno;
     else

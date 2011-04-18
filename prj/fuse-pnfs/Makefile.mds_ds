@@ -16,7 +16,7 @@ MDS_SOURCES_SVC.h =
 SOURCES.x = mds_ds.x
 
 DS_TARGETS_SVC.c = ds_svc_mt.c ds_server.c mds_ds_xdr.c 
-MDS_TARGETS_SVC.c = mds_svc_mt.c mds_server.c mds_ds_xdr.c 
+MDS_TARGETS_SVC.c = mds_svc_mt.c mds_server.c mds_ds_xdr.c mds_ds_clnt.c
 TARGETS_CLNT.c = mds_ds_clnt.c mds_ds_client.c pnfs_client.c mds_ds_xdr.c 
 TARGETS = mds_ds.h mds_ds_xdr.c mds_ds_clnt.c mds_ds_svc.c mds_ds_client.c mds_ds_server.c ds_server.c mds_server.c pnfs_client.c
 
