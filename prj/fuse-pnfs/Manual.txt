@@ -1,0 +1,68 @@
+This file explains the steps involved in compiling the code. And also the steps
+to start the servers and the client application.
+
+Tar file Contents :
+
+Steps to compile the code :
+---------------------------
+- Executable name : mds_server ds_server pnfs_client 
+- We have a Makefile script "Makefile.mds_ds". This script invokes the make for both 
+  mds_server and ds_server and even the pnfs_client
+
+    - mds_server : The server which maintains all the meta data for all the data
+      residing on all the data servers. This should be started first. The pnfs client
+      interacts with this server first to perform any operation. Most of the operations
+      are served from this server except few like read / write. 
+
+    - ds_server : The server which hosts all the data in the system. Usually multiple 
+      instances of the data server exists in the system. All the read and write operations
+      are served from these servers.
+
+    - pnfs_client : This is the client used to interact with the pNFS system. This client can 
+      interact with the mds_server to perform the operations. For read and write operations
+      it gets the location of the data from mds_server and then makes calls to ds_server to 
+      perform actual read and write.
+
+Steps to start the mds_server :
+--------------------------------
+- Executable name : ./mds_server
+  Usage: ./mds_server -d <share-dir> -f <ds-servers-file>
+   <share-dir>         : The directory that is being shared
+   <ds_servers-file>   : The file containing the list of ds-servers for this FS
+
+  - share-dir : should be empty while starting the server. This is the placefolder for meta-data
+  - ds_servers-file : This is a file on the local file system having entries for each
+    data server in the system. One entry is made for each ds server. 
+    
+    Sample ds_servers-file 
+   -- snip --
+    compute-0-0.local
+    compute-0-1.local
+    -- snip --
+
+Steps to start the ds_server :
+-------------------------------
+- Executable name : ./ds_server
+  Usage: ./ds_server -d <share-dir> -s <mds-server> -i fsid
+   <share-dir>    : The directory that is being shared
+   <mds-server>   : The name of the mds-server for this filesystem
+   <fsid>         : The fsid of the filesystem being served (provided by mds-server for this filesystem 
+
+  - share-dir : This dir should be empty while starting and is the place holder for actual data.
+  - mds-server : IP / DNS of the machine where the metadata server mds_server is running
+  - fsid : Give any non zero number, say 0 or 1
+
+
+Steps to start the pnfs_client :
+--------------------------------
+- Executable name : ./pnfs_client
+  Usage : ./pnfs_client -S <server_name> -f <filesystem> <local_mountpoint>
+   <server_name> : The name of the metadata server
+
+  - server_name : The name of the mds_server from where we mount the nfs volume
+  - local_mountpoint : the local drectory from where the nfs file system is mounted.
+
+Steps to use the pnfs client :
+------------------------------
+Once the volume is mounted we can cd to the directory where it is mounted 
+and perform any operations like normal. 
