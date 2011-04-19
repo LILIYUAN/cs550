@@ -202,6 +202,162 @@ static int pnfs_open(const char *name, struct fuse_file_info *fi)
     return (0);
 }
 
+typedef struct ext_rw {
+    layout_rec  ext;
+    char        *buf;
+    off_t       off;
+    size_t      len;
+    size_t      res;
+    int         rw_op;
+} ext_rw_t;
+
+/*
+ * The routine executed by a pthread to read or write an extent.
+ * Multiple such requests could be staretd in parallel by pnfs_read/pnfs_write.
+ *
+ * Return value :
+ *  0 - On success
+ *  < 0 - When we fail.
+ *
+ *  ext_rw->res - Contains the number of bytes read/written in total
+ */
+void *pnfs_rw_ext(void *data)
+{
+    ext_rw_t *ext_rw;
+    size_t count;
+    size_t len;
+    off_t cur_off;
+    off_t ext_off;
+    char *bufp;
+    int rw_op;
+
+    ext_rw = data;
+    count = ext_rw->len;
+    cur_off = ext_rw->off;
+    ext_off = ext_rw->ext.off;
+    bufp = ext_rw->buf;
+    rw_op = ext_rw->rw_op;
+    ext_rw->res = 0;
+
+    while (count != 0) {
+        len = MIN(count, SIZE);
+
+        if (rw_op == OPREAD) {
+            len = read_c(ext_rw->ext.dsname, ext_rw->ext.extname, cur_off - ext_off, len, bufp);
+        } else {
+            len = read_c(ext_rw->ext.dsname, ext_rw->ext.extname, cur_off - ext_off, len, bufp);
+        }
+
+        if (len <= 0) {
+            return;
+        }
+
+        count -= len;
+        cur_off += len;
+        bufp+= len;
+        ext_rw->res += len;
+    }
+    return;
+}
+
+static int pnfs_p_rdwr(const char *name, char *buf, size_t size, off_t offset,
+                    int rdwr, struct fuse_file_info *fi)
+{
+    size_t          res = 0;
+    size_t          count;
+    size_t          len;
+    off_t           cur_off;
+    char            *bufp;
+    layout_rec      *extp = NULL;
+    getlayout_res   layout;
+    getlayout_req   req;
+    size_t          dummy;
+    pthread_t       thr[MAXDS];
+    ext_rw_t        ext_rw[MAXDS]; 
+    int             nthr = 0;
+    int             i;
+
+    (void) fi;
+
+
+    /*
+     * We break this read into STRIPESZ extents and issue them in parallel by
+     * spawning a pthread for every extent. 
+     */
+    count = size;
+    cur_off = offset;
+    bufp = buf;
+    memset((void *)extp, 0, sizeof (layout_rec));
+    while (count != 0) {
+        /*
+         * This should align it to STRIPE_SZ boundary.
+         */
+        len = MIN (count, (STRIPE_SZ - (cur_off % STRIPE_SZ)));
+
+        /* len = MIN(count, STRIPE_SZ); */
+
+#ifdef DEBUG
+        printf("pnfs_p_rdwr(%s) offset : %d len %d mds_name\n", name, (int) cur_off, len, server.mds_name);
+#endif
+        getlayout_c(server.mds_name, name, cur_off, len, OPREAD, &dummy, &ext_rw[nthr].ext);
+
+#ifdef DEBUG
+        printf("pnfs_p_rdwr(%s) : After getlayout : off=%d len=%d dsname=%s extname=%s\n",
+                name, (int) ext_rw[nthr].off, (int) ext_rw[nthr].len, ext_rw[nthr].ext.dsname,
+                ext_rw[nthr].ext.extname);
+#endif
+        count -= len;
+
+        /*
+         * Initialize a record to hand off to a separate thread.
+         */
+        ext_rw[nthr].off = cur_off;
+        ext_rw[nthr].len = len;
+        ext_rw[nthr].buf = bufp;
+        ext_rw[nthr].rw_op = rdwr;
+        /*
+         * Spawn a new thread and issue a read.
+         */
+        pthread_create(&thr[nthr], NULL, pnfs_rw_ext, (void *)&ext_rw[nthr]);
+        nthr++;
+
+        /* 
+         * If we have spawned MAXDS request then we should wait for them to
+         * finish before we proceed.
+         */
+        if (nthr == MAXDS) {
+            for (i = 0; i < nthr; i++) {
+                pthread_join(thr[i], NULL);
+            }
+            nthr = 0;
+        }
+
+        cur_off += len;
+        bufp += len;
+    }
+
+    /* 
+     * Wait for the threads to finish.
+     */
+    for (i = 0; i < nthr; i++) {
+        pthread_join(thr[i], NULL);
+    }
+
+    return (size - count);
+}
+
+static int pnfs_pread(const char *name, char *buf, size_t size, off_t offset,
+                    struct fuse_file_info *fi)
+{
+    return (pnfs_p_rdwr(name, buf, size, offset, OPREAD, fi));
+}
+
+static int pnfs_pwrite(const char *name, const char *buf, size_t size,
+        off_t offset, struct fuse_file_info *fi)
+{
+    return(pnfs_p_rdwr(name, buf, size, offset, OPWRITE, fi));
+}
+
 static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
                     struct fuse_file_info *fi)
 {
