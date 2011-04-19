@@ -1,0 +1,11 @@
+
+* We assume that the data servers are all empty in the begining
+* All the entries / data is created only by a valid pnfs client that we have written
+* Even though we can have data in data sevrers and the corresponding meta data for them can be
+  created while the data servers registers - this is not taken care of [ out of scope ]
+* When the meta data server is started, a list of ds servers is given to it. This list cannot be 
+  altered later. This functionality is out of scope for us. This can be acheived however it is 
+  out of scope of the proposal. 
+
+ 
+ 
