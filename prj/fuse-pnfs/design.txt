@@ -8,4 +8,4 @@
   out of scope of the proposal. 
 
  
- 
+* Our current design is a PC, if the servers are killed, then everything is started a-fresh 
