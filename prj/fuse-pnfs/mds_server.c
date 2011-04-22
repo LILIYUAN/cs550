@@ -22,7 +22,13 @@ extern mds_t mds;
 int
 get_alloc_ds_svr(void)
 {
-    return (mds.nxt_alloc_ds++ % mds.ds_cnt);
+    int ret;
+    
+    ret = mds.nxt_alloc_ds;
+    mds.nxt_alloc_ds = (mds.nxt_alloc_ds + 1) % mds.ds_cnt;
+
+    printf("get_alloc_ds_server: return value = %d\n", ret);
+    return ret;
 }
 
 int 
