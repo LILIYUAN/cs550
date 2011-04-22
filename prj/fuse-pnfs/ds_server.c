@@ -275,19 +275,54 @@ read_ds_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
 }
 
 /*
- * TODO : This should recursively create the directory of it does not exist.
+ * This is a helper routine to recursively create the directories on the
+ * data-server before writing to a file for the first time.
  */
 int
-create_and_open(char *name)
+create_and_open(char *fname)
 {
+    char name[MAXPATHLEN];
+    char dname[MAXPATHLEN];
+    char *p, *saveptr;
     int fd;
+    int ret;
 
+    /*
+     * Extract the directory name from the given filepath.
+     */
+    strncpy(dname, fname, MAXPATHLEN-1);
+    p = strrchr(dname, '/');
+    *p = '\0';
+
+#ifdef DEBUG
+    printf("create_and_open: dname = %s\n", dname);
+#endif
+    p = strtok_r(dname, "/", &saveptr);
+    while (p) {
+        ret = mkdir(p, 0777);
+#ifdef DEBUG
+        printf("create_and_open: mkdir(%s) = %d\n", p, ret);
+#endif
+        /*
+         * We either succeed or the directory exists. If not we should return
+         * failure.
+         */
+        if (ret != 0 && ret != EEXIST) {
+            ret = - errno;
+            return (ret);
+        }
+        p = strtok_r(NULL, "/", &saveptr); 
+    }
+
+    ret = 0;
+    sprintf(name, "%s/%s", ds.dir, fname);
     fd = open(name, O_CREAT|O_RDWR, 0777);
 
     if (fd < 0) {
         printf("Failed to create the extent file : %s\n", name);
+        ret = -errno;
     }
-    return (fd);
+    return (ret);
 }
 
 bool_t
@@ -306,7 +341,7 @@ write_ds_1_svc(write_req *argp, write_res *result, struct svc_req *rqstp)
          * If the file does not exist : it is being written for the first time.
          * Hence, create it.
          */
-        fd = create_and_open(name);
+        fd = create_and_open(argp->name);
         if (fd < 0) { 
             printf("Failed to open(%s) : errno %d\n", argp->name, errno);
             result->res = -errno;
