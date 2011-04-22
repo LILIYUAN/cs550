@@ -436,6 +436,13 @@ main (int argc, char **argv)
         }
     }
 
+    if (dir[0] != '/') {
+        printf("mds_server : share-dir %s : is not an absolute path !\n", dir);
+        printf("mds_server : Please provide an absolute path for <share-dir>\n");
+        usage(argv[0]);
+        return (1);
+    }
+
     if (init_mds(dir, dsfile) != 0) {
         return (1);
     }

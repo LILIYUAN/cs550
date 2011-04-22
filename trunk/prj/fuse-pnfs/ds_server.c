@@ -277,6 +277,8 @@ read_ds_1_svc(read_req *argp, read_res *result, struct svc_req *rqstp)
 /*
  * This is a helper routine to recursively create the directories on the
  * data-server before writing to a file for the first time.
+ *
+ * Returns the file descriptor if successful else (-errno).
  */
 int
 create_and_open(char *fname)
@@ -290,7 +292,8 @@ create_and_open(char *fname)
     /*
      * Extract the directory name from the given filepath.
      */
-    strncpy(dname, fname, MAXPATHLEN-1);
+    sprintf(dname, "%s/%s", ds.dir, fname, MAXPATHLEN-1);
+    name[0] = '\0';
     p = strrchr(dname, '/');
     *p = '\0';
 
@@ -299,15 +302,16 @@ create_and_open(char *fname)
 #endif
     p = strtok_r(dname, "/", &saveptr);
     while (p) {
-        ret = mkdir(p, 0777);
+        strcat(name, "/"); strcat(name, p);
+        ret = mkdir(name, 0777);
 #ifdef DEBUG
-        printf("create_and_open: mkdir(%s) = %d\n", p, ret);
+        printf("create_and_open: mkdir(%s) = %d\n", name, ret);
 #endif
         /*
          * We either succeed or the directory exists. If not we should return
          * failure.
          */
-        if (ret != 0 && ret != EEXIST) {
+        if (ret != 0 && errno != EEXIST) {
             ret = - errno;
             return (ret);
         }
@@ -322,10 +326,9 @@ create_and_open(char *fname)
         printf("Failed to create the extent file : %s\n", name);
         ret = -errno;
     } else {
-    	ret = fd;
-    }    
+        ret = fd;
+    }
 
-    
     return (ret);
 }
 

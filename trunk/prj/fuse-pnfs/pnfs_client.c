@@ -245,9 +245,13 @@ void *pnfs_rw_ext(void *data)
         if (rw_op == OPREAD) {
             len = read_c(ext_rw->ext.dsname, ext_rw->ext.extname, cur_off - ext_off, len, bufp);
         } else {
-            len = read_c(ext_rw->ext.dsname, ext_rw->ext.extname, cur_off - ext_off, len, bufp);
+            len = write_c(ext_rw->ext.dsname, ext_rw->ext.extname, cur_off - ext_off, len, bufp);
         }
 
+#ifdef DEBUG
+        printf("pnfs_rw_ext(%s) cur_off : %d len %d\n", ext_rw->ext.extname,
+                (int) cur_off, len);
+#endif
         if (len <= 0) {
             return;
         }
@@ -268,7 +272,6 @@ static int pnfs_p_rdwr(const char *name, char *buf, size_t size, off_t offset,
     size_t          len;
     off_t           cur_off;
     char            *bufp;
-    layout_rec      *extp = NULL;
     getlayout_res   layout;
     getlayout_req   req;
     size_t          dummy;
@@ -276,18 +279,21 @@ static int pnfs_p_rdwr(const char *name, char *buf, size_t size, off_t offset,
     ext_rw_t        ext_rw[MAXDS]; 
     int             nthr = 0;
     int             i;
+    int             ret;
 
     (void) fi;
 
-
+#ifdef DEBUG
+        printf("pnfs_p_rdwr(%s) START rdwr = %d offset : %d len %d mds_name\n",
+                name, rdwr, (int)offset, size, server.mds_name);
+#endif
     /*
-     * We break this read into STRIPESZ extents and issue them in parallel by
+     * We break this read/write into STRIPESZ extents and issue them in parallel by
      * spawning a pthread for every extent. 
      */
     count = size;
     cur_off = offset;
     bufp = buf;
-    memset((void *)extp, 0, sizeof (layout_rec));
     while (count != 0) {
         /*
          * This should align it to STRIPE_SZ boundary.
@@ -299,13 +305,20 @@ static int pnfs_p_rdwr(const char *name, char *buf, size_t size, off_t offset,
 #ifdef DEBUG
         printf("pnfs_p_rdwr(%s) offset : %d len %d mds_name\n", name, (int) cur_off, len, server.mds_name);
 #endif
-        getlayout_c(server.mds_name, name, cur_off, len, OPREAD, &dummy, &ext_rw[nthr].ext);
+        ret = getlayout_c(server.mds_name, name, cur_off, len, rdwr, &dummy, &ext_rw[nthr].ext);
 
 #ifdef DEBUG
-        printf("pnfs_p_rdwr(%s) : After getlayout : off=%d len=%d dsname=%s extname=%s\n",
-                name, (int) ext_rw[nthr].off, (int) ext_rw[nthr].len, ext_rw[nthr].ext.dsname,
+        printf("pnfs_p_rdwr(%s) : After getlayout : ret = %d off=%d len=%d dsname=%s extname=%s\n",
+                name, ret, (int) ext_rw[nthr].off, (int) ext_rw[nthr].len, ext_rw[nthr].ext.dsname,
                 ext_rw[nthr].ext.extname);
 #endif
+        if (ret <= 0) {
+#ifdef DEBUG
+            printf("pnfs_p_rdwr: getlayout_c : Failed ret = %d\n", ret);
+#endif
+            return (ret);
+        }
+
         count -= len;
 
         /*
@@ -355,7 +368,7 @@ static int pnfs_pread(const char *name, char *buf, size_t size, off_t offset,
 static int pnfs_pwrite(const char *name, const char *buf, size_t size,
         off_t offset, struct fuse_file_info *fi)
 {
-    return(pnfs_p_rdwr(name, buf, size, offset, OPWRITE, fi));
+    return(pnfs_p_rdwr(name, (char *)buf, size, offset, OPWRITE, fi));
 }
 
 static int pnfs_read(const char *name, char *buf, size_t size, off_t offset,
@@ -519,8 +532,8 @@ static struct fuse_operations pnfs_oper = {
 
   .create   = pnfs_create,
   .open     = pnfs_open,
-  .read     = pnfs_read,
-  .write    = pnfs_write,
+  .read     = pnfs_pread,
+  .write    = pnfs_pwrite,
   .statfs   = pnfs_statfs,
   /*.lookup   = pnfs_lookup,*/
   /*.close    = pnfs_close,*/
