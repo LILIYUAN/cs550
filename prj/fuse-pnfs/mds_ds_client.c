@@ -739,7 +739,7 @@ int getlayout_c(char *mds_svr, char *fname, off_t off, size_t len, int op, size_
      * it needs instead of STRIPE_SZ.
      */
     printf("getlayout_c: res.cnt = %d\n", res.cnt);
-    if (res.cnt) {
+    if (res.cnt > 0) {
 #ifdef DEBUG
         printf("getlayout_c(%s) : off=%lu len=%lu dsname=%s extname=%s\n",
                 fname, res.recs[0].off, res.recs[0].len, res.recs[0].dsname, res.recs[0].extname);
@@ -750,5 +750,5 @@ int getlayout_c(char *mds_svr, char *fname, off_t off, size_t len, int op, size_
         strcpy(rec->extname, res.recs[0].extname);
         *sz = res.sz;
     }
-    return (0);
+    return (res.cnt);
 }

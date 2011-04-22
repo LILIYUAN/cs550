@@ -371,6 +371,14 @@ main (int argc, char **argv)
     dir = argv[2];
     mds = argv[4];
     fsid.__val[0] = atoi(argv[6]);
+
+    if (dir[0] != '/') {
+        printf("ds_server : share-dir %s : is not an absolute path !\n", dir);
+        printf("ds_server : Please provide an absolute path for <share-dir>\n");
+        usage(argv[0]);
+        return (1);
+    }
+
     if (init_ds(dir, mds, fsid) != 0) {
         return (1);
     }
