@@ -321,7 +321,11 @@ create_and_open(char *fname)
     if (fd < 0) {
         printf("Failed to create the extent file : %s\n", name);
         ret = -errno;
-    }
+    } else {
+    	ret = fd;
+    }    
+
+    
     return (ret);
 }
 
