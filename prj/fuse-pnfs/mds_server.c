@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #define SIZE_FMT    "%15lu\n"
+#define REC_MV_FMT    "%10lu %10lu %s %s\n"
 #define REC_WR_FMT     "%10lu %10lu %s %s.ext%d\n"
 #define REC_RD_FMT     "%10lu %10lu %s %s\n"
 
@@ -510,19 +511,26 @@ rename_mds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
 
     sprintf(old, "%s/%s", mds.dir, argp->old);
     sprintf(new, "%s/%s", mds.dir, argp->new);
-  
+
+#ifdef DEBUG
+    printf("rename_mds_1_svc: old=%s new=%s\n", old, new);
+#endif
+
     if ((result->res = stat(old, &sbuf)) != 0) {
         return (retval);
     }
     /*
      * Check if the new name exists.
      */
-    if ((nfd = open(new, O_CREAT|O_EXCL, sbuf.st_mode)) < 0) {
+    if ((nfd = open(new, O_CREAT|O_TRUNC|O_RDWR, sbuf.st_mode)) < 0) {
         result->res = -EEXIST;
         return retval;
     }
 
     if ((nfh = fdopen(nfd, "r+")) == NULL) {
+#ifdef DEBUG
+        printf("rename_mds_1_svc: fdopen() failed errno=%d\n", errno);
+#endif
         result->res = -errno;
         return (retval);
     }
@@ -538,19 +546,24 @@ rename_mds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
     flock(nfd, LOCK_EX);
 
     fscanf(fh, SIZE_FMT, (unsigned long *)&sz);
-    fprintf(nfh, SIZE_FMT, sz);
+    fprintf(nfh, SIZE_FMT, (long unsigned int)sz);
 
     while (!feof(fh)) {
         bytes = fscanf(fh, REC_RD_FMT, &rec_off, &rec_len, rec.dsname,
                 (char *)rec.extname);
 #ifdef DEBUG
-        printf("rec : bytes=%d off=%lu len=%lu ds=%s extname=%s\n",
+        printf("rename_mds_1_svc: rec : bytes=%d off=%lu len=%lu ds=%s extname=%s\n",
                 bytes, rec_off, rec_len, rec.dsname, rec.extname);
 #endif
         p = rindex(rec.extname, '.');
 
-        sprintf(newext, "%s%s", new, p); 
+        sprintf(newext, "%s%s", argp->new, p); 
         ret = rename_c_ds(rec.dsname, rec.extname, newext); 
+#ifdef DEBUG
+        printf("rename_mds_1_svc: rename(dsname=%s, old=%s, new=%s) = %d\n",
+                rec.dsname, rec.extname, newext, ret);
+#endif
+        fprintf(nfh, REC_MV_FMT, rec_off, rec_len, rec.dsname, newext);
     }
 
     ret = unlink(old);
@@ -837,6 +850,10 @@ symlink_mds_1_svc(symlink_req *argp, symlink_res *result, struct svc_req *rqstp)
     sprintf(new, "%s/%s", mds.dir, argp->new);
 
     ret = symlink(old, new);
+#ifdef DEBUG
+    printf("symlink_mds_1_svc: old=%s new=%s ret=%d errno=%d\n",
+            old, new, ret, errno);
+#endif
     if (ret < 0)
         result->res = -errno;
     else
