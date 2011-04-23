@@ -30,6 +30,9 @@ Steps to start the mds_server :
    <share-dir>         : The directory that is being shared
    <ds_servers-file>   : The file containing the list of ds-servers for this FS
 
+  mds_server : share-dir mds_share : is not an absolute path !
+  mds_server : Please provide an absolute path for <share-dir>
+
   - share-dir : should be empty while starting the server. This is the placefolder for meta-data
   - ds_servers-file : This is a file on the local file system having entries for each
     data server in the system. One entry is made for each ds server. 
@@ -47,6 +50,10 @@ Steps to start the ds_server :
    <share-dir>    : The directory that is being shared
    <mds-server>   : The name of the mds-server for this filesystem
    <fsid>         : The fsid of the filesystem being served (provided by mds-server for this filesystem 
+
+  ds_server : share-dir ds1 : is not an absolute path !
+  ds_server : Please provide an absolute path for <share-dir>
+
 
   - share-dir : This dir should be empty while starting and is the place holder for actual data.
   - mds-server : IP / DNS of the machine where the metadata server mds_server is running
