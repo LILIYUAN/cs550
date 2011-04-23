@@ -1,0 +1,70 @@
+Agenda :
+    - Problem Statement
+    - Basic Design
+    - File Layout
+    - Command line info
+    - Results
+    - Conclusion
+
+Problem Statement :
+    - The scalibility of a network filesystems is limited if we have single
+      server.
+    - One of the solutions is to increase the bandwidth by spreading the load
+      across multiple servers.
+    - And along with the above solution we should still have unified namespace.
+    - The idea is to implement a pNFS like filesystem and achieve data striping.
+
+Basic Design :
+    Add the diagram
+
+    Main components :
+        - FUSE client on the client machine
+        - Metadata Server
+        - DataServer
+
+How is metadata of the files maintained ? File Layouts
+    
+    - The metadata server maintains the segment details as file layouts
+
+        <size>
+        <extent-record>
+        <extent-record>
+        <extent-record>
+    - Each extent record is as below :
+        <offset> <length> <data-server-name> <extent-name>
+
+Read/Write Operations :
+    - Steps taken during a read/write.
+
+Command line interface :
+
+    - How to start the metadata server ?
+        $ ./mds_server -d <share-dir> -f <dslist>
+
+    - How to start dataservers ?
+        $ ./ds_server -S <mds-server-name> -d <share-dir> -s <mds-server> -i fsid
+
+        NOTE : Today we ignore the fsid. But, can be later used to identify the
+        exact filesystem when multiple filesystems are shared.
+
+    - How to mount on the client ?
+        $ ./pnfs_client -S <mds-server-name>
+                        -f <fs-name-shared-by-mds-server>
+                        <local-mnt-point>
+Results :
+    - The following operations were tested :
+        - create files and write data to them.
+        - verify their contents by reading
+        - write large files and verify striping
+
+Future work :
+    - Implement sharing of multiple filesystems
+    - Dynamic addtion of data servers.
+    - Page caching for better response times
+    - Implementation of the missing filesystem operations
+
+Conclusion :
+    - This is a basic pNFS like filesystem which does the striping effectively
+    - Not all filesystem operations work. But framework is available to
+      extend/implement them.
+
