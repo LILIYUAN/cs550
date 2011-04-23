@@ -163,8 +163,11 @@ rename_ds_1_svc(rename_req *argp, rename_res *result, struct svc_req *rqstp)
     sprintf(old, "%s/%s", ds.dir, argp->old);
     sprintf(new, "%s/%s", ds.dir, argp->new);
 
-
     ret = rename(old, new);
+#ifdef DEBUG
+    printf("rename_ds_1 : old=%s new=%s ret=%d errno=%d\n", old, new, ret, errno);
+#endif
+
     if (ret != 0) 
         result->res = -errno;
     else 
