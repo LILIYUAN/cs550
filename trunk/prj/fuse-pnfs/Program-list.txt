@@ -30,4 +30,4 @@ Documentation :
 ./Verification.pdf        : Details of all the test cases, environment and results.`
 ./pNFS-project-report.pdf : The project report for this project with all the details.
 ./pNFS-preso.pdf          : The slides used for the presentation
-./presentation-video.ogv  : The video recording of the presentation.
+./pNFS-preso-video.ogv  : The video recording of the presentation.
