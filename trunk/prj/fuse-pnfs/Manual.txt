@@ -6,8 +6,11 @@ Tar file Contents :
 Steps to compile the code :
 ---------------------------
 - Executable name : mds_server ds_server pnfs_client 
-- We have a Makefile script "Makefile.mds_ds". This script invokes the make for both 
-  mds_server and ds_server and even the pnfs_client
+- We have a makefile "Makefile.mds_ds" which can be used to build all the
+  components (pnfs_client, mds_server, ds_server). 
+
+  NOTE : To compile pnfs_client FUSE-dev packages should be available on the
+  machine.
 
     - mds_server : The server which maintains all the meta data for all the data
       residing on all the data servers. This should be started first. The pnfs client
@@ -18,8 +21,8 @@ Steps to compile the code :
       instances of the data server exists in the system. All the read and write operations
       are served from these servers.
 
-    - pnfs_client : This is the client used to interact with the pNFS system. This client can 
-      interact with the mds_server to perform the operations. For read and write operations
+    - pnfs_client : This is the client used to interact with the pNFS system. This client
+      interacts with the mds_server to perform the operations. For read and write operations
       it gets the location of the data from mds_server and then makes calls to ds_server to 
       perform actual read and write.
 
