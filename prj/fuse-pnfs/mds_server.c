@@ -714,23 +714,43 @@ lookup_mds_1_svc(lookup_req *argp, lookup_res *result, struct svc_req *rqstp)
 }
 
 /*
+ * TODO :
  * This is a little complicated.
  * - If we are reducing the size :
  *      - Walk through all the ds_server entries and unlink those stripes which
  *      fall out of the range.
  *      - Truncate the partial length if any.
  *      - Update the size.
- * - For the size is extended
+ * - If the size is extended
  *      - Update the size.
+ *
+ * Current Approach :
+ *  Today we just update the size of the file. However, the extents remain as
+ *  is. Ideally to make it complete we should implement the steps listed above
+ *  TODO list.
  */
 bool_t
 truncate_mds_1_svc(truncate_req *argp, truncate_res *result, struct svc_req *rqstp)
 {
-	bool_t retval;
+	bool_t retval = TRUE;
+    char name[MAXPATHLEN];
+    FILE *fh;
+    int fd;
 
-	/*
-	 * insert server code here
-	 */
+    sprintf(name, "%s/%s", mds.dir, argp->name);
+    if ((fh = fopen(name, "r+")) == NULL) {
+        result->res = -errno;
+        return (retval);
+    }
+
+    fd = fileno(fh);
+
+    flock(fd, LOCK_EX);
+    fprintf(fh, SIZE_FMT, argp->len);
+    flock(fh, LOCK_UN);
+    fclose(fh);
+
+    result->res = 0; 
 
 	return retval;
 }
