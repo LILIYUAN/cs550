@@ -1,0 +1,33 @@
+IDL file :
+mds_ds.x    : The IDL definition for all the RPC calls of metadata server and data server
+
+Generated files :
+./mds_ds.h
+./mds_ds_xdr.c
+
+Makefile :
+./Makefile.mds_ds : Makefile to compile all the compoments
+
+Headers :
+./ds_misc.h
+./mds_ds_misc.h
+
+Metadata-Server source files :
+mds_server.c    : This has the core of the metadata server logic
+mds_svc_mt.c    : This the multithreaded server skeleton for metadata server.
+
+Data Server Source files :
+./ds_server.c   : This has the core of the dataserver logic
+./ds_svc_mt.c   : This is the multithreaded server skeleton for data server.
+
+pnfs-client Source files :
+./pnfs_client.c : The FUSE plugin code which interacts with metadata and data servers.
+./mds_ds_client.c : Helper routines which do the actual RPC calls to data and metadata servers.
+
+
+Documentation :
+./Manual.txt              : Gives the details of the command line interface and compilation details.
+./Verification.pdf        : Details of all the test cases, environment and results.`
+./pNFS-project-report.pdf : The project report for this project with all the details.
+./pNFS-preso.pdf          : The slides used for the presentation
+./presentation-video.ogv  : The video recording of the presentation.
