@@ -1,0 +1,41 @@
+
+We need to add code to cache the files locally.
+    - We can modify the b_hitquery_1_svc() routine to also pull the file into a
+      local cache and add it to the list.
+
+      Approaches for local cache :
+        - We could keep the cached files in a separate directory.
+        - The index file could be the same as before.
+We can have a 
+
+- Today for each file we maintain only the host names which are serving it.
+  In addition to this we need to keep :
+    - version number of the file.
+
+- A command to update the version of the file. Or a command line option to
+  obtain_client would do.
+    - The obtain-server will update the revision of the file and send a
+      broadcase message to all the neighbors.
+        - Message contains the following info :
+            - FIlename
+            - version number.
+
+        - Each neighbour which sees this message will check its local cache and
+          if outdated deletes the cache file.
+                - For this to work the peer server will maintain the cache files
+                  in a separate dir.
+                - In the index dir we maintain the following info :
+                       cached-version=<version-no>
+                       <origin-server-name> 
+                       <origin-server-name> 
+                       <origin-server-name> 
+                - So, when an invalidate message is received we do the following :
+                    - modify the file in indexdir to make the <version-no> to -1
+                      to indicate that we no longer have a cached entry
+                    - delete the cached file.
+                    - fetch a new file.
+                    - modify the <version-no> with the current version.
+                    
+
+
+
