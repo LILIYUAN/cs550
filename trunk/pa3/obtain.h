@@ -19,6 +19,10 @@ extern "C" {
 #define MAXCOUNT 16
 #define MAXHOSTNAME 32
 #define BUFSIZE 512
+#define PRIMARY 0
+#define CACHED 1
+
+typedef u_long my_time_t;
 
 typedef char *filename;
 
@@ -56,6 +60,8 @@ struct query_rec {
 	char fname[MAXNAME];
 	int count;
 	char peers[BUFSIZE];
+	int prim_flag[MAXCOUNT];
+	my_time_t mtime[MAXCOUNT];
 	int eof;
 };
 typedef struct query_rec query_rec;
@@ -79,6 +85,8 @@ struct b_hitquery_reply {
 	int cnt;
 	char fname[MAXNAME];
 	char hosts[BUFSIZE];
+	int prim_flag[MAXCOUNT];
+	my_time_t mtime[MAXCOUNT];
 };
 typedef struct b_hitquery_reply b_hitquery_reply;
 
@@ -149,6 +157,7 @@ extern int obtainprog_1_freeresult ();
 /* the xdr functions */
 
 #if defined(__STDC__) || defined(__cplusplus)
+extern  bool_t xdr_my_time_t (XDR *, my_time_t*);
 extern  bool_t xdr_filename (XDR *, filename*);
 extern  bool_t xdr_request (XDR *, request*);
 extern  bool_t xdr_request (XDR *, request*);
@@ -166,6 +175,7 @@ extern  bool_t xdr_update_req (XDR *, update_req*);
 extern  bool_t xdr_update_res (XDR *, update_res*);
 
 #else /* K&R C */
+extern bool_t xdr_my_time_t ();
 extern bool_t xdr_filename ();
 extern bool_t xdr_request ();
 extern bool_t xdr_request ();
