@@ -192,6 +192,8 @@ build_peers_from_cache(char *fname, peers_t *resp)
     char *p;
     int fd;
     char host[MAXHOSTNAME+2];
+    int pflag, rev; 
+    my_time_t ttr;
 
 #ifdef DEBUG
     printf("build_peers_from_cache %s : Processing query for file : %s\n", localhostname, fname);
@@ -217,7 +219,8 @@ build_peers_from_cache(char *fname, peers_t *resp)
      */
     flock(fd, LOCK_SH);
 
-    while (cnt < MAXCOUNT && fscanf(fh, "%s\n", host) != EOF) {
+    while (cnt < MAXCOUNT && !feof(fh)) {
+        fscanf(fh, IND_REC_FMT, &rev, &pflag, &ttr, host);
         resp->peer[cnt] = malloc((MAXHOSTNAME + 2) * sizeof(char));
         if (resp->peer[cnt] == NULL) {
             printf("search_cache: Out of memory !! Quitting !\n");
@@ -285,7 +288,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
 {
     b_hitquery_reply res;
     char fname[MAXPATHLEN];
-    char *p;
+    file_rec *p;
     FILE *fh;
     int fd;
     CLIENT *clnt;
@@ -325,9 +328,10 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     res.id = id;
     strcpy(res.fname, fname_req);
     res.cnt = 0;
-    p = res.hosts; 
+    p = &res.recs[res.cnt]; 
     
-    while (fscanf(fh, "%s\n", p) != EOF) {
+    while (!feof(fh)) {
+        fscanf(fh, IND_REC_FMT, &p->rev, &p->pflag, &p->ttr, p->hostname);
         res.cnt++;
         if (res.cnt == MAXCOUNT) {
             flock(fd, LOCK_UN);
@@ -344,7 +348,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
             res.cnt = 0;
             flock(fd, LOCK_SH);
         }
-        p += MAXHOSTNAME;
+        p = &res.recs[res.cnt];
     }
 
     flock(fd, LOCK_UN);
@@ -549,13 +553,32 @@ b_query_propagate(b_query_req *argp, int flag)
     return (node);
 }
 
+/*
+ * This routine decides if the given record of a file is valid.
+ * The record is valid if the current version of the file is insync with origin
+ * server.
+ *
+ * If it is a local cache record then :
+ * - It is valid only if its TTR has not expired.
+ */
+bool_t
+valid_rec(file_rec *rec)
+{
+    /*
+     * TODO : Need to implement the validation.
+     *
+     * For now we assume that all records are valid.
+     */
+    return (TRUE);
+}
+
 bool_t
 search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
 	b_query_req *query;
     query_node_t *node;
-    char *p;
+    file_rec rec, *p;
 	char fname[MAXPATHLEN];
     char peer[MAXHOSTNAME+2];
 	int i, fd;
@@ -634,11 +657,21 @@ send_result:
 
     strcpy(result->fname, argp->fname);
     result->count = 0;
-    p = result->peers; 
+    p = &result->recs[result->count]; 
     
-    while (fgets(p, MAXHOSTNAME, fh) != NULL) {
-        p[strlen(p) - 1] = '\0';
+    while (!feof(fh)) {
+        fscanf(fh, IND_REC_FMT, &rec.rev, &rec.pflag, &rec.ttr, rec.hostname);
+
+        if (!valid_rec(&rec)) {
+            continue;
+        }
+
+        /*
+         * Copy the record into the result.
+         */
+        *p = rec;
         result->count++;
+
         /* 
          * We have filled up the response with MAXCOUNT results.
          * Send it back.
@@ -650,15 +683,8 @@ send_result:
             result->eof = 0;
             return retval;
         }
-        p += MAXHOSTNAME;
+        p = &result->recs[result->count]; 
     }
-
-    printf("p = %s\n", p);
-    /*
-    if (*p) {
-        result->count++;
-    }
-    */
 
     flock(fd, LOCK_UN);
     fclose(fh);
@@ -750,7 +776,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
             req.id = argp->id;
             req.cnt = argp->cnt;
             strcpy(req.fname, argp->fname);
-            memcpy(req.hosts, argp->hosts, BUFSIZE);
+            memcpy(req.recs, argp->recs, sizeof(argp->recs));
 
             stat = b_hitquery_1(&req, &ret, clnt);
             if (stat != RPC_TIMEDOUT && stat != RPC_SUCCESS) {
@@ -765,9 +791,9 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
      * Record the results in the local cache (/tmp/indsvr/) so that we can reuse
      * this info for the next queries for this file.
      */
-    for (i = 0, p = argp->hosts; i < argp->cnt; i++) {
-        add_peer(argp->fname, p);
-        p = p + MAXHOSTNAME;
+    for (i = 0; i < argp->cnt; i++) {
+        add_peer(argp->fname, argp->recs[i].hostname, argp->recs[i].pflag,
+                argp->recs[i].rev, argp->recs[i].ttr);
     }
 
     if (node) {
@@ -799,10 +825,15 @@ invalidate_1_svc(invalidate_req *argp, void *result, struct svc_req *rqstp)
 {
 }
 
+/*
+ * This a request to update a file revision.
+ * This could be called by a client app. Or could be triggered internally.
+ * We make sure we are the primary server for the file and then update it.
+ */
 bool_t
 update_1_svc(update_req *argp, update_res *result, struct svc_req *rqstp)
 {
-
+    
 }
 
 int
