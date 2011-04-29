@@ -25,7 +25,7 @@ We can have a
                 - For this to work the peer server will maintain the cache files
                   in a separate dir.
                 - In the index dir we maintain the following info :
-                       cached-version=<version-no>
+                       cached-version=<version-no> <origin-server-name>
                        <origin-server-name> 
                        <origin-server-name> 
                        <origin-server-name> 
@@ -35,7 +35,45 @@ We can have a
                     - delete the cached file.
                     - fetch a new file.
                     - modify the <version-no> with the current version.
-                    
+=========================================                    
+
+Push Implementation :
+---------------------
+
+- "fileupdate <filename>" 
+    - This is a new command which allows user to update the revision of a file.
+    - This command will call the update() RPC call to the local peer server to
+      update a file.
+        - The update() will do the following :
+            - Check if it is the origin server for the file <filename>
+            - If yes,
+                - sends out the invalidate() RPC call to all its neighbors :
+                    struct inval_req {
+                        char filename[MAXFILENAME];
+                        int     oldrev;
+                        int     newrev;
+                        int     ttl;
+                    }
+
+- Implement invalidate() RPC call.
+    - This is same as query(). 
+    - It is a oneway rpc call.
+    - the origin server sends out a oneway rpc call to all its neighbors.
+    - on receipt of this call the peer server does the following :
+        - Decrements TTL.
+        - If not zero :
+            - Send to all neighbors
+        - Check if we have a local cache
+        - If yes, 
+            - mark it invalid (for this make the rev no to -1)
+            - Fetch the new copy
+            - Update the rev
+            NOTE : If another request is received for the same file later and if
+            we see that the rev number is -1, it indicates that another thread
+            is already fetching the new rev. Hence, don't do anything.
+
+
+
 
 
 
