@@ -227,13 +227,15 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
  * For every file registered we create a file under "/tmp/indsvr/" (if it does
  * not exist already). And append the name of the peer-node to that file.
  */
-int add_peer (char *fname, char *peername)
+int add_peer (char *fname, char *peername, int primary_flag, int newrev, my_time_t ttr)
 {
     FILE *fh;
     char filepath[MAXPATHLEN];
     char peer[MAXHOSTNAME+2];
     int ret, found = 0;
     int fd;
+    int oldrev, oldpflag;
+    my_time_t   oldttr;
     static init_done = 0;
 
     /*
@@ -283,13 +285,10 @@ int add_peer (char *fname, char *peername)
     printf("Walking through current entries for %s: ", fname);
 #endif
 
-    while ((fgets(peer, MAXHOSTNAME+2, fh)) != NULL) {
-        /*
-         * Truncate the '\n' from the string.
-         */
-        peer[strlen(peer) - 1] = '\0';
+    while (!feof(fh)) {
+        fscanf(fh, IND_REC_FMT, &oldrev, &oldpflag, &oldttr, peer);
 #ifdef DEBUG
-        printf("peer %s strlen = %d\n", peer, strlen(peer));
+        printf("rev=%d pflag=%d peer=%s\n", oldrev, oldpflag, peer);
 #endif
 
         if (strcmp(peer, peername) == 0) {
@@ -299,8 +298,9 @@ int add_peer (char *fname, char *peername)
     }
 
     if (found == 0) {
-        fprintf(fh, "%s\n", peername);
-        printf("Registering file : %s from peer %s\n", fname, peername);
+        fprintf(fh, IND_REC_FMT, newrev, primary_flag, ttr, peername);
+        printf("Registering file : %s from peer %s newrev=%d primary_flag=%d ttr=%lu\n",
+                fname, peername, newrev, primary_flag, ttr);
     }
 
     flock(fd, LOCK_UN);
@@ -308,6 +308,83 @@ int add_peer (char *fname, char *peername)
     close(fd);
 
     return (0);
+}
+
+/*
+ * Searches in the fname for a record against <peername> and updates it.
+ *
+ * If newrev is -1 :
+ *  - Increment the current rev by 1 and write it back.
+ *
+ * Return value :
+ * 0 - If could not find a record
+ * 1 - If it successfully updates the record.
+ */
+int
+update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newttr)
+{
+    FILE *fh;
+    char filepath[MAXPATHLEN];
+    char peer[MAXHOSTNAME+2];
+    int ret, found = 0;
+    int fd;
+    int oldrev, oldpflag;
+    my_time_t   oldttr;
+    long pos = 0;
+
+    /*
+     * Try to open the name of the file under the index directory. If it
+     * already exists we open it else we create a new one.
+     */
+    sprintf(filepath, "%s/%s", SERVER_DIR, fname);
+    fh = fopen(filepath, "r+");
+    if (fh == NULL) {
+        printf("index-server : Failed to make an entry : errno = %d : %s\n", errno, strerror(errno));
+        return (errno);
+    }
+
+    fd = fileno(fh);
+    /*
+     * Lock the file in exclusive mode so that other contending threads don't
+     * modify it while we are searching.
+     */
+    flock(fd, LOCK_EX);
+
+    /*
+     * Search through the file to search for the entry and update it else
+     * add the new entry.
+     */
+#ifdef DEBUG
+    printf("update_rec: Walking through current entries for %s: ", fname);
+#endif
+
+    while (!feof(fh)) {
+        pos = ftell(fh);
+        fscanf(fh, IND_REC_FMT, &oldrev, &oldpflag, &oldttr, peer);
+#ifdef DEBUG
+        printf("rev=%d pflag=%d peer=%s\n", oldrev, oldpflag, peer);
+#endif
+
+        if (strcmp(peer, peername) == 0) {
+            found = 1;
+
+            /*
+             * Check if this is a request to update the rev.
+             */
+            if (newrev = -1) {
+                newrev = oldrev = 1;
+            }
+            fseek(fh, SEEK_SET, pos);
+            fprintf(fh, IND_REC_FMT, newrev, newpflag, newttr, peer);
+            break;
+        }
+    }
+
+    flock(fd, LOCK_UN);
+    fclose(fh);
+    close(fd);
+
+    return (found);
 }
 
 /*
@@ -336,7 +413,7 @@ register_files(char *localhostname, char *dirname)
             continue;
         printf("Registering file : %s to the index-server : %s\n", entp->d_name, localhostname);
 
-        ret = add_peer(entp->d_name, localhostname);
+        ret = add_peer(entp->d_name, localhostname, PRIMARY, 0, 0);
     }
 
     closedir(dirp);

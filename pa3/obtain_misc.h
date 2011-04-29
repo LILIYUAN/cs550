@@ -34,4 +34,10 @@ typedef struct pending_req {
 #define MAXTTL 4 
 #define SERVER_DIR "/tmp/indsvr/"
 
+/*
+ * Index record in the index file.
+ * <revnumber> <primaryflag> <TTR> <hostname>
+ */
+#define IND_REC_FMT "%4d %2d %10lu %s\n"
+
 #define DEBUG 1 

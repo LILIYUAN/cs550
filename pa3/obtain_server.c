@@ -802,6 +802,7 @@ invalidate_1_svc(invalidate_req *argp, void *result, struct svc_req *rqstp)
 bool_t
 update_1_svc(update_req *argp, update_res *result, struct svc_req *rqstp)
 {
+
 }
 
 int
