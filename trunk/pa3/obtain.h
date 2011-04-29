@@ -50,6 +50,14 @@ struct readfile_res {
 };
 typedef struct readfile_res readfile_res;
 
+struct file_rec {
+	char hostname[MAXNAME];
+	int pflag;
+	int rev;
+	my_time_t ttr;
+};
+typedef struct file_rec file_rec;
+
 struct query_req {
 	char *fname;
 	int count;
@@ -59,8 +67,7 @@ typedef struct query_req query_req;
 struct query_rec {
 	char fname[MAXNAME];
 	int count;
-	char peers[BUFSIZE];
-	int prim_flag[MAXCOUNT];
+	file_rec recs[MAXCOUNT];
 	my_time_t mtime[MAXCOUNT];
 	int eof;
 };
@@ -84,9 +91,7 @@ struct b_hitquery_reply {
 	msg_id id;
 	int cnt;
 	char fname[MAXNAME];
-	char hosts[BUFSIZE];
-	int prim_flag[MAXCOUNT];
-	my_time_t mtime[MAXCOUNT];
+	file_rec recs[MAXCOUNT];
 };
 typedef struct b_hitquery_reply b_hitquery_reply;
 
@@ -165,6 +170,7 @@ extern  bool_t xdr_filedata (XDR *, filedata);
 extern  bool_t xdr_datareceived (XDR *, datareceived*);
 extern  bool_t xdr_datareceived (XDR *, datareceived*);
 extern  bool_t xdr_readfile_res (XDR *, readfile_res*);
+extern  bool_t xdr_file_rec (XDR *, file_rec*);
 extern  bool_t xdr_query_req (XDR *, query_req*);
 extern  bool_t xdr_query_rec (XDR *, query_rec*);
 extern  bool_t xdr_msg_id (XDR *, msg_id*);
@@ -183,6 +189,7 @@ extern bool_t xdr_filedata ();
 extern bool_t xdr_datareceived ();
 extern bool_t xdr_datareceived ();
 extern bool_t xdr_readfile_res ();
+extern bool_t xdr_file_rec ();
 extern bool_t xdr_query_req ();
 extern bool_t xdr_query_rec ();
 extern bool_t xdr_msg_id ();

@@ -58,9 +58,9 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
      * Continue until the user enters a valid choice.
      */
     printf("Total number of peers serving %s = %d\n", res_rec.fname, res_rec.count);
-    printf("Peers service  %s are :\n", res_rec.peers);
+    printf("Peers serving the file are :\n");
     for (i = 0; i < res_rec.count; i++) {
-        printf("\t%d : %s\n", i, res_rec.peers+(i * MAXHOSTNAME));
+        printf("\t%d : %s\n", i, res_rec.recs[i].hostname);
     }
 
     if (fopt == 0) {
@@ -80,11 +80,11 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
      */
     attempts = 0;
     time(&start_time);
-    while (get_file(res_rec.peers+(i * MAXHOSTNAME), fname, dest_dir) != 0 &&
+    while (get_file(res_rec.recs[i].hostname, fname, dest_dir) != 0 &&
         attempts < res_rec.count) {
 
         printf("Failed to fetch the file from host:%s\nTrying next server\n",
-                res_rec.peers+(i * MAXHOSTNAME));
+                res_rec.recs[i].hostname);
 
         i = (i + 1) % res_rec.count;
         attempts++;
@@ -97,7 +97,6 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
     } else {
         printf("Time taken to fetch the file = %ld secs\n", (long) difftime(end_time, start_time));
     }
-
 
     clnt_destroy(clnt);
 
