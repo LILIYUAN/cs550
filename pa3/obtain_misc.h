@@ -43,6 +43,7 @@ typedef struct pending_req {
 
 #define MAXTTL 4 
 #define SERVER_DIR "/tmp/indsvr/"
+#define CACHE_DIR "/tmp/cachedir/"
 
 /*
  * Index record in the index file.
