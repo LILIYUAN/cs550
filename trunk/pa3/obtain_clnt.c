@@ -28,6 +28,15 @@ search_1(query_req *argp, query_rec *clnt_res, CLIENT *clnt)
 }
 
 enum clnt_stat 
+addcache_1(addcache_req *argp, addcache_res *clnt_res, CLIENT *clnt)
+{
+	return (clnt_call(clnt, addcache,
+		(xdrproc_t) xdr_addcache_req, (caddr_t) argp,
+		(xdrproc_t) xdr_addcache_res, (caddr_t) clnt_res,
+		TIMEOUT));
+}
+
+enum clnt_stat 
 b_query_1(b_query_req *argp, void *clnt_res, CLIENT *clnt)
 {
 	return (clnt_call(clnt, b_query,
