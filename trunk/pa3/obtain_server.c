@@ -134,7 +134,7 @@ node_t *remove_node(pending_req_t *pending, msg_id *m)
  *   on the linked list.
  */
 node_t *
-find_node(pending_req_t pending, msg_id *m) 
+find_node(pending_req_t *pending, msg_id *m) 
 {
     node_t *p = NULL;
 
@@ -833,6 +833,7 @@ is_origin_server(char *fname, char *peername, file_rec *rec)
     int fd;
     file_rec    tmp;
     int found = 0;
+    char filepath[MAXPATHLEN];
 
     /*
      * Try to open the name of the file under the index diorectory. If it
