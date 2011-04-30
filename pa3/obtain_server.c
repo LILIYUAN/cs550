@@ -138,6 +138,7 @@ find_node(pending_req_t *pending, msg_id *m)
 {
     node_t *p = NULL;
 
+    printf("find_node: waiting for pending->lock\n");
     pthread_mutex_lock(&(pending->lock));
     p = pending->head;
 
@@ -149,6 +150,7 @@ find_node(pending_req_t *pending, msg_id *m)
         pthread_mutex_lock(&p->node_lock);
     }
     pthread_mutex_unlock(&(pending->lock));
+    printf("find_node: Done\n");
     return (p);
 }
 
@@ -375,8 +377,8 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     while (!feof(fh)) {
         fscanf(fh, IND_REC_FMT, &p->rev, &p->pflag, &p->ttr, p->hostname);
 #ifdef DEBUG
-        printf("send_local_cache: read rec : rev=%d pflag=%d ttr=%d hostname=%s for file %s\n",
-                p->rev, p->pflag, p->ttr, p->hostname, res.fname);
+        printf("send_local_cache: read rec : rev=%d pflag=%d ttr=%lu hostname=%s for file %s\n",
+                p->rev, p->pflag, (unsigned long)p->ttr, p->hostname, res.fname);
 #endif
             ret = b_hitquery_1(&res, &tmp, clnt);
         /*
@@ -459,6 +461,10 @@ b_query_propagate(b_query_req *argp, int flag)
     int i, cnt;
     enum clnt_stat stat;
     int ret;
+
+#ifdef DEBUG
+    printf("b_query_propagate: fname %s \n", argp->fname);
+#endif
 
     node = find_node(&qpending, &argp->id);
 
@@ -923,10 +929,10 @@ is_origin_server(char *fname, char *peername, file_rec *rec)
 
     fd = fileno(fh);
     /*
-     * Lock the file in exclusive mode so that other contending threads don't
+     * Lock the file in shared mode so that other contending threads don't
      * modify it while we are searching.
      */
-    flock(fd, LOCK_EX);
+    flock(fd, LOCK_SH);
 
     /*
      * Search through the contents for the matching record and see if it is the
@@ -972,7 +978,7 @@ addcache_1_svc(addcache_req *req, addcache_res *res, struct svc_req *rqstp)
     char buf[SIZE];
 
     sprintf(src, "%s/%s",req->path, req->fname);
-    sprintf(dest, "%s/%s",req->path, req->fname);
+    sprintf(dest, "%s/%s",CACHE_DIR, req->fname);
 
     in = fopen (src, "rb");
     if (in == NULL) {
@@ -982,8 +988,6 @@ addcache_1_svc(addcache_req *req, addcache_res *res, struct svc_req *rqstp)
     if (out == NULL) {
       perror (dest);
     }
-
-
 
     while ((bytes_in = fread (buf, 1, SIZE, in)) > 0) {
       bytes_out = fwrite (buf, 1, bytes_in, out);
