@@ -16,7 +16,8 @@
 #define WAITTIME    1
 
 extern peers_t          peers;
-extern pending_req_t    pending;
+extern pending_req_t    qpending;
+extern pending_req_t    ipending;
 extern char             *localhostname;
 extern char             *sharedir;
 /*extern __thread int errno;*/
@@ -30,7 +31,7 @@ pthread_mutex_t seqno_lock = PTHREAD_MUTEX_INITIALIZER;
 static struct timeval zero_timeout = {0, 0};
 
 int
-insert_node(node_t *p)
+insert_node(pending_req_t *pending, node_t *p)
 {
     if (!p) {
         return (FAILED);
@@ -40,21 +41,21 @@ insert_node(node_t *p)
      * Add the timestamp.
      */
     (void) time(&(p->ts));
-    pthread_mutex_lock(&(pending.lock));
+    pthread_mutex_lock(&(pending->lock));
     /*
      * Add the node to the tail of the list.
      * This will help us keep the nodes sorted by the timestamp.
      * i.e. the newer nodes will at the tail of the list.
      */
-    if (pending.tail) {
-        pending.tail->next = p;
+    if (pending->tail) {
+        pending->tail->next = p;
     }
-    pending.tail = p; 
-    if (pending.head == NULL) {
-        pending.head = p;
+    pending->tail = p; 
+    if (pending->head == NULL) {
+        pending->head = p;
     }
-    pending.count++;
-    pthread_mutex_unlock(&(pending.lock));
+    pending->count++;
+    pthread_mutex_unlock(&(pending->lock));
 
     return (SUCCESS);
 }
@@ -65,41 +66,41 @@ insert_node(node_t *p)
  *   If found, locks the node and pulls it out of the linkedlist and returns the
  *   node locked.
  */
-node_t *remove_node(msg_id *m)
+node_t *remove_node(pending_req_t *pending, msg_id *m)
 {
     node_t *p, *prev = NULL;
-    pthread_mutex_lock(&(pending.lock));
-    p = pending.head;
+    pthread_mutex_lock(&(pending->lock));
+    p = pending->head;
 
     if (!p) {
-        pthread_mutex_unlock(&(pending.lock));
+        pthread_mutex_unlock(&(pending->lock));
         return (NULL);
     }
 
     /*
      * Handle the head as a special case.
      */
-    if (p->req.id.hostid == m->hostid && p->req.id.seqno == m->seqno) {
+    if (p->id.hostid == m->hostid && p->id.seqno == m->seqno) {
         /*
          * Make sure no one else is operating on this node.
          */
         pthread_mutex_lock(&p->node_lock);
 
-        pending.head = pending.head->next;
+        pending->head = pending->head->next;
 
-        if (p == pending.tail) {
-            pending.tail = prev;
+        if (p == pending->tail) {
+            pending->tail = prev;
         }
 
-        pending.count--;
-        pthread_mutex_unlock(&(pending.lock));
+        pending->count--;
+        pthread_mutex_unlock(&(pending->lock));
         return (p);
     }
 
-    prev = pending.head;
+    prev = pending->head;
     p = p->next;
 
-    while (p && (p->req.id.hostid != m->hostid || p->req.id.seqno != m->seqno)) {
+    while (p && (p->id.hostid != m->hostid || p->id.seqno != m->seqno)) {
         prev = p;
         p = p->next;
     }
@@ -110,18 +111,18 @@ node_t *remove_node(msg_id *m)
     if (p) {
         prev->next = p->next;
 
-        if (p == pending.tail) {
-            pending.tail = prev;
+        if (p == pending->tail) {
+            pending->tail = prev;
         }
 
-        pending.count--;
+        pending->count--;
 
         /*
          * Make sure that no one is operating on this node.
          */
         pthread_mutex_lock(&p->node_lock);
     }
-    pthread_mutex_unlock(&(pending.lock));
+    pthread_mutex_unlock(&(pending->lock));
     return (p);
 }
 
@@ -133,21 +134,21 @@ node_t *remove_node(msg_id *m)
  *   on the linked list.
  */
 node_t *
-find_node(msg_id *m) 
+find_node(pending_req_t pending, msg_id *m) 
 {
     node_t *p = NULL;
 
-    pthread_mutex_lock(&(pending.lock));
-    p = pending.head;
+    pthread_mutex_lock(&(pending->lock));
+    p = pending->head;
 
-    while (p && (p->req.id.hostid != m->hostid || p->req.id.seqno != m->seqno)) {
+    while (p && (p->id.hostid != m->hostid || p->id.seqno != m->seqno)) {
         p = p->next;
     }
 
     if (p) {
         pthread_mutex_lock(&p->node_lock);
     }
-    pthread_mutex_unlock(&(pending.lock));
+    pthread_mutex_unlock(&(pending->lock));
     return (p);
 }
 
@@ -402,7 +403,7 @@ b_query_propagate(b_query_req *argp, int flag)
     enum clnt_stat stat;
     int ret;
 
-    node = find_node(&argp->id);
+    node = find_node(&qpending, &argp->id);
 
     /*
      * We already have processed msg_id. Hence, we have nothing to do now.
@@ -439,6 +440,7 @@ b_query_propagate(b_query_req *argp, int flag)
 
     node->type = QUERY;
     node->data.q_req.id = argp->id;
+    node->id = argp->id;
     strcpy(node->data.q_req.uphost, argp->uphost);
     strcpy(node->data.q_req.fname, argp->fname);
     node->data.q_req.ttl = argp->ttl - 1;  /* Decrement the TTL by one */
@@ -455,7 +457,7 @@ b_query_propagate(b_query_req *argp, int flag)
     strcpy(req.fname, argp->fname);
     req.ttl = argp->ttl - 1;
 
-    (void) insert_node(node);
+    (void) insert_node(&qpending, node);
 
     /*
      * Lock the node. This is to avoid processing of responses
@@ -751,7 +753,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
     /*
      * Search for the msg_id in the pending queue.
      */
-    node = find_node(&argp->id);
+    node = find_node(&qpending, &argp->id);
 
     /* 
      * If the query request is found on the local queue and we are not the
@@ -821,11 +823,6 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
 	return retval;
 }
 
-bool_t
-invalidate_1_svc(invalidate_req *argp, void *result, struct svc_req *rqstp)
-{
-}
-
 /*
  * Find the record for peername in the index file. 
  */
@@ -887,6 +884,96 @@ is_origin_server(char *fname, char *peername, file_rec *rec)
 }
 
 /*
+ * This routine does the following :
+ *  - Adds the current request to the pending list and locks the entry.
+ *  - Now, sends the message to all the peers.
+ */
+void
+propagate_invalidate(invalidate_req *inval) 
+{
+    node_t *node = NULL;
+    invalidate_req *req;
+
+#ifdef DEBUG
+        printf("propagate_invalidate: file %s originsvr %s \n", inval->fname, inval->originsvr);
+#endif
+
+    node = find_node(&ipending, inval->id);
+
+    if (node) {
+        pthread_mutex_unlock(&node->node_lock);
+#ifdef DEBUG
+        printf("propagate_invalidate: This request for file %s is already processed\n", inval->fname);
+#endif
+        return;
+    }
+
+    node = malloc(sizeof(node_t));
+    if (node == NULL) {
+        printf("propagate_invalidate: Failed to allocate memory for invalidate request !\n");
+        return ;
+    }
+
+    node->type = INVALIDATE;
+    node->data.i_req.id = inval->id;
+    node->data.i_req.ver = inval->ver;
+    node->data.i_req.ttl = inval->ttl - 1;
+    strcpy(node->data.i_req.originsvr, inval->originsvr);
+    strcpy(node->data.i_req.fname, inval->fname);
+    node->next = NULL;
+    pthread_mutex_init(&node->node_lock, NULL);
+    pthread_cond_init(&node->allhome_cv, NULL);
+
+    (void) insert_node(&ipending, node);
+
+    req = &(node->data.i_req);
+
+    /*
+     * Lock the node. This is to avoid processing of responses
+     * even before we are done with the propagation of
+     * requests to all the peers.
+     */
+    pthread_mutex_lock(&node->node_lock);
+    
+    /*
+     * Now send this message to all the neighbors.
+     */
+    for (i = 0; i < peers.count; i++) {
+
+        clnt = clnt_create(peers.peer[i], OBTAINPROG, OBTAINVER, "tcp");
+        if (clnt == NULL) {
+            clnt_pcreateerror (peers.peer[i]);
+            /*
+             * Make a call only if we have a valid handle. We try to create
+             * a handle above. Ideally that should succeed. But, if we
+             * failed to create a client handle possible the peer is having
+             * problems. Hence ignore it and continue.
+             */
+            continue;
+        }
+        /*
+         * Now make a one-way RPC call to relay the message.
+         */
+        if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
+            printf("Failed to set the timeout value to zero\n");
+            printf("Cannot make oneway RPC calls and hence behaviour could be unpredictable\n");
+        }
+
+        stat = invalidate_1(req, &res, clnt);
+#ifdef DEBUG
+        printf("propagate_invalidate: invalidate_1(fname=%s, originsvr=%s, ttl=%lu, rev=%d) to %s\n",
+                req->fname, req->originsvr, req->ttl, req->rev, peers.peer[i]);
+#endif
+
+        if (stat != RPC_SUCCESS && stat != RPC_TIMEDOUT) {
+            clnt_perror(clnt, "b_query failed");
+            continue;
+        }
+        clnt_destroy(clnt);
+    }
+}
+
+/*
  * This a request to update a file revision.
  * This could be called by a client app. Or could be triggered internally.
  * We make sure we are the primary server for the file and then update it.
@@ -896,8 +983,9 @@ update_1_svc(update_req *argp, update_res *result, struct svc_req *rqstp)
 {
     bool_t retval = TRUE;
     pending_req_t
-    node_t  *inval;
+    invalidate_req *inval;
     file_rec rec;
+    int ret = 0;
 
 #ifdef DEBUG
     printf("update_1_svc: file=%s\n", argp->fname);
@@ -907,33 +995,58 @@ update_1_svc(update_req *argp, update_res *result, struct svc_req *rqstp)
      * Check this host is the origin server.
      * If not fail the request.
      */
-    result->res = is_origin_server(argp->fname, localhostname, &rec);
-    if (result->res != 0) {
-        return (retval);
+    ret = is_origin_server(argp->fname, localhostname, &rec);
+
+    if (ret != 0 || rec->pflag != PRIMARY) {
+        result->res = ret;
+        return retval;
     }
 
-    inval = malloc(sizeof(node_t));
+    inval = malloc(sizeof(invalidate_req));
     if (inval == NULL) {
         printf("update_1_svc: Failed to allocate memory for invalidate request !\n");
         result->res = ENOMEM;
         return retval;
     }
 
-    inval->type = INVALIDATE;
-    inval->data.i_req.msg_id.hostid = gethostid();
-    inval->data.i_req.msg_id.seqno = getseqno();
-    inval->data.i_req.ttl = MAXTTL;
-    strcpy(inval->data.i_req.originsvr, localhostname);
-    strcpy(inval->data.i_req.fname, argp->fname);
+    inval->id.hostid = gethostid();
+    inval->id.seqno = getseqno();
+    inval->ttl = MAXTTL;
+    strcpy(inval->originsvr, localhostname);
+    strcpy(inval->fname, argp->fname);
 
-    inval->data.i_req.rev = update_rec(argp->fname, localhostname, PRIMARY, -1, 
+    inval->rev = update_rec(argp->fname, localhostname, PRIMARY, -1, -1)
+
+        /*
+         * If rev returned a negative value something is wrong.
+         * The file disappeared or someone removed my record.
+         */
+    if (inval->rev < 0) {
+        result->res = inval->rev;
+        free(inval);
+        return retval;
+    }
 
     /*
      * Now propagate it to the peers.
      */
-    invalidate_propagate(inval);
+    propagate_invalidate(inval);
+    free(inval);
 
+    return retval;
+}
 
+bool_t
+invalidate_1_svc(invalidate_req *argp, void *result, struct svc_req *rqstp)
+{
+    int retval = TRUE;
+
+    propagate_invalidate(argp);
+
+    /*
+     * Now, update the local index record.
+     */
+    update_rec(argp->fname, argp->originsvr, argp->pflag, argp->rev, argp->ttr);
 }
 
 int

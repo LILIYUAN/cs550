@@ -195,6 +195,8 @@ xdr_invalidate_req (XDR *xdrs, invalidate_req *objp)
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->ver))
 		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->ttl))
+		 return FALSE;
 	return TRUE;
 }
 
@@ -203,9 +205,7 @@ xdr_update_req (XDR *xdrs, update_req *objp)
 {
 	register int32_t *buf;
 
-	int i;
-	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
-		sizeof (char), (xdrproc_t) xdr_char))
+	 if (!xdr_filename (xdrs, &objp->fname))
 		 return FALSE;
 	return TRUE;
 }
