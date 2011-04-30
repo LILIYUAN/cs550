@@ -101,8 +101,14 @@ struct invalidate_req {
 	char fname[MAXNAME];
 	int ver;
 	int ttl;
+	int ttr;
 };
 typedef struct invalidate_req invalidate_req;
+
+struct invalidate_res {
+	int res;
+};
+typedef struct invalidate_res invalidate_res;
 
 struct update_req {
 	filename fname;
@@ -178,6 +184,7 @@ extern  bool_t xdr_msg_id (XDR *, msg_id*);
 extern  bool_t xdr_b_query_req (XDR *, b_query_req*);
 extern  bool_t xdr_b_hitquery_reply (XDR *, b_hitquery_reply*);
 extern  bool_t xdr_invalidate_req (XDR *, invalidate_req*);
+extern  bool_t xdr_invalidate_res (XDR *, invalidate_res*);
 extern  bool_t xdr_update_req (XDR *, update_req*);
 extern  bool_t xdr_update_res (XDR *, update_res*);
 
@@ -197,6 +204,7 @@ extern bool_t xdr_msg_id ();
 extern bool_t xdr_b_query_req ();
 extern bool_t xdr_b_hitquery_reply ();
 extern bool_t xdr_invalidate_req ();
+extern bool_t xdr_invalidate_res ();
 extern bool_t xdr_update_req ();
 extern bool_t xdr_update_res ();
 

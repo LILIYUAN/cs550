@@ -444,7 +444,7 @@ b_query_propagate(b_query_req *argp, int flag)
     strcpy(node->data.q_req.uphost, argp->uphost);
     strcpy(node->data.q_req.fname, argp->fname);
     node->data.q_req.ttl = argp->ttl - 1;  /* Decrement the TTL by one */
-    node->data.q_sent = 0; node->recv = 0;
+    node->sent = 0; node->recv = 0;
     node->next = NULL;
     pthread_mutex_init(&node->node_lock, NULL);
     pthread_cond_init(&node->allhome_cv, NULL);
@@ -768,8 +768,8 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
          */
         clnt = clnt_create(node->data.q_req.uphost, OBTAINPROG, OBTAINVER, "tcp");
         if (clnt == NULL) {
-            clnt_pcreateerror(node->req.uphost);
-            printf("b_hitquery_1_svc() : Failed to relay the response to : %s\n", node->req.uphost);
+            clnt_pcreateerror(node->data.q_req.uphost);
+            printf("b_hitquery_1_svc() : Failed to relay the response to : %s\n", node->data.q_req.uphost);
         } else {
             if (clnt_control(clnt, CLSET_TIMEOUT, (char *)&zero_timeout) == FALSE) {
                 printf("Failed to set the timeout value to zero\n");
@@ -873,11 +873,11 @@ is_origin_server(char *fname, char *peername, file_rec *rec)
         }
     }
 
-    flock(fh, LOCK_UN);
+    flock(fd, LOCK_UN);
     fclose(fh);
     close(fd);
 
-    if (found == 1 && rec.pflag == PRIMARY) {
+    if (found == 1 && rec->pflag == PRIMARY) {
         return (0);
     }
 
@@ -894,13 +894,16 @@ propagate_invalidate(invalidate_req *inval)
 {
     node_t *node = NULL;
     invalidate_req *req;
+    invalidate_res res;
     int i=0;
+    CLIENT *clnt;
+    enum clnt_stat stat;
 
 #ifdef DEBUG
         printf("propagate_invalidate: file %s originsvr %s \n", inval->fname, inval->originsvr);
 #endif
 
-    node = find_node(&ipending, inval->id);
+    node = find_node(&ipending, &inval->id);
 
     if (node) {
         pthread_mutex_unlock(&node->node_lock);
@@ -964,7 +967,7 @@ propagate_invalidate(invalidate_req *inval)
         stat = invalidate_1(req, &res, clnt);
 #ifdef DEBUG
         printf("propagate_invalidate: invalidate_1(fname=%s, originsvr=%s, ttl=%lu, rev=%d) to %s\n",
-                req->fname, req->originsvr, req->ttl, req->rev, peers.peer[i]);
+                req->fname, req->originsvr, req->ttl, req->ver, peers.peer[i]);
 #endif
 
         if (stat != RPC_SUCCESS && stat != RPC_TIMEDOUT) {
@@ -984,7 +987,6 @@ bool_t
 update_1_svc(update_req *argp, update_res *result, struct svc_req *rqstp)
 {
     bool_t retval = TRUE;
-    pending_req_t
     invalidate_req *inval;
     file_rec rec;
     int ret = 0;
@@ -999,7 +1001,7 @@ update_1_svc(update_req *argp, update_res *result, struct svc_req *rqstp)
      */
     ret = is_origin_server(argp->fname, localhostname, &rec);
 
-    if (ret != 0 || rec->pflag != PRIMARY) {
+    if (ret != 0 || rec.pflag != PRIMARY) {
         result->res = ret;
         return retval;
     }
@@ -1017,14 +1019,14 @@ update_1_svc(update_req *argp, update_res *result, struct svc_req *rqstp)
     strcpy(inval->originsvr, localhostname);
     strcpy(inval->fname, argp->fname);
 
-    inval->rev = update_rec(argp->fname, localhostname, PRIMARY, -1, -1);
+    inval->ver = update_rec(argp->fname, localhostname, PRIMARY, -1, -1);
 
         /*
          * If rev returned a negative value something is wrong.
          * The file disappeared or someone removed my record.
          */
-    if (inval->rev < 0) {
-        result->res = inval->rev;
+    if (inval->ver < 0) {
+        result->res = inval->ver;
         free(inval);
         return retval;
     }
@@ -1048,7 +1050,7 @@ invalidate_1_svc(invalidate_req *argp, void *result, struct svc_req *rqstp)
     /*
      * Now, update the local index record.
      */
-    update_rec(argp->fname, argp->originsvr, argp->pflag, argp->ver, argp->ttr);
+    update_rec(argp->fname, argp->originsvr, PRIMARY, argp->ver, argp->ttr);
 }
 
 int
@@ -1071,8 +1073,9 @@ obtainprog_1_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t result)
  * those nodes which are older than a minute.
  */
 void *
-reaper_thread(void *unused)
+reaper_thread(void *ptr)
 {
+    pending_req_t *pending = ptr;
     node_t *p, *del_list = NULL;
     time_t ts;
 
@@ -1083,34 +1086,34 @@ reaper_thread(void *unused)
 
     while (TRUE) {
         sleep(INTERVAL);
-        pthread_mutex_lock(&pending.lock);
+        pthread_mutex_lock(&pending->lock);
 
-        p = pending.head;
+        p = pending->head;
 
         /*
          * Build the delete list.
          */
-        while (pending.head && (ts - pending.head->ts) > TIMEOUT) {
-            p = pending.head;
-            pending.head = pending.head->next;
+        while (pending->head && (ts - pending->head->ts) > TIMEOUT) {
+            p = pending->head;
+            pending->head = pending->head->next;
 
             /*
              * If this is the last node make sure the tail of updated as well.
              */
-            if (pending.tail == p){
-                pending.tail = pending.head;
+            if (pending->tail == p){
+                pending->tail = pending->head;
             }
 
             p->next = NULL;
-            pthread_mutex_unlock(&pending.lock);
+            pthread_mutex_unlock(&pending->lock);
 
             /*
              * Wait for the any active users to drain out.
              */
             pthread_mutex_lock(&p->node_lock);
             free(p);
-            pthread_mutex_lock(&pending.lock);
+            pthread_mutex_lock(&pending->lock);
         }
-        pthread_mutex_unlock(&pending.lock);
+        pthread_mutex_unlock(&pending->lock);
     }
 }

@@ -197,6 +197,18 @@ xdr_invalidate_req (XDR *xdrs, invalidate_req *objp)
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->ttl))
 		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->ttr))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_invalidate_res (XDR *xdrs, invalidate_res *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_int (xdrs, &objp->res))
+		 return FALSE;
 	return TRUE;
 }
 

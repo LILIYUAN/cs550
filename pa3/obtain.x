@@ -104,6 +104,11 @@ struct invalidate_req {
     char    fname[MAXNAME];
     int     ver;
     int     ttl;
+    int     ttr;
+};
+
+struct invalidate_res {
+    int res;
 };
 
 struct update_req {
