@@ -160,6 +160,9 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
     datap->rqstp = rqstp;
     datap->transp = transp;
 
+#ifdef DEBUG
+    printf("obtainprog_1: service routine : rq_proc = %d\n", (int)rqstp->rq_proc);
+#endif
 	switch (rqstp->rq_proc) {
 	case NULLPROC:
 		(void) svc_sendreply (transp, (xdrproc_t) xdr_void, (char *)NULL);

@@ -290,7 +290,7 @@ find_origin_rec(char *fname, file_rec *rec)
 
     fh = fopen(name, "r");
     if (fh == NULL) {
-        printf("send_local_cache: Failed to open filename %s : errno = %d\n", fname, errno);
+        printf("find_origin_rec: Failed to open filename %s : errno = %d\n", fname, errno);
         return TRUE;
     }
 
@@ -374,6 +374,11 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     
     while (!feof(fh)) {
         fscanf(fh, IND_REC_FMT, &p->rev, &p->pflag, &p->ttr, p->hostname);
+#ifdef DEBUG
+        printf("send_local_cache: read rec : rev=%d pflag=%d ttr=%d hostname=%s for file %s\n",
+                p->rev, p->pflag, p->ttr, p->hostname, res.fname);
+#endif
+            ret = b_hitquery_1(&res, &tmp, clnt);
         /*
          * If we found a origin server rec (orig_rec) then we compare the current records
          * rev with that of orig_rec.  If they are different we don't add that
@@ -405,6 +410,9 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     fclose(fh);
     close(fd);
 
+#ifdef DEBUG
+            printf("send_local_cache: Sending response to %s for file %s\n", uphost, res.fname);
+#endif
     ret = b_hitquery_1(&res, &tmp, clnt);
     if (ret != RPC_SUCCESS && ret != RPC_TIMEDOUT) {
         clnt_perror(clnt, "b_hitquery failed");
@@ -506,7 +514,14 @@ b_query_propagate(b_query_req *argp, int flag)
     strcpy(req.fname, argp->fname);
     req.ttl = argp->ttl - 1;
 
+#ifdef DEBUG
+    printf("b_query_propagate: before insert_node()\n");
+#endif
     (void) insert_node(&qpending, node);
+
+#ifdef DEBUG
+    printf("b_query_propagate: insert_node() done\n");
+#endif
 
     /*
      * Lock the node. This is to avoid processing of responses
@@ -1077,6 +1092,7 @@ propagate_invalidate(invalidate_req *inval)
         }
         clnt_destroy(clnt);
     }
+    pthread_mutex_unlock(&node->node_lock);
 }
 
 /*
