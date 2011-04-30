@@ -885,6 +885,23 @@ is_origin_server(char *fname, char *peername, file_rec *rec)
 }
 
 /*
+ *
+ */
+addcache_1_svc(addcache_req *req, addcache_res *res, struct svc_req *rqstp)
+{
+    char cmd[MAXPATHLEN];
+    // copy the file to cache directory
+    sprintf(cmd, "cp %s/%s %s/%s",req->path, req->fname, CACHE_DIR, req->fname);
+    system(cmd);
+
+    // call add peer
+    add_peer( req->fname, localhostname, CACHED, req->ver, req->ttr);
+
+}
+
+
+
+/*
  * This routine does the following :
  *  - Adds the current request to the pending list and locks the entry.
  *  - Now, sends the message to all the peers.
