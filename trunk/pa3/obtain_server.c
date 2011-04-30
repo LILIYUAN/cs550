@@ -894,6 +894,7 @@ propagate_invalidate(invalidate_req *inval)
 {
     node_t *node = NULL;
     invalidate_req *req;
+    int i=0;
 
 #ifdef DEBUG
         printf("propagate_invalidate: file %s originsvr %s \n", inval->fname, inval->originsvr);
