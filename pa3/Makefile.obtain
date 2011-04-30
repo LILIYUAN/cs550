@@ -4,9 +4,11 @@
 # Parameters
 
 CLIENT = obtain_client
+UPDATE = update
 SERVER = obtain_server
 
 SOURCES_CLNT.c = 
+SOURCES_UPDATE.c = 
 SOURCES_CLNT.h = 
 SOURCES_SVC.c = 
 SOURCES_SVC.h = 
@@ -14,9 +16,11 @@ SOURCES.x = obtain.x
 
 TARGETS_SVC.c = obtain_svc_mt.c obtain_server.c obtain_xdr.c obtain_clnt.c
 TARGETS_CLNT.c = obtain_clnt.c obtain_client.c obtain_xdr.c 
-TARGETS = obtain.h obtain_xdr.c obtain_clnt.c obtain_svc_mt.c obtain_client.c obtain_server.c
+TARGETS_UPDATE.c = obtain_clnt.c update.c obtain_xdr.c 
+TARGETS = obtain.h obtain_xdr.c obtain_clnt.c obtain_svc_mt.c obtain_client.c obtain_server.c update.c
 
 OBJECTS_CLNT = $(SOURCES_CLNT.c:%.c=%.o) $(TARGETS_CLNT.c:%.c=%.o)
+OBJECTS_UPDATE = $(SOURCES_UPDATE.c:%.c=%.o) $(TARGETS_UPDATE.c:%.c=%.o)
 OBJECTS_SVC = $(SOURCES_SVC.c:%.c=%.o) $(TARGETS_SVC.c:%.c=%.o)
 # Compiler flags 
 
@@ -27,7 +31,7 @@ RPCGENFLAGS = -M
 
 # Targets 
 
-all : $(CLIENT) $(SERVER)
+all : $(CLIENT) $(SERVER) $(UPDATE)
 
 $(TARGETS) : $(SOURCES.x) 
 	rpcgen $(RPCGENFLAGS) $(SOURCES.x)
@@ -38,6 +42,9 @@ $(OBJECTS_SVC) : $(SOURCES_SVC.c) $(SOURCES_SVC.h) $(TARGETS_SVC.c)
 
 $(CLIENT) : $(OBJECTS_CLNT) 
 	$(LINK.c) -o $(CLIENT) $(OBJECTS_CLNT) $(LDLIBS) 
+
+$(UPDATE) : $(OBJECTS_UPDATE)
+	$(LINK.c) -o $(UPDATE) $(OBJECTS_UPDATE) $(LDLIBS) 
 
 $(SERVER) : $(OBJECTS_SVC) 
 	$(LINK.c) -o $(SERVER) $(OBJECTS_SVC) $(LDLIBS)

@@ -499,7 +499,8 @@ main (int argc, char **argv)
 	FILE *fd;
 	int i, ret;
 	char tmp[MAXHOSTNAME+2];
-    pthread_t reaper;
+    pthread_t ireaper;
+    pthread_t qreaper;
 	
 
     if (argc != 3) {
@@ -536,10 +537,11 @@ main (int argc, char **argv)
     pthread_mutex_init(&(ipending.lock), NULL);
 
     /*
-     * Create the reaper_thread.
+     * Create the reaper_threads for ipending and qpending lists.
      */
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    pthread_create(&reaper, &attr, reaper_thread, NULL);
+    pthread_create(&qreaper, &attr, reaper_thread, (void *)&qpending);
+    pthread_create(&ireaper, &attr, reaper_thread, (void *)&ipending);
 
     /*
      * Register the files in the given directory with the index-server.
