@@ -278,6 +278,40 @@ int getseqno(void)
 	return(ret);
 }
 
+bool_t
+find_origin_rec(char *fname, file_rec *rec)
+{
+    char name[MAXPATHLEN];
+    file_rec tmp;
+    FILE *fh;
+    int fd;
+
+    sprintf(name, "%s/%s", SERVER_DIR, fname);
+
+    fh = fopen(name, "r");
+    if (fh == NULL) {
+        printf("send_local_cache: Failed to open filename %s : errno = %d\n", fname, errno);
+        return TRUE;
+    }
+
+    fd = fileno(fh);
+    flock(fh, LOCK_SH);
+
+    while (!feof(fh)) {
+        fscanf(fh, IND_REC_FMT, &tmp.rev, &tmp.pflag, &tmp.ttr, tmp.hostname);
+
+        if (tmp.pflag == PRIMARY) {
+            *rec = tmp;
+            return TRUE;
+        }
+    }
+
+    flock(fh, LOCK_UN);
+    fclose(fh);
+    close(fd);
+    return FALSE;
+}
+
 /*
  * This routine looks for the file in the local index directory
  * ("/tmp/indsvr/<filename>") and sends back the host names to uphost.
@@ -290,11 +324,13 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     b_hitquery_reply res;
     char fname[MAXPATHLEN];
     file_rec *p;
+    file_rec orig_rec;
     FILE *fh;
     int fd;
     CLIENT *clnt;
     enum clnt_stat ret;
     int tmp;
+    bool_t orig = FALSE;
 
     if (!fname_req || !uphost) {
         return (SUCCESS);
@@ -309,6 +345,11 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     }
 
     fd = fileno(fh);
+
+    /*
+     * Fetch the origin server record if there is one.
+     */
+    orig = find_origin_rec(fname_req, &orig_rec);
 
     clnt = clnt_create(uphost, OBTAINPROG, OBTAINVER, "tcp");
     if (clnt == NULL) {
@@ -333,6 +374,14 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     
     while (!feof(fh)) {
         fscanf(fh, IND_REC_FMT, &p->rev, &p->pflag, &p->ttr, p->hostname);
+        /*
+         * If we found a origin server rec (orig_rec) then we compare the current records
+         * rev with that of orig_rec.  If they are different we don't add that
+         * record to the reply list.
+         */
+        if (orig && p->rev != orig_rec.rev) {
+            continue;
+        }
         res.cnt++;
         if (res.cnt == MAXCOUNT) {
             flock(fd, LOCK_UN);
@@ -565,7 +614,7 @@ b_query_propagate(b_query_req *argp, int flag)
  * - It is valid only if its TTR has not expired.
  */
 bool_t
-valid_rec(file_rec *rec)
+valid_rec(file_rec *orig, file_rec *rec)
 {
     /*
      * TODO : Need to implement the validation.
@@ -590,6 +639,8 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     int ret;
     struct timeval now;
     struct timespec timeout;
+    file_rec orig_rec;
+    int orig;
 
 #ifdef DEBUG
     printf("search_1_svc() %s  : Received request for file : %s\n", localhostname, argp->fname);
@@ -889,35 +940,10 @@ is_origin_server(char *fname, char *peername, file_rec *rec)
  */
 addcache_1_svc(addcache_req *req, addcache_res *res, struct svc_req *rqstp)
 {
-    char src[MAXPATHLEN], dest[MAXPATHLEN];
-    FILE *in, *out;
-    int bytes_in = 0, bytes_out = 0;
-    char buf[SIZE];
-
-    sprintf(src, "%s/%s",req->path, req->fname);
-    sprintf(dest, "%s/%s",req->path, req->fname);
-
-    in = fopen (src, "rb");
-    if (in == NULL) {
-      perror (src);
-    }
-    out = fopen (dest, "wb");
-    if (out == NULL) {
-      perror (dest);
-    }
-
-
-
-    while ((bytes_in = fread (buf, 1, SIZE, in)) > 0) {
-      bytes_out = fwrite (buf, 1, bytes_in, out);
-
-      if (bytes_out != bytes_in) {
-         perror ("Fatal write error.");
-      }
-    }
-
-    
-
+    char cmd[MAXPATHLEN];
+    // copy the file to cache directory
+    sprintf(cmd, "cp %s/%s %s/%s",req->path, req->fname, CACHE_DIR, req->fname);
+    system(cmd);
 
     // call add peer
     add_peer( req->fname, localhostname, CACHED, req->ver, req->ttr);
