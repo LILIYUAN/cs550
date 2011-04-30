@@ -295,7 +295,7 @@ find_origin_rec(char *fname, file_rec *rec)
     }
 
     fd = fileno(fh);
-    flock(fh, LOCK_SH);
+    flock(fd, LOCK_SH);
 
     while (!feof(fh)) {
         fscanf(fh, IND_REC_FMT, &tmp.rev, &tmp.pflag, &tmp.ttr, tmp.hostname);
@@ -306,7 +306,7 @@ find_origin_rec(char *fname, file_rec *rec)
         }
     }
 
-    flock(fh, LOCK_UN);
+    flock(fd, LOCK_UN);
     fclose(fh);
     close(fd);
     return FALSE;
