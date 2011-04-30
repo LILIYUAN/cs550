@@ -340,7 +340,7 @@ update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newt
     fh = fopen(filepath, "r+");
     if (fh == NULL) {
         printf("index-server : Failed to make an entry : errno = %d : %s\n", errno, strerror(errno));
-        return (errno);
+        return (-errno);
     }
 
     fd = fileno(fh);
@@ -384,7 +384,7 @@ update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newt
     fclose(fh);
     close(fd);
 
-    return (found);
+    return (newrev);
 }
 
 /*

@@ -30,7 +30,7 @@ pthread_mutex_t seqno_lock = PTHREAD_MUTEX_INITIALIZER;
 static struct timeval zero_timeout = {0, 0};
 
 int
-insert_node(query_node_t *p)
+insert_node(node_t *p)
 {
     if (!p) {
         return (FAILED);
@@ -65,9 +65,9 @@ insert_node(query_node_t *p)
  *   If found, locks the node and pulls it out of the linkedlist and returns the
  *   node locked.
  */
-query_node_t *remove_node(msg_id *m)
+node_t *remove_node(msg_id *m)
 {
-    query_node_t *p, *prev = NULL;
+    node_t *p, *prev = NULL;
     pthread_mutex_lock(&(pending.lock));
     p = pending.head;
 
@@ -132,10 +132,10 @@ query_node_t *remove_node(msg_id *m)
  *   deletes the node from the linked list, whereas find_node() leaves the node
  *   on the linked list.
  */
-query_node_t *
+node_t *
 find_node(msg_id *m) 
 {
-    query_node_t *p = NULL;
+    node_t *p = NULL;
 
     pthread_mutex_lock(&(pending.lock));
     p = pending.head;
@@ -390,11 +390,11 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
  *          - Look at the local cache and call b_hitquery() with the results to
  *            the uphost.
  */
-query_node_t *
+node_t *
 b_query_propagate(b_query_req *argp, int flag)
 {
 	bool_t retval = TRUE;
-    query_node_t *node;
+    node_t *node;
     b_query_req  req;
     peers_t my_cache;
     CLIENT *clnt;
@@ -430,18 +430,19 @@ b_query_propagate(b_query_req *argp, int flag)
         return (NULL);
     }
 
-    node = (query_node_t *)malloc(sizeof(query_node_t));
+    node = (node_t *)malloc(sizeof(node_t));
     if (node == NULL) {
-        printf("Failed to allocate query_node_t. Hence not processing this request.\n");
+        printf("Failed to allocate node_t. Hence not processing this request.\n");
         printf("Hoping the reaper thread will reap some memory\n");
         return (NULL);
     }
 
-    node->req.id = argp->id;
-    strcpy(node->req.uphost, argp->uphost);
-    strcpy(node->req.fname, argp->fname);
-    node->req.ttl = argp->ttl - 1;  /* Decrement the TTL by one */
-    node->sent = 0; node->recv = 0;
+    node->type = QUERY;
+    node->data.q_req.id = argp->id;
+    strcpy(node->data.q_req.uphost, argp->uphost);
+    strcpy(node->data.q_req.fname, argp->fname);
+    node->data.q_req.ttl = argp->ttl - 1;  /* Decrement the TTL by one */
+    node->data.q_sent = 0; node->recv = 0;
     node->next = NULL;
     pthread_mutex_init(&node->node_lock, NULL);
     pthread_cond_init(&node->allhome_cv, NULL);
@@ -577,7 +578,7 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
 	b_query_req *query;
-    query_node_t *node;
+    node_t *node;
     file_rec rec, *p;
 	char fname[MAXPATHLEN];
     char peer[MAXHOSTNAME+2];
@@ -735,7 +736,7 @@ bool_t
 b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
 {
 	bool_t retval = TRUE;
-    query_node_t *node;
+    node_t *node;
     b_hitquery_reply req;
     CLIENT *clnt;
     int i;
@@ -758,12 +759,12 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
      * Else, the response is late (beyond 60 secs) and hence the reaper thread
      * has possibly reaped the query. Hence, do nothing.
      */
-    if (node && strcmp(node->req.uphost, localhostname) != 0) {
+    if (node && strcmp(node->data.q_req.uphost, localhostname) != 0) {
         /*
          * We have the query details. Bubble up this response to the upstream
          * host.
          */
-        clnt = clnt_create(node->req.uphost, OBTAINPROG, OBTAINVER, "tcp");
+        clnt = clnt_create(node->data.q_req.uphost, OBTAINPROG, OBTAINVER, "tcp");
         if (clnt == NULL) {
             clnt_pcreateerror(node->req.uphost);
             printf("b_hitquery_1_svc() : Failed to relay the response to : %s\n", node->req.uphost);
@@ -826,6 +827,66 @@ invalidate_1_svc(invalidate_req *argp, void *result, struct svc_req *rqstp)
 }
 
 /*
+ * Find the record for peername in the index file. 
+ */
+int
+is_origin_server(char *fname, char *peername, file_rec *rec) 
+{
+    FILE *fh;
+    int fd;
+    file_rec    tmp;
+    int found = 0;
+
+    /*
+     * Try to open the name of the file under the index diorectory. If it
+     * already exists we open it else we create a new one.
+     */
+    sprintf(filepath, "%s/%s", SERVER_DIR, fname);
+    fh = fopen(filepath, "a+");
+    if (fh == NULL) {
+        printf("index-server : Failed to make an entry : errno = %d : %s\n", errno, strerror(errno));
+        return (-errno);
+    }
+
+    fd = fileno(fh);
+    /*
+     * Lock the file in exclusive mode so that other contending threads don't
+     * modify it while we are searching.
+     */
+    flock(fd, LOCK_EX);
+
+    /*
+     * Search through the contents for the matching record and see if it is the
+     * origin server.
+     */
+    while (!feof(fh)) {
+        fscanf(fh, IND_REC_FMT, &tmp.rev, &tmp.pflag, &tmp.ttr, tmp.hostname);
+#ifdef DEBUG
+        printf("rev=%d pflag=%d peer=%s\n", tmp.rev, tmp.pflag, tmp.hostname);
+#endif
+
+        if (strcmp(tmp.hostname, peername) == 0) {
+            found = 1;
+            rec->rev = tmp.rev;
+            rec->pflag = tmp.pflag;
+            rec->ttr = tmp.ttr;
+            strcpy(rec->hostname, tmp.hostname); 
+            break;
+        }
+    }
+
+    flock(fh, LOCK_UN);
+    fclose(fh);
+    close(fd);
+
+    if (found == 1 && rec.pflag == PRIMARY) {
+        return (0);
+    }
+
+    return (-1);
+}
+
+/*
  * This a request to update a file revision.
  * This could be called by a client app. Or could be triggered internally.
  * We make sure we are the primary server for the file and then update it.
@@ -833,7 +894,46 @@ invalidate_1_svc(invalidate_req *argp, void *result, struct svc_req *rqstp)
 bool_t
 update_1_svc(update_req *argp, update_res *result, struct svc_req *rqstp)
 {
+    bool_t retval = TRUE;
+    pending_req_t
+    node_t  *inval;
+    file_rec rec;
+
+#ifdef DEBUG
+    printf("update_1_svc: file=%s\n", argp->fname);
+#endif
     
+    /*
+     * Check this host is the origin server.
+     * If not fail the request.
+     */
+    result->res = is_origin_server(argp->fname, localhostname, &rec);
+    if (result->res != 0) {
+        return (retval);
+    }
+
+    inval = malloc(sizeof(node_t));
+    if (inval == NULL) {
+        printf("update_1_svc: Failed to allocate memory for invalidate request !\n");
+        result->res = ENOMEM;
+        return retval;
+    }
+
+    inval->type = INVALIDATE;
+    inval->data.i_req.msg_id.hostid = gethostid();
+    inval->data.i_req.msg_id.seqno = getseqno();
+    inval->data.i_req.ttl = MAXTTL;
+    strcpy(inval->data.i_req.originsvr, localhostname);
+    strcpy(inval->data.i_req.fname, argp->fname);
+
+    inval->data.i_req.rev = update_rec(argp->fname, localhostname, PRIMARY, -1, 
+
+    /*
+     * Now propagate it to the peers.
+     */
+    invalidate_propagate(inval);
+
+
 }
 
 int
@@ -858,7 +958,7 @@ obtainprog_1_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t result)
 void *
 reaper_thread(void *unused)
 {
-    query_node_t *p, *del_list = NULL;
+    node_t *p, *del_list = NULL;
     time_t ts;
 
     /*

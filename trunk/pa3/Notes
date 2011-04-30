@@ -73,7 +73,9 @@ Push Implementation :
             is already fetching the new rev. Hence, don't do anything.
 
 
-
+- For the invalidate requests we should maintain a separate linked list. -->> 
+    - the update() and invalidate() routines add the current request to this 
+      queue.
 
 
 
