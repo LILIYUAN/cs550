@@ -100,11 +100,12 @@ struct invalidate_req {
 	char originsvr[MAXHOSTNAME];
 	char fname[MAXNAME];
 	int ver;
+	int ttl;
 };
 typedef struct invalidate_req invalidate_req;
 
 struct update_req {
-	char fname[MAXNAME];
+	filename fname;
 };
 typedef struct update_req update_req;
 

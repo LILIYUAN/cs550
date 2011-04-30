@@ -103,6 +103,7 @@ struct invalidate_req {
     char    originsvr[MAXHOSTNAME];
     char    fname[MAXNAME];
     int     ver;
+    int     ttl;
 };
 
 struct update_req {
