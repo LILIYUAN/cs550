@@ -22,6 +22,7 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 	union {
 		request obtain_1_arg;
 		query_req search_1_arg;
+		addcache_req addcache_1_arg;
 		b_query_req b_query_1_arg;
 		b_hitquery_reply b_hitquery_1_arg;
 		invalidate_req invalidate_1_arg;
@@ -30,6 +31,7 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 	union {
 		readfile_res obtain_1_res;
 		query_rec search_1_res;
+		addcache_res addcache_1_res;
 		update_res update_1_res;
 	} result;
 	bool_t retval;
@@ -51,6 +53,12 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		_xdr_argument = (xdrproc_t) xdr_query_req;
 		_xdr_result = (xdrproc_t) xdr_query_rec;
 		local = (bool_t (*) (char *, void *,  struct svc_req *))search_1_svc;
+		break;
+
+	case addcache:
+		_xdr_argument = (xdrproc_t) xdr_addcache_req;
+		_xdr_result = (xdrproc_t) xdr_addcache_res;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))addcache_1_svc;
 		break;
 
 	case b_query:
