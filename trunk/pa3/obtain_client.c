@@ -102,9 +102,9 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
 
        // build the addcache_req object
        ac_req.fname = fname;
-       //ac_req.ver = vers;
+       ac_req.ver = res_rec.recs[i].rev;
        ac_req.path = dest_dir;
-       //ac_req.ttr = ttr
+       ac_req.ttr = res_rec.recs[i].ttr;
 
        // make the RPC call
        addcache_1(&ac_req,&ac_res,clnt);
