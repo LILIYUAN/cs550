@@ -27,6 +27,7 @@ extern void *reaper_thread(void *);
 typedef	union argument {
 		request             obtain_1_arg;
         query_req           search_1_arg;
+        addcache_req        addcache_1_req;
         b_query_req         b_query_1_arg;
         b_hitquery_reply    b_hitquery_1_arg;
         invalidate_req      invalidate_1_arg;
@@ -35,6 +36,8 @@ typedef	union argument {
 typedef union result {
         readfile_res    obtain_1_res;
         query_rec       search_1_res; 
+        addcache_res    addcache_1_res;
+        update_res      update_1_res;
 } result_t;
 
 /*
@@ -172,6 +175,12 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
         datap->_xdr_argument = (xdrproc_t) xdr_query_req;
         datap->_xdr_result = (xdrproc_t) xdr_query_rec;
         datap->local = (bool_t (*) (char *, void *, struct svc_req *))search_1_svc;
+        break;
+ 
+    case addcache:
+        datap->_xdr_argument = (xdrproc_t) xdr_addcache_req;
+        datap->_xdr_result = (xdrproc_t) xdr_addcache_res;
+        datap->local = (bool_t (*) (char *, void *,  struct svc_req *))addcache_1_svc;
         break;
 
     case b_query:
