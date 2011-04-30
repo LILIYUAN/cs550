@@ -231,3 +231,29 @@ xdr_update_res (XDR *xdrs, update_res *objp)
 		 return FALSE;
 	return TRUE;
 }
+
+bool_t
+xdr_addcache_req (XDR *xdrs, addcache_req *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_filename (xdrs, &objp->fname))
+		 return FALSE;
+	 if (!xdr_filename (xdrs, &objp->path))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->ver))
+		 return FALSE;
+	 if (!xdr_my_time_t (xdrs, &objp->ttr))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_addcache_res (XDR *xdrs, addcache_res *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_int (xdrs, &objp->res))
+		 return FALSE;
+	return TRUE;
+}
