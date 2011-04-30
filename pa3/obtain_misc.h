@@ -14,19 +14,28 @@ typedef struct peers_s {
     CLIENT  *clnt[MAXCOUNT];
 } peers_t;
 
+typedef enum bcast {
+    QUERY,
+    INVALIDATE
+} bcast_t;
+
 typedef struct query_node {
-    b_query_req req;
+    bcast_t             type;
+    union data {
+        b_query_req q_req;
+        invalidate_req  i_req;
+    }
     time_t              ts;
     int                 sent;
     int                 recv;
     pthread_cond_t      allhome_cv;
     pthread_mutex_t     node_lock;
     struct query_node   *next;
-} query_node_t;
+} node_t;
 
 typedef struct pending_req {
-    query_node_t    *head;
-    query_node_t    *tail;
+    node_t    *head;
+    node_t    *tail;
     pthread_mutex_t lock;
     int count;
 } pending_req_t;
