@@ -21,11 +21,12 @@ typedef enum bcast {
 
 typedef struct query_node {
     bcast_t             type;
-    union data {
+    union {
         b_query_req q_req;
         invalidate_req  i_req;
-    }
+    } data;
     time_t              ts;
+    msg_id              id;
     int                 sent;
     int                 recv;
     pthread_cond_t      allhome_cv;
