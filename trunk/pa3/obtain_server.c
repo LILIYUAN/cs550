@@ -1017,7 +1017,7 @@ update_1_svc(update_req *argp, update_res *result, struct svc_req *rqstp)
     strcpy(inval->originsvr, localhostname);
     strcpy(inval->fname, argp->fname);
 
-    inval->rev = update_rec(argp->fname, localhostname, PRIMARY, -1, -1)
+    inval->rev = update_rec(argp->fname, localhostname, PRIMARY, -1, -1);
 
         /*
          * If rev returned a negative value something is wrong.
@@ -1048,7 +1048,7 @@ invalidate_1_svc(invalidate_req *argp, void *result, struct svc_req *rqstp)
     /*
      * Now, update the local index record.
      */
-    update_rec(argp->fname, argp->originsvr, argp->pflag, argp->rev, argp->ttr);
+    update_rec(argp->fname, argp->originsvr, argp->pflag, argp->ver, argp->ttr);
 }
 
 int
