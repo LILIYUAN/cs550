@@ -940,10 +940,34 @@ is_origin_server(char *fname, char *peername, file_rec *rec)
  */
 addcache_1_svc(addcache_req *req, addcache_res *res, struct svc_req *rqstp)
 {
-    char cmd[MAXPATHLEN];
-    // copy the file to cache directory
-    sprintf(cmd, "cp %s/%s %s/%s",req->path, req->fname, CACHE_DIR, req->fname);
-    system(cmd);
+
+
+    char src[MAXPATHLEN], dest[MAXPATHLEN];
+    FILE *in, *out;
+    int bytes_in = 0, bytes_out = 0;
+    char buf[SIZE];
+
+    sprintf(src, "%s/%s",req->path, req->fname);
+    sprintf(dest, "%s/%s",req->path, req->fname);
+
+    in = fopen (src, "rb");
+    if (in == NULL) {
+      perror (src);
+    }
+    out = fopen (dest, "wb");
+    if (out == NULL) {
+      perror (dest);
+    }
+
+
+
+    while ((bytes_in = fread (buf, 1, SIZE, in)) > 0) {
+      bytes_out = fwrite (buf, 1, bytes_in, out);
+
+      if (bytes_out != bytes_in) {
+         perror ("Fatal write error.");
+      }
+    }    
 
     // call add peer
     add_peer( req->fname, localhostname, CACHED, req->ver, req->ttr);
