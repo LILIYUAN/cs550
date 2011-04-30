@@ -709,6 +709,11 @@ send_result:
     fd = fileno(fh);
     flock(fd, LOCK_SH);
 
+    /*
+     * Fetch the origin server record if there is one.
+     */
+    orig = find_origin_rec(argp->fname, &orig_rec);
+
     strcpy(result->fname, argp->fname);
     result->count = 0;
     p = &result->recs[result->count]; 
@@ -716,7 +721,11 @@ send_result:
     while (!feof(fh)) {
         fscanf(fh, IND_REC_FMT, &rec.rev, &rec.pflag, &rec.ttr, rec.hostname);
 
-        if (!valid_rec(&rec)) {
+        /*
+         * If we have a valid origin-server record makes sure the rev of this record is the
+         * same. Else, we don't add this record to the response.
+         */
+        if (orig && orig_rec.rev != rec.rev) {
             continue;
         }
 
@@ -1058,7 +1067,7 @@ propagate_invalidate(invalidate_req *inval)
 
         stat = invalidate_1(req, &res, clnt);
 #ifdef DEBUG
-        printf("propagate_invalidate: invalidate_1(fname=%s, originsvr=%s, ttl=%lu, rev=%d) to %s\n",
+        printf("propagate_invalidate: invalidate_1(fname=%s, originsvr=%s, ttl=%d, rev=%d) to %s\n",
                 req->fname, req->originsvr, req->ttl, req->ver, peers.peer[i]);
 #endif
 
