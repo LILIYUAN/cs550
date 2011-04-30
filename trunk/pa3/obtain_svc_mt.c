@@ -19,7 +19,8 @@ char localhost[MAXHOSTNAME + 2];
 char *localhostname = localhost;
 
 peers_t peers;
-pending_req_t pending;
+pending_req_t qpending;
+pending_req_t ipending;
 
 extern void *reaper_thread(void *);
 
@@ -371,9 +372,17 @@ update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newt
             /*
              * Check if this is a request to update the rev.
              */
-            if (newrev = -1) {
+            if (newrev == -1) {
                 newrev = oldrev = 1;
             }
+
+            /*
+             * We use the same oldttr if newttr is -1.
+             */
+            if (newttr == -1) {
+                newttr = oldttr;
+            }
+
             fseek(fh, SEEK_SET, pos);
             fprintf(fh, IND_REC_FMT, newrev, newpflag, newttr, peer);
             break;
@@ -514,7 +523,8 @@ main (int argc, char **argv)
     /*
      * Initialize the pending queue mutex.
      */
-    pthread_mutex_init(&(pending.lock), NULL);
+    pthread_mutex_init(&(qpending.lock), NULL);
+    pthread_mutex_init(&(ipending.lock), NULL);
 
     /*
      * Create the reaper_thread.
