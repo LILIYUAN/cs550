@@ -120,6 +120,19 @@ struct update_res {
 };
 typedef struct update_res update_res;
 
+struct addcache_req {
+	filename fname;
+	filename path;
+	int ver;
+	my_time_t ttr;
+};
+typedef struct addcache_req addcache_req;
+
+struct addcache_res {
+	int res;
+};
+typedef struct addcache_res addcache_res;
+
 #define OBTAINPROG 0x20000011
 #define OBTAINVER 1
 
@@ -130,16 +143,19 @@ extern  bool_t obtain_1_svc(request *, readfile_res *, struct svc_req *);
 #define search 2
 extern  enum clnt_stat search_1(query_req *, query_rec *, CLIENT *);
 extern  bool_t search_1_svc(query_req *, query_rec *, struct svc_req *);
-#define b_query 3
+#define addcache 3
+extern  enum clnt_stat addcache_1(addcache_req *, addcache_res *, CLIENT *);
+extern  bool_t addcache_1_svc(addcache_req *, addcache_res *, struct svc_req *);
+#define b_query 4
 extern  enum clnt_stat b_query_1(b_query_req *, void *, CLIENT *);
 extern  bool_t b_query_1_svc(b_query_req *, void *, struct svc_req *);
-#define b_hitquery 4
+#define b_hitquery 5
 extern  enum clnt_stat b_hitquery_1(b_hitquery_reply *, void *, CLIENT *);
 extern  bool_t b_hitquery_1_svc(b_hitquery_reply *, void *, struct svc_req *);
-#define invalidate 5
+#define invalidate 6
 extern  enum clnt_stat invalidate_1(invalidate_req *, void *, CLIENT *);
 extern  bool_t invalidate_1_svc(invalidate_req *, void *, struct svc_req *);
-#define update 6
+#define update 7
 extern  enum clnt_stat update_1(update_req *, update_res *, CLIENT *);
 extern  bool_t update_1_svc(update_req *, update_res *, struct svc_req *);
 extern int obtainprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
@@ -151,16 +167,19 @@ extern  bool_t obtain_1_svc();
 #define search 2
 extern  enum clnt_stat search_1();
 extern  bool_t search_1_svc();
-#define b_query 3
+#define addcache 3
+extern  enum clnt_stat addcache_1();
+extern  bool_t addcache_1_svc();
+#define b_query 4
 extern  enum clnt_stat b_query_1();
 extern  bool_t b_query_1_svc();
-#define b_hitquery 4
+#define b_hitquery 5
 extern  enum clnt_stat b_hitquery_1();
 extern  bool_t b_hitquery_1_svc();
-#define invalidate 5
+#define invalidate 6
 extern  enum clnt_stat invalidate_1();
 extern  bool_t invalidate_1_svc();
-#define update 6
+#define update 7
 extern  enum clnt_stat update_1();
 extern  bool_t update_1_svc();
 extern int obtainprog_1_freeresult ();
@@ -187,6 +206,8 @@ extern  bool_t xdr_invalidate_req (XDR *, invalidate_req*);
 extern  bool_t xdr_invalidate_res (XDR *, invalidate_res*);
 extern  bool_t xdr_update_req (XDR *, update_req*);
 extern  bool_t xdr_update_res (XDR *, update_res*);
+extern  bool_t xdr_addcache_req (XDR *, addcache_req*);
+extern  bool_t xdr_addcache_res (XDR *, addcache_res*);
 
 #else /* K&R C */
 extern bool_t xdr_my_time_t ();
@@ -207,6 +228,8 @@ extern bool_t xdr_invalidate_req ();
 extern bool_t xdr_invalidate_res ();
 extern bool_t xdr_update_req ();
 extern bool_t xdr_update_res ();
+extern bool_t xdr_addcache_req ();
+extern bool_t xdr_addcache_res ();
 
 #endif /* K&R C */
 
