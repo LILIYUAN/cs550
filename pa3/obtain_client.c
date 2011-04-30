@@ -253,6 +253,13 @@ int main(int argc, char *argv[])
         return (1);
     }
 
+    if (argv[fopt + 2][0] != '/') {
+        printf("obtain_client : dest-dir %s : is not an absolute path !\n", argv[fopt+2]);
+        printf("obtain_client : Please provide an absolute path for <dest-dir>\n");
+        usage(argv[0]);
+        return (1);
+    }
+
 
     result = query_and_fetch(argv[fopt + 1], localhostname, argv[fopt + 2], fopt);
 
