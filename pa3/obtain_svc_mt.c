@@ -31,6 +31,7 @@ typedef	union argument {
         b_query_req         b_query_1_arg;
         b_hitquery_reply    b_hitquery_1_arg;
         invalidate_req      invalidate_1_arg;
+        update_req 	    update_1_arg;
 } argument_t ;
 
 typedef union result {
@@ -203,6 +204,12 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
         datap->_xdr_result = (xdrproc_t) xdr_void;
         datap->local = (bool_t (*) (char *, void *,  struct svc_req *))invalidate_1_svc;
         break;
+
+    case update:
+         datap->_xdr_argument = (xdrproc_t) xdr_update_req;
+         datap->_xdr_result = (xdrproc_t) xdr_update_res;
+         datap->local = (bool_t (*) (char *, void *,  struct svc_req *))update_1_svc;
+         break;
 
 	default:
 		svcerr_noproc (transp);
