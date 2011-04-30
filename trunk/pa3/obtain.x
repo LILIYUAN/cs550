@@ -119,18 +119,30 @@ struct update_res {
     int res;
 };
 
+struct addcache_req {
+    filename fname;
+    filename path;
+    int ver;
+    my_time_t ttr;
+};
+
+struct addcache_res {
+    int res;
+};
+
 /*
  */
 program OBTAINPROG {
     version OBTAINVER {
         readfile_res	obtain(request *) = 1;
         query_rec   	search(query_req) = 2;
+	addcache_res    addcache(addcache_req) = 3; 
 		/*
 		 * The following are one-way RPC calls.
 		 */
-        void            b_query(b_query_req) = 3;
-        void            b_hitquery(b_hitquery_reply) = 4;
-        void            invalidate(invalidate_req) = 5;
-        update_res      update(update_req) = 6;
+        void            b_query(b_query_req) = 4;
+        void            b_hitquery(b_hitquery_reply) = 5;
+        void            invalidate(invalidate_req) = 6;
+        update_res      update(update_req) = 7;
     } = 1;
 } = 0x20000011;
