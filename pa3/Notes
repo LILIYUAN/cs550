@@ -96,7 +96,7 @@ Thread to Randomly trigger update.
             - Call update_1_svc() on it.
 
 
-Pull Method :
+Pull Method : [ALL ITEMS UNDER THIS ARE IMPLEMENTED NOW]
 -------------
 - A RPC method : validate(filename, vernumber) -> result (filename, newversion)
     - validate() method:
