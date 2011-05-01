@@ -98,16 +98,21 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
         printf("Failed to fetch the file from any of the listed peers\n");
     } else {
         printf("Time taken to fetch the file = %ld secs\n", (long) difftime(end_time, start_time));
-   
 
-       // build the addcache_req object
-       ac_req.fname = fname;
-       ac_req.ver = res_rec.recs[i].rev;
-       ac_req.path = dest_dir;
-       ac_req.ttr = res_rec.recs[i].ttr;
 
-       // make the RPC call
-       addcache_1(&ac_req,&ac_res,clnt);
+        // build the addcache_req object
+        ac_req.fname = fname;
+        ac_req.ver = res_rec.recs[i].rev;
+        ac_req.path = dest_dir;
+        ac_req.ttr = res_rec.recs[i].ttr;
+
+        // make the RPC call
+        addcache_1(&ac_req,&ac_res,clnt);
+        if (ret != RPC_SUCCESS) {
+            printf("ret = %d\n", ret);
+            clnt_perror (clnt, "addcache_1 failed");
+        }
+
     }
 
     clnt_destroy(clnt);

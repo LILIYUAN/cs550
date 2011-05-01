@@ -1013,17 +1013,19 @@ is_origin_server(char *fname, char *peername, file_rec *rec)
 /*
  *
  */
+bool_t
 addcache_1_svc(addcache_req *req, addcache_res *res, struct svc_req *rqstp)
 {
-
-
+    bool_t retval = TRUE;
     char src[MAXPATHLEN], dest[MAXPATHLEN];
     FILE *in, *out;
     int bytes_in = 0, bytes_out = 0;
     char buf[SIZE];
     static int cachedir_init_done = 0;
     int ret;
+    file_rec orig_rec;
 
+    res->res = 0;
     /*
      * Create the server index directory for the first time.
      */
@@ -1041,6 +1043,24 @@ addcache_1_svc(addcache_req *req, addcache_res *res, struct svc_req *rqstp)
         }
         close(ret);
         cachedir_init_done = 1;
+    }
+
+    /*
+     * Check if we are the origin-server of this file.
+     * If yes, there is no need to cache it.
+     */
+    ret = find_origin_rec(req->fname, &orig_rec);
+#ifdef DEBUG
+    printf("addcache_1_svc: fname=%s origin=%s localhostname=%s\n",
+            req->fname, orig_rec.hostname, localhostname);
+#endif
+
+    if (ret && strcmp(orig_rec.hostname, localhostname) == 0) {
+#ifdef DEBUG
+        printf("addcache_1_svc: This is the origin server for file %s."
+                " Hence not caching it\n", req->fname);
+#endif
+        return retval;
     }
 
     sprintf(src, "%s/%s",req->path, req->fname);
@@ -1063,9 +1083,13 @@ addcache_1_svc(addcache_req *req, addcache_res *res, struct svc_req *rqstp)
       }
     }    
 
+    fclose(in);
+    fclose(out);
+
     // call add peer
     add_peer( req->fname, localhostname, CACHED, req->ver, req->ttr);
 
+    return retval;
 }
 
 /*
@@ -1391,6 +1415,9 @@ validate_thread(void *unused)
         }
        
         while (((ret = readdir_r(dirp, &dent, &result)) == 0) && result) {
+            if (strcmp(dent.d_name, ".") == 0 || strcmp(dent.d_name, "..") == 0)
+                continue;
+
             sprintf(name, "%s/%s", CACHE_DIR, dent.d_name);
             ret = stat(name, &sbuf);
 
@@ -1431,7 +1458,7 @@ validate_thread(void *unused)
             clnt = clnt_create(orig.hostname, OBTAINPROG, OBTAINVER, "tcp");
             if (clnt == NULL) {
                 clnt_pcreateerror(orig.hostname);
-                printf("validate_thread: Failed to contact : %s\n", orig.hostname);
+                printf("validate_thread: Failed to contact : %s for file %s\n", orig.hostname, dent.d_name);
                 continue;
             }
             vreq.fname = dent.d_name;
