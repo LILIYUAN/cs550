@@ -978,6 +978,27 @@ addcache_1_svc(addcache_req *req, addcache_res *res, struct svc_req *rqstp)
     FILE *in, *out;
     int bytes_in = 0, bytes_out = 0;
     char buf[SIZE];
+    static int cachedir_init_done = 0;
+    int ret;
+
+    /*
+     * Create the server index directory for the first time.
+     */
+    if (cachedir_init_done == 0) {
+        ret = mkdir(CACHE_DIR, 0755);
+
+        /*
+         * If we failed to create the index directory and failed for any other
+         * reason other than EEXIST we exit.
+         */
+        if (ret == -1 && errno != EEXIST) {
+            char errorstr[512];
+            sprintf(errorstr, "Failed to create the index directory : %s", SERVER_DIR);
+            perror(errorstr);
+        }
+        close(ret);
+        cachedir_init_done = 1;
+    }
 
     sprintf(src, "%s/%s",req->path, req->fname);
     sprintf(dest, "%s/%s",CACHE_DIR, req->fname);
@@ -1003,8 +1024,6 @@ addcache_1_svc(addcache_req *req, addcache_res *res, struct svc_req *rqstp)
     add_peer( req->fname, localhostname, CACHED, req->ver, req->ttr);
 
 }
-
-
 
 /*
  * This routine does the following :
