@@ -20,6 +20,8 @@ extern pending_req_t    qpending;
 extern pending_req_t    ipending;
 extern char             *localhostname;
 extern char             *sharedir;
+extern int push;
+extern int pull;
 /*extern __thread int errno;*/
 
 int seqno;
