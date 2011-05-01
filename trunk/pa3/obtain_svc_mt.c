@@ -21,6 +21,9 @@ char *localhostname = localhost;
 peers_t peers;
 pending_req_t qpending;
 pending_req_t ipending;
+int push;
+int pull;
+int ttrtime;
 
 extern void *reaper_thread(void *);
 extern void *validate_thread(void *);
@@ -450,7 +453,7 @@ register_files(char *localhostname, char *dirname)
             continue;
         printf("Registering file : %s to the index-server : %s\n", entp->d_name, localhostname);
 
-        ret = add_peer(entp->d_name, localhostname, PRIMARY, 0, 0);
+        ret = add_peer(entp->d_name, localhostname, PRIMARY, 0, ttrtime);
     }
 
     closedir(dirp);
@@ -502,9 +505,9 @@ parse_peers(char *peerfile)
  */
 void
 usage(char *name) {
-    printf(" Usage : %s [-u] [-l] <peer-list-file> <share-dir>\n\n", name);
+    printf(" Usage : %s [-u] [-l <ttrtime>] <peer-list-file> <share-dir>\n\n", name);
     printf(" -u : push the updates to peers\n");
-    printf(" -l : pull the updates from peers\n");
+    printf(" -l <ttrtime> : pull the updates from peers. ttrtime is the time-to-refresh in secs\n");
     printf(" peer-list-file : file containing the Hostnames of the peers\n");
     printf(" share-dir : Directory that you would like to share\n\n");
 }
@@ -512,8 +515,6 @@ usage(char *name) {
 extern char *optarg;
 extern int optind;
 
-int push;
-int pull;
 
 int
 main (int argc, char **argv)
@@ -534,13 +535,15 @@ main (int argc, char **argv)
         return (1);
     }
 
-    while ((opt = getopt(argc, argv, "ul")) != -1) {
+    while ((opt = getopt(argc, argv, "ul:")) != -1) {
         switch (opt) {
             case 'u':
                 push = 1;
                 break;
             case 'l':
                 pull = 1;
+                ttrtime = atoi(optarg);
+                printf("ttrtime = %d\n", ttrtime);
                 break;
             default:
                 usage(argv[0]);
