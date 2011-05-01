@@ -402,7 +402,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
 #endif
             ret = b_hitquery_1(&res, &tmp, clnt);
             if (ret != RPC_SUCCESS && ret != RPC_TIMEDOUT) {
-                clnt_perror(clnt, "b_hitquery failed");
+                clnt_perror(clnt, "b_hitquery a failed");
             }
             res.cnt = 0;
             flock(fd, LOCK_SH);
@@ -419,7 +419,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
 #endif
     ret = b_hitquery_1(&res, &tmp, clnt);
     if (ret != RPC_SUCCESS && ret != RPC_TIMEDOUT) {
-        clnt_perror(clnt, "b_hitquery failed");
+        clnt_perror(clnt, "b_hitquery b failed");
     }
 
     clnt_destroy(clnt);
