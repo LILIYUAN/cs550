@@ -493,13 +493,18 @@ parse_peers(char *peerfile)
  */
 void
 usage(char *name) {
-    printf(" Usage : %s <peer-list-file> <share-dir>\n\n", name);
+    printf(" Usage : %s [-u] [-l] <peer-list-file> <share-dir>\n\n", name);
+    printf(" -u : push the updates to peers\n");
+    printf(" -l : pull the updates from peers\n");
     printf(" peer-list-file : file containing the Hostnames of the peers\n");
     printf(" share-dir : Directory that you would like to share\n\n");
 }
 
 extern char *optarg;
 extern int optind;
+
+int push;
+int pull;
 
 int
 main (int argc, char **argv)
@@ -511,11 +516,26 @@ main (int argc, char **argv)
 	char tmp[MAXHOSTNAME+2];
     pthread_t ireaper;
     pthread_t qreaper;
+    int opt;
 	
 
-    if (argc != 3) {
+    if (argc < 3 || argc > 5) {
         usage(argv[0]);
         return (1);
+    }
+
+    while ((opt = getopt(argc, argv, "ul")) != -1) {
+        switch (opt) {
+            case 'u':
+                push = 1;
+                break;
+            case 'l':
+                pull = 1;
+                break;
+            default:
+                usage(argv[0]);
+                return (1);
+        }
     }
 
 	if ( gethostname(localhostname, sizeof(localhost)) != 0) {
@@ -523,8 +543,9 @@ main (int argc, char **argv)
         return (1);
     }
 
-	peerfile = argv[1];
-	sharedir = argv[2];
+	peerfile = argv[optind];
+	sharedir = argv[optind + 1];
+    printf("peerfile %s sharedir %s\n", peerfile, sharedir);
 
     if (strlen(peerfile) == 0 || strlen(sharedir) == 0) {
         usage(argv[0]);
