@@ -530,7 +530,7 @@ main (int argc, char **argv)
     int opt;
 	
 
-    if (argc < 3 || argc > 5) {
+    if (argc < 3 || argc > 6) {
         usage(argv[0]);
         return (1);
     }
@@ -543,7 +543,6 @@ main (int argc, char **argv)
             case 'l':
                 pull = 1;
                 ttrtime = atoi(optarg);
-                printf("ttrtime = %d\n", ttrtime);
                 break;
             default:
                 usage(argv[0]);
@@ -560,13 +559,14 @@ main (int argc, char **argv)
 	sharedir = argv[optind + 1];
     printf("peerfile %s sharedir %s\n", peerfile, sharedir);
 
-    if (strlen(peerfile) == 0 || strlen(sharedir) == 0) {
+    if (!peerfile || strlen(peerfile) == 0 || !sharedir || strlen(sharedir) == 0) {
         usage(argv[0]);
         return (1);
     }
 
 #ifdef DEBUG
     printf("localhostname : %s\n", localhostname);
+    printf("ttrtime = %d\n", ttrtime);
 #endif
 
 	if (parse_peers(peerfile) != 0) {
