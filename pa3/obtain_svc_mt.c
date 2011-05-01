@@ -392,7 +392,7 @@ update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newt
              * Check if this is a request to update the rev.
              */
             if (newrev == -1) {
-                newrev = oldrev = 1;
+                newrev = oldrev + 1;
             }
 
             /*
