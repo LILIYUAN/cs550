@@ -107,7 +107,7 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
        ac_req.ttr = res_rec.recs[i].ttr;
 
        // make the RPC call
-       /*addcache_1(&ac_req,&ac_res,clnt);*/
+       addcache_1(&ac_req,&ac_res,clnt);
     }
 
     clnt_destroy(clnt);

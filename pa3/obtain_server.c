@@ -1476,5 +1476,6 @@ validate_thread(void *unused)
 void *
 update_trigger(void *unused)
 {
+
 }
 
