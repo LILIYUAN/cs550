@@ -113,6 +113,7 @@ service_request(void *data )
     */
     if (retval > 0 && local != (bool_t (*) (char *, void *,  struct svc_req *))b_query_1_svc
             && local != (bool_t (*) (char *, void *,  struct svc_req *))b_hitquery_1_svc
+            && local != (bool_t (*) (char *, void *,  struct svc_req *))invalidate_1_svc
             && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)result)) {
         svcerr_systemerr (transp);
     }
