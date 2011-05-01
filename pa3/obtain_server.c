@@ -388,7 +388,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
          * rev with that of orig_rec.  If they are different we don't add that
          * record to the reply list.
          */
-        if (orig && p->rev != orig_rec.rev) {
+        if (orig && !valid_rec(fname_req, &orig_rec, p)) {
             continue;
         }
         res.cnt++;
@@ -637,14 +637,57 @@ b_query_propagate(b_query_req *argp, int flag)
  * - It is valid only if its TTR has not expired.
  */
 bool_t
-valid_rec(file_rec *orig, file_rec *rec)
+valid_rec(char *fname, file_rec *orig, file_rec *rec)
 {
+    int ret;
+    struct stat sbuf;
+    char name[MAXPATHLEN];
+    time_t curtime;
+    bool_t push_retval = FALSE;
+    bool_t pull_retval = FALSE;
+    
     /*
-     * TODO : Need to implement the validation.
-     *
-     * For now we assume that all records are valid.
+     * If this is the origin server of the file. No more check is needed.
      */
-    return (TRUE);
+    if (rec->pflag == PRIMARY) {
+        return TRUE;
+    }
+
+    /*
+     * If we don't have the origin_server's record we have to trust the
+     * cached entry :-(
+     */
+    if (orig = NULL) {
+        return (TRUE);
+    }
+
+    if (pull) {
+        sprintf(name, "%s/%s", CACHE_DIR, fname);
+        ret = stat(name, &sbuf);
+        if (ret) {
+            pull_retval = FALSE;
+        } else {
+            curtime = time(NULL);
+            if (curtime - sbuf.st_mtime > orig->ttr) {
+                pull_retval = FALSE;
+            } else {
+                pull_retval = TRUE;
+            }
+        }
+    }
+
+    if (push && rec->rev == orig->rev) {
+        push_retval = TRUE;
+    }
+
+    if (push && pull) {
+        return (push_retval & pull_retval);
+    }
+    if (push) {
+        return (push_retval);
+    } else {
+        return (pull_retval);
+    }
 }
 
 bool_t
@@ -748,7 +791,7 @@ send_result:
          * If we have a valid origin-server record makes sure the rev of this record is the
          * same. Else, we don't add this record to the response.
          */
-        if (orig && orig_rec.rev != rec.rev) {
+        if (orig && !valid_rec(fname, &orig_rec, &rec)) {
             continue;
         }
 
