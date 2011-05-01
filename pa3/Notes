@@ -85,7 +85,7 @@ Pending items :
 Thread to Randomly trigger update.
 ----------------------------------
 - An option to automatically simulate updates to files.
-    - "-t <delay>" option to obtain_server
+    - "-T <delay>" option to obtain_server
     - this will create a thread and it will
         - sleep for a random time (between 0 and delay secs)
         - Randomly pick a file and update it.
@@ -117,6 +117,10 @@ Pull Method :
         - sleep(5)
             - Ideally this should depend on the next refresh.
 
+- Add options pull and push to obtain_svc_mt.c
+    - -u - for push
+    - -l <ttr-secs> - for pull
+
 - Modification to send_local_cache() and search_1_svc()
     - The below check is in addtion to the existing check where we don't add an
       entry if its rev is not the same as origin server.
@@ -124,3 +128,4 @@ Pull Method :
         - stat() on the cachefile.
         - check if the current_time - modtime > TTR
         - if so don't add it.
+

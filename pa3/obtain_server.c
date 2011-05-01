@@ -1314,6 +1314,7 @@ validate_1_svc(validate_req *argp, validate_res *result, struct svc_req *rqstp)
 }
 
 #define TRYTIMEOUT  5
+#define SLEEPTIME   30
 /*
  * validate_thread() :
  */
@@ -1332,7 +1333,7 @@ validate_thread(void *unused)
     CLIENT *clnt;
     validate_req    vreq;
     validate_res    vres; 
-    int sleeptime = TRYTIMEOUT;
+    int sleeptime = SLEEPTIME;
 
 
     while (1) {
@@ -1363,6 +1364,14 @@ validate_thread(void *unused)
                         dent.d_name);
                 continue;
             }
+
+            /*
+             * Find the smallest TTR and use it as sleeptime.
+             */
+            if (sleeptime < orig.ttr) {
+                sleeptime = orig.ttr;
+            }
+
             /*
              * Check if this file's TTR has expired.
              */
