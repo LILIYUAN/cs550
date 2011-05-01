@@ -71,3 +71,12 @@ update_1(update_req *argp, update_res *clnt_res, CLIENT *clnt)
 		(xdrproc_t) xdr_update_res, (caddr_t) clnt_res,
 		TIMEOUT));
 }
+
+enum clnt_stat 
+validate_1(validate_req *argp, validate_res *clnt_res, CLIENT *clnt)
+{
+	return (clnt_call(clnt, validate,
+		(xdrproc_t) xdr_validate_req, (caddr_t) argp,
+		(xdrproc_t) xdr_validate_res, (caddr_t) clnt_res,
+		TIMEOUT));
+}

@@ -257,3 +257,31 @@ xdr_addcache_res (XDR *xdrs, addcache_res *objp)
 		 return FALSE;
 	return TRUE;
 }
+
+bool_t
+xdr_validate_req (XDR *xdrs, validate_req *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_filename (xdrs, &objp->fname))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->ver))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_validate_res (XDR *xdrs, validate_res *objp)
+{
+	register int32_t *buf;
+
+	int i;
+	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXPATHLEN,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
+	 if (!xdr_file_rec (xdrs, &objp->frec))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->res))
+		 return FALSE;
+	return TRUE;
+}

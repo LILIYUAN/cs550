@@ -1269,3 +1269,65 @@ reaper_thread(void *ptr)
         pthread_mutex_unlock(&pending->lock);
     }
 }
+
+/*
+ * validate_1_svc :
+ *    - validate() method:
+ *      - Call find_origin_rec().
+ *      - compare vernumber to the vernumber from origin-rec.
+ *      - Send the response back with :
+ *          - filename
+ *          - newversion
+ */
+bool_t
+validate_1_svc(validate_req *argp, validate_res *result, struct svc_req *rqstp)
+{
+    bool_t retval = TRUE;
+    file_rec    tmp;
+    int ret;
+
+    ret = find_origin_rec(argp->fname, &tmp);
+#ifdef DEBUG
+    printf("validate_1_svc: fname=%s oldrev=%d \n", argp->fname, argp->ver);
+#endif 
+    if (ret == TRUE) {
+        memcpy(
+                (void *)&result->frec,
+                (void *)&tmp,
+                sizeof(file_rec));
+        strcpy(result->fname, argp->fname);
+        if (tmp.rev != argp->ver) {
+            result->res = 1;
+        } else {
+            result->res = 0;
+        }
+    } else {
+        result->res = -1;
+    }
+#ifdef DEBUG
+    printf("validate_1_svc: RESULT: res=%d fname=%s host=%s newrev=%d newttr=%lu newpflag=%d\n",
+            result->res, result->fname, result->frec.hostname, result->frec.rev,
+            result->frec.ttr, result->frec.pflag);
+#endif
+
+    return (retval);
+}
+
+/*
+ * update_trigger thread 
+ *- An option to automatically simulate updates to files.
+ *  - "-t <delay>" option to obtain_server
+ *  - this will create a thread and it will
+ *      - sleep for a random time (between 0 and delay secs)
+ *      - Randomly pick a file and update it.
+ *          - For this we need a count of files we are serving : filecount
+ *          - generate a random number : fileno = between 0 - filecount
+ *          - open the sharedir, call readdir() fileno times. This will get us
+ *            the random file that we picked.
+ *          - Call update_1_svc() on it.
+ */
+void
+update_trigger(void *unused)
+{
+}
+

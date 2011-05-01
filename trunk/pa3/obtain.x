@@ -130,6 +130,17 @@ struct addcache_res {
     int res;
 };
 
+struct validate_req {
+    filename    fname;
+    int         ver;
+};
+
+struct validate_res {
+    char        fname[MAXPATHLEN];
+    file_rec    frec;
+    int         res;
+};
+
 /*
  */
 program OBTAINPROG {
@@ -144,5 +155,6 @@ program OBTAINPROG {
         void            b_hitquery(b_hitquery_reply) = 5;
         void            invalidate(invalidate_req) = 6;
         update_res      update(update_req) = 7;
+        validate_res    validate(validate_req) = 8;
     } = 1;
 } = 0x20000011;

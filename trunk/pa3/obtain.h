@@ -133,6 +133,19 @@ struct addcache_res {
 };
 typedef struct addcache_res addcache_res;
 
+struct validate_req {
+	filename fname;
+	int ver;
+};
+typedef struct validate_req validate_req;
+
+struct validate_res {
+	char fname[MAXPATHLEN];
+	file_rec frec;
+	int res;
+};
+typedef struct validate_res validate_res;
+
 #define OBTAINPROG 0x20000011
 #define OBTAINVER 1
 
@@ -158,6 +171,9 @@ extern  bool_t invalidate_1_svc(invalidate_req *, void *, struct svc_req *);
 #define update 7
 extern  enum clnt_stat update_1(update_req *, update_res *, CLIENT *);
 extern  bool_t update_1_svc(update_req *, update_res *, struct svc_req *);
+#define validate 8
+extern  enum clnt_stat validate_1(validate_req *, validate_res *, CLIENT *);
+extern  bool_t validate_1_svc(validate_req *, validate_res *, struct svc_req *);
 extern int obtainprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -182,6 +198,9 @@ extern  bool_t invalidate_1_svc();
 #define update 7
 extern  enum clnt_stat update_1();
 extern  bool_t update_1_svc();
+#define validate 8
+extern  enum clnt_stat validate_1();
+extern  bool_t validate_1_svc();
 extern int obtainprog_1_freeresult ();
 #endif /* K&R C */
 
@@ -208,6 +227,8 @@ extern  bool_t xdr_update_req (XDR *, update_req*);
 extern  bool_t xdr_update_res (XDR *, update_res*);
 extern  bool_t xdr_addcache_req (XDR *, addcache_req*);
 extern  bool_t xdr_addcache_res (XDR *, addcache_res*);
+extern  bool_t xdr_validate_req (XDR *, validate_req*);
+extern  bool_t xdr_validate_res (XDR *, validate_res*);
 
 #else /* K&R C */
 extern bool_t xdr_my_time_t ();
@@ -230,6 +251,8 @@ extern bool_t xdr_update_req ();
 extern bool_t xdr_update_res ();
 extern bool_t xdr_addcache_req ();
 extern bool_t xdr_addcache_res ();
+extern bool_t xdr_validate_req ();
+extern bool_t xdr_validate_res ();
 
 #endif /* K&R C */
 
