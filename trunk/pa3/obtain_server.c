@@ -289,6 +289,7 @@ find_origin_rec(char *fname, file_rec *rec)
     file_rec tmp;
     FILE *fh;
     int fd;
+    bool_t retval = FALSE;;
 
     sprintf(name, "%s/%s", SERVER_DIR, fname);
 
@@ -306,14 +307,15 @@ find_origin_rec(char *fname, file_rec *rec)
 
         if (tmp.pflag == PRIMARY) {
             *rec = tmp;
-            return TRUE;
+            retval = TRUE;
+            break;
         }
     }
 
     flock(fd, LOCK_UN);
     fclose(fh);
     close(fd);
-    return FALSE;
+    return retval;
 }
 
 /*
