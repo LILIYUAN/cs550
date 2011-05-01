@@ -23,6 +23,7 @@ pending_req_t qpending;
 pending_req_t ipending;
 
 extern void *reaper_thread(void *);
+extern void *validate_thread(void *);
 
 typedef	union argument {
 		request             obtain_1_arg;
@@ -524,6 +525,7 @@ main (int argc, char **argv)
 	char tmp[MAXHOSTNAME+2];
     pthread_t ireaper;
     pthread_t qreaper;
+    pthread_t validate_thr;
     int opt;
 	
 
@@ -581,6 +583,10 @@ main (int argc, char **argv)
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_create(&qreaper, &attr, reaper_thread, (void *)&qpending);
     pthread_create(&ireaper, &attr, reaper_thread, (void *)&ipending);
+
+    if (pull) {
+        pthread_create(&validate_thr, &attr, validate_thread, (void *)&ipending);
+    }
 
     /*
      * Register the files in the given directory with the index-server.

@@ -295,7 +295,7 @@ find_origin_rec(char *fname, file_rec *rec)
     fh = fopen(name, "r");
     if (fh == NULL) {
         printf("find_origin_rec: Failed to open filename %s : errno = %d\n", fname, errno);
-        return TRUE;
+        return FALSE;
     }
 
     fd = fileno(fh);
@@ -1313,6 +1313,101 @@ validate_1_svc(validate_req *argp, validate_res *result, struct svc_req *rqstp)
     return (retval);
 }
 
+#define TRYTIMEOUT  5
+/*
+ * validate_thread() :
+ */
+void *
+validate_thread(void *unused)
+{
+    int ret = 0;
+    DIR *dirp = NULL;
+    struct dirent dent;
+    struct dirent *result = NULL;
+    struct stat sbuf;
+    char name[MAXPATHLEN];
+    time_t  curtime;
+    file_rec    orig;
+    enum clnt_stat rpcstat;
+    CLIENT *clnt;
+    validate_req    vreq;
+    validate_res    vres; 
+    int sleeptime = TRYTIMEOUT;
+
+
+    while (1) {
+        dirp = opendir(CACHE_DIR);
+        if (!dirp) {
+            /*
+             * We don't have a cachedir yet. Let's sleep for TRYTIMEOUT and
+             * re-check.
+             */
+            sleep(TRYTIMEOUT);
+            continue;
+        }
+       
+        while (((ret = readdir_r(dirp, &dent, &result)) == 0) && result) {
+            sprintf(name, "%s/%s", CACHE_DIR, dent.d_name);
+            ret = stat(name, &sbuf);
+
+            if (ret != 0) {
+                printf("validate_thread: Failed to stat(%s) errno=%d\n", name, errno);
+                continue;
+            }
+
+            /*
+             * Fetch the origin_rec of the file.
+             */
+            if (find_origin_rec(dent.d_name, &orig) != TRUE) {
+                printf("validate_thread: Failed to find origin rec for file:%s !!\n",
+                        dent.d_name);
+                continue;
+            }
+            /*
+             * Check if this file's TTR has expired.
+             */
+            curtime = time(NULL);
+
+            if ((curtime - sbuf.st_mtime) < orig.ttr) {
+                printf("validate_thread: Skipping validation for file %s\n", dent.d_name);
+                continue;
+            }
+
+            /*
+             * This file needs a validation call.
+             */
+            clnt = clnt_create(orig.hostname, OBTAINPROG, OBTAINVER, "tcp");
+            if (clnt == NULL) {
+                clnt_pcreateerror(orig.hostname);
+                printf("validate_thread: Failed to contact : %s\n", orig.hostname);
+                continue;
+            }
+            vreq.fname = dent.d_name;
+            vreq.ver = orig.rev;
+            rpcstat = validate_1(&vreq, &vres, clnt);
+            if (rpcstat != RPC_SUCCESS) {
+                clnt_perror(clnt, "b_query failed");
+                clnt_destroy(clnt);
+                continue;
+            }
+            clnt_destroy(clnt);
+
+            /*
+             * If res == 1 then the new revision is different. We need to update
+             * the local record.
+             */
+            if (vres.res == 1 &&
+                    update_rec(dent.d_name, vres.frec.hostname,
+                        PRIMARY, vres.frec.rev, vres.frec.ttr) >= 0) {
+                printf("validate_thread: Failed to update record for %s\n", dent.d_name);
+            }
+        }
+        closedir(dirp);
+        sleep(sleeptime);
+    }
+}
+
+
 /*
  * update_trigger thread 
  *- An option to automatically simulate updates to files.
@@ -1326,7 +1421,7 @@ validate_1_svc(validate_req *argp, validate_res *result, struct svc_req *rqstp)
  *            the random file that we picked.
  *          - Call update_1_svc() on it.
  */
-void
+void *
 update_trigger(void *unused)
 {
 }
