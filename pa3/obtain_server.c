@@ -1040,6 +1040,16 @@ propagate_invalidate(invalidate_req *inval)
     CLIENT *clnt;
     enum clnt_stat stat;
 
+    /*
+     * Check if this request should be relayed to the peers.
+     */
+    if (inval->ttl <= 1) {
+        /*
+         * We don't need to relay this to the peers. 
+         */
+        return;
+    }
+
 #ifdef DEBUG
         printf("propagate_invalidate: file %s originsvr %s \n", inval->fname, inval->originsvr);
 #endif

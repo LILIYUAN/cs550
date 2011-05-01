@@ -78,4 +78,49 @@ Push Implementation :
       queue.
 
 
+=====================================
 
+Pending items :
+
+Thread to Randomly trigger update.
+----------------------------------
+- An option to automatically simulate updates to files.
+    - "-t <delay>" option to obtain_server
+    - this will create a thread and it will
+        - sleep for a random time (between 0 and delay secs)
+        - Randomly pick a file and update it.
+            - For this we need a count of files we are serving : filecount
+            - generate a random number : fileno = between 0 - filecount
+            - open the sharedir, call readdir() fileno times. This will get us
+              the random file that we picked. 
+            - Call update_1_svc() on it.
+
+
+Pull Method :
+-------------
+- A RPC method : validate(filename, vernumber) -> result (filename, newversion)
+    - validate() method:
+        - Call find_origin_rec().
+        - compare vernumber to the vernumber from origin-rec.
+        - Send the response back with :
+            - filename
+            - newversion
+
+- A thread is created for this on the obtain_server which does the following :
+    - For every file in CACHE_DIR :
+        - It finds the origin_rec for the file : calls find_origin_rec()
+        - Call stat() for the CACHE_DIR/file.
+        - Checks if (current_time  - mtime) > TTR 
+            - Call validate(filename, vernumber)
+            - If the newversion is different :
+                - update_rec().
+        - sleep(5)
+            - Ideally this should depend on the next refresh.
+
+- Modification to send_local_cache() and search_1_svc()
+    - The below check is in addtion to the existing check where we don't add an
+      entry if its rev is not the same as origin server.
+    - If pull mode is on:
+        - stat() on the cachefile.
+        - check if the current_time - modtime > TTR
+        - if so don't add it.
