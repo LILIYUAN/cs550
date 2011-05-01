@@ -62,8 +62,9 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
     printf("Total number of peers serving %s = %d\n", res_rec.fname, res_rec.count);
     printf("Peers serving the file are :\n");
     for (i = 0; i < res_rec.count; i++) {
-        printf("\t%d : %s\n", i, res_rec.recs[i].hostname);
+        printf("\t%d : %s\n", i, res_rec.peers+(i * MAXHOSTNAME));
     }
+
 
     if (fopt == 0) {
         printf("Pick the peer from which you want to fetch from : ");
@@ -82,11 +83,11 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
      */
     attempts = 0;
     time(&start_time);
-    while (get_file(res_rec.recs[i].hostname, fname, dest_dir) != 0 &&
+    while (get_file(res_rec.peers+(i * MAXHOSTNAME), fname, dest_dir) != 0 &&
         attempts < res_rec.count) {
 
         printf("Failed to fetch the file from host:%s\nTrying next server\n",
-                res_rec.recs[i].hostname);
+                res_rec.peers+(i * MAXHOSTNAME));
 
         i = (i + 1) % res_rec.count;
         attempts++;
@@ -102,12 +103,12 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
 
         // build the addcache_req object
         ac_req.fname = fname;
-        ac_req.ver = res_rec.recs[i].rev;
+        ac_req.ver = res_rec.vers[i];
         ac_req.path = dest_dir;
-        ac_req.ttr = res_rec.recs[i].ttr;
+        ac_req.ttr = res_rec.ttrs[i];
 
         // make the RPC call
-        addcache_1(&ac_req,&ac_res,clnt);
+        ret = addcache_1(&ac_req,&ac_res,clnt);
         if (ret != RPC_SUCCESS) {
             printf("ret = %d\n", ret);
             clnt_perror (clnt, "addcache_1 failed");

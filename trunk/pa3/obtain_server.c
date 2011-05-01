@@ -303,7 +303,7 @@ find_origin_rec(char *fname, file_rec *rec)
     flock(fd, LOCK_SH);
 
     while (!feof(fh)) {
-        fscanf(fh, IND_REC_FMT, &tmp.rev, &tmp.pflag, &tmp.ttr, tmp.hostname);
+        fscanf(fh, IND_REC_FMT, &tmp.ver, &tmp.pflag, &tmp.ttr, tmp.hostname);
 
         if (tmp.pflag == PRIMARY) {
             *rec = tmp;
@@ -329,8 +329,9 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
 {
     b_hitquery_reply res;
     char fname[MAXPATHLEN];
-    file_rec *p;
+    char *p;
     file_rec orig_rec;
+    file_rec rec;
     FILE *fh;
     int fd;
     CLIENT *clnt;
@@ -376,24 +377,33 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
     res.id = id;
     strcpy(res.fname, fname_req);
     res.cnt = 0;
-    p = &res.recs[res.cnt]; 
+    p = res.hosts; 
     
     while (!feof(fh)) {
-        fscanf(fh, IND_REC_FMT, &p->rev, &p->pflag, &p->ttr, p->hostname);
+        fscanf(fh, IND_REC_FMT, &rec.ver, &rec.pflag, &rec.ttr, rec.hostname);
 #ifdef DEBUG
         printf("send_local_cache: read rec : rev=%d pflag=%d ttr=%lu hostname=%s for file %s\n",
-                p->rev, p->pflag, (unsigned long)p->ttr, p->hostname, res.fname);
+                rec.ver, rec.pflag, (unsigned long)rec.ttr, rec.hostname, res.fname);
 #endif
-            ret = b_hitquery_1(&res, &tmp, clnt);
+            /*ret = b_hitquery_1(&res, &tmp, clnt);*/
         /*
          * If we found a origin server rec (orig_rec) then we compare the current records
          * rev with that of orig_rec.  If they are different we don't add that
          * record to the reply list.
          */
-        if (orig && !valid_rec(fname_req, &orig_rec, p)) {
+        if (orig && !valid_rec(fname_req, &orig_rec, &rec)) {
             continue;
         }
+
+        /*
+         * This is a valid record. Now add it to the reply struct.
+         */
+        res.vers[res.cnt] = rec.ver;
+        res.pflags[res.cnt] = rec.pflag;
+        res.ttrs[res.cnt] = rec.ttr;
+        memcpy(p, rec.hostname, MAXHOSTNAME);
         res.cnt++;
+
         if (res.cnt == MAXCOUNT) {
             flock(fd, LOCK_UN);
             /*
@@ -409,7 +419,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
             res.cnt = 0;
             flock(fd, LOCK_SH);
         }
-        p = &res.recs[res.cnt];
+        p += MAXHOSTNAME;
     }
 
     flock(fd, LOCK_UN);
@@ -678,7 +688,7 @@ valid_rec(char *fname, file_rec *orig, file_rec *rec)
         }
     }
 
-    if (push && rec->rev == orig->rev) {
+    if (push && rec->ver == orig->ver) {
         push_retval = TRUE;
     }
 
@@ -698,7 +708,8 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 	bool_t retval = TRUE;
 	b_query_req *query;
     node_t *node;
-    file_rec rec, *p;
+    char *p;
+    file_rec rec;
 	char fname[MAXPATHLEN];
     char peer[MAXHOSTNAME+2];
 	int i, fd;
@@ -784,10 +795,10 @@ send_result:
 
     strcpy(result->fname, argp->fname);
     result->count = 0;
-    p = &result->recs[result->count]; 
+    p = result->peers; 
     
     while (!feof(fh)) {
-        fscanf(fh, IND_REC_FMT, &rec.rev, &rec.pflag, &rec.ttr, rec.hostname);
+        fscanf(fh, IND_REC_FMT, &rec.ver, &rec.pflag, &rec.ttr, rec.hostname);
 
         /*
          * If we have a valid origin-server record makes sure the rev of this record is the
@@ -800,7 +811,10 @@ send_result:
         /*
          * Copy the record into the result.
          */
-        *p = rec;
+        result->vers[result->count] = rec.ver;
+        result->ttrs[result->count] = rec.ttr;
+        result->pflags[result->count] = rec.pflag;
+        memcpy(p, rec.hostname, MAXHOSTNAME);
         result->count++;
 
         /* 
@@ -814,7 +828,7 @@ send_result:
             result->eof = 0;
             return retval;
         }
-        p = &result->recs[result->count]; 
+        p += MAXHOSTNAME; 
     }
 
     flock(fd, LOCK_UN);
@@ -907,7 +921,10 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
             req.id = argp->id;
             req.cnt = argp->cnt;
             strcpy(req.fname, argp->fname);
-            memcpy(req.recs, argp->recs, sizeof(argp->recs));
+            memcpy(req.hosts, argp->hosts, BUFSIZE);
+            memcpy(req.pflags, argp->pflags, sizeof(req.pflags));
+            memcpy(req.vers, argp->vers, sizeof(req.vers));
+            memcpy(req.ttrs, argp->ttrs, sizeof(req.ttrs));
 
             stat = b_hitquery_1(&req, &ret, clnt);
             if (stat != RPC_TIMEDOUT && stat != RPC_SUCCESS) {
@@ -922,9 +939,10 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
      * Record the results in the local cache (/tmp/indsvr/) so that we can reuse
      * this info for the next queries for this file.
      */
-    for (i = 0; i < argp->cnt; i++) {
-        add_peer(argp->fname, argp->recs[i].hostname, argp->recs[i].pflag,
-                argp->recs[i].rev, argp->recs[i].ttr);
+    for (i = 0, p = argp->hosts; i < argp->cnt; i++) {
+        add_peer(argp->fname, p, argp->pflags[i],
+                argp->vers[i], argp->ttrs[i]);
+        p += MAXHOSTNAME;
     }
 
     if (node) {
@@ -986,14 +1004,14 @@ is_origin_server(char *fname, char *peername, file_rec *rec)
      * origin server.
      */
     while (!feof(fh)) {
-        fscanf(fh, IND_REC_FMT, &tmp.rev, &tmp.pflag, &tmp.ttr, tmp.hostname);
+        fscanf(fh, IND_REC_FMT, &tmp.ver, &tmp.pflag, &tmp.ttr, tmp.hostname);
 #ifdef DEBUG
-        printf("rev=%d pflag=%d peer=%s\n", tmp.rev, tmp.pflag, tmp.hostname);
+        printf("rev=%d pflag=%d peer=%s\n", tmp.ver, tmp.pflag, tmp.hostname);
 #endif
 
         if (strcmp(tmp.hostname, peername) == 0) {
             found = 1;
-            rec->rev = tmp.rev;
+            rec->ver = tmp.ver;
             rec->pflag = tmp.pflag;
             rec->ttr = tmp.ttr;
             strcpy(rec->hostname, tmp.hostname); 
@@ -1365,7 +1383,7 @@ validate_1_svc(validate_req *argp, validate_res *result, struct svc_req *rqstp)
                 (void *)&tmp,
                 sizeof(file_rec));
         strcpy(result->fname, argp->fname);
-        if (tmp.rev != argp->ver) {
+        if (tmp.ver != argp->ver) {
             result->res = 1;
         } else {
             result->res = 0;
@@ -1375,7 +1393,7 @@ validate_1_svc(validate_req *argp, validate_res *result, struct svc_req *rqstp)
     }
 #ifdef DEBUG
     printf("validate_1_svc: RESULT: res=%d fname=%s host=%s newrev=%d newttr=%lu newpflag=%d\n",
-            result->res, result->fname, result->frec.hostname, result->frec.rev,
+            result->res, result->fname, result->frec.hostname, result->frec.ver,
             result->frec.ttr, result->frec.pflag);
 #endif
 
@@ -1464,7 +1482,7 @@ validate_thread(void *unused)
                 continue;
             }
             vreq.fname = dent.d_name;
-            vreq.ver = orig.rev;
+            vreq.ver = orig.ver;
             rpcstat = validate_1(&vreq, &vres, clnt);
             if (rpcstat != RPC_SUCCESS) {
                 clnt_perror(clnt, "b_query failed");
@@ -1479,7 +1497,7 @@ validate_thread(void *unused)
              */
             if (vres.res == 1 &&
                     update_rec(dent.d_name, vres.frec.hostname,
-                        PRIMARY, vres.frec.rev, vres.frec.ttr) >= 0) {
+                        PRIMARY, vres.frec.ver, vres.frec.ttr) >= 0) {
                 printf("validate_thread: Failed to update record for %s\n", dent.d_name);
             }
         }
