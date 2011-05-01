@@ -1,6 +1,6 @@
 const SIZE = 4096;
 const MAXNAME = 128;
-const MAXCOUNT = 16;
+const MAXCOUNT = 4;
 const MAXHOSTNAME = 32;
 const BUFSIZE = 512; /* MAXHOSTNAME * MAXCOUNT */
 const PRIMARY = 0;  /* Indicates a primary server */
@@ -97,11 +97,11 @@ struct b_query_req {
 struct b_hitquery_reply {
 	msg_id	    id;
 	int		    cnt;
-    char        fname[MAXNAME];
-    char        hosts[BUFSIZE];
     int         pflags[MAXCOUNT];
     int         vers[MAXCOUNT];
     my_time_t   ttrs[MAXCOUNT];
+    char        fname[MAXNAME];
+    char        hosts[BUFSIZE];
 };
 
 struct invalidate_req {
