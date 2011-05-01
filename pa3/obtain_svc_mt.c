@@ -32,6 +32,7 @@ typedef	union argument {
         b_hitquery_reply    b_hitquery_1_arg;
         invalidate_req      invalidate_1_arg;
         update_req 	    update_1_arg;
+        validate_req validate_1_arg;
 } argument_t ;
 
 typedef union result {
@@ -39,6 +40,7 @@ typedef union result {
         query_rec       search_1_res; 
         addcache_res    addcache_1_res;
         update_res      update_1_res;
+        validate_res    validate_1_res;
 } result_t;
 
 /*
@@ -210,6 +212,12 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
          datap->_xdr_result = (xdrproc_t) xdr_update_res;
          datap->local = (bool_t (*) (char *, void *,  struct svc_req *))update_1_svc;
          break;
+
+    case validate:
+        datap->_xdr_argument = (xdrproc_t) xdr_validate_req;
+        datap->_xdr_result = (xdrproc_t) xdr_validate_res;
+        datap->local = (bool_t (*) (char *, void *,  struct svc_req *))validate_1_svc;
+        break;
 
 	default:
 		svcerr_noproc (transp);

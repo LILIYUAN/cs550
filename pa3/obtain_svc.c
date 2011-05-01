@@ -27,12 +27,14 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		b_hitquery_reply b_hitquery_1_arg;
 		invalidate_req invalidate_1_arg;
 		update_req update_1_arg;
+		validate_req validate_1_arg;
 	} argument;
 	union {
 		readfile_res obtain_1_res;
 		query_rec search_1_res;
 		addcache_res addcache_1_res;
 		update_res update_1_res;
+		validate_res validate_1_res;
 	} result;
 	bool_t retval;
 	xdrproc_t _xdr_argument, _xdr_result;
@@ -83,6 +85,12 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		_xdr_argument = (xdrproc_t) xdr_update_req;
 		_xdr_result = (xdrproc_t) xdr_update_res;
 		local = (bool_t (*) (char *, void *,  struct svc_req *))update_1_svc;
+		break;
+
+	case validate:
+		_xdr_argument = (xdrproc_t) xdr_validate_req;
+		_xdr_result = (xdrproc_t) xdr_validate_res;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))validate_1_svc;
 		break;
 
 	default:
