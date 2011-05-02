@@ -23,10 +23,14 @@ pending_req_t qpending;
 pending_req_t ipending;
 int push;
 int pull;
+int trigger;
 int ttrtime;
+int delay;
+int filecount;
 
 extern void *reaper_thread(void *);
 extern void *validate_thread(void *);
+extern void *trigger_thread(void *);
 
 typedef	union argument {
 		request             obtain_1_arg;
@@ -455,6 +459,7 @@ register_files(char *localhostname, char *dirname)
         printf("Registering file : %s to the index-server : %s\n", entp->d_name, localhostname);
 
         ret = add_peer(entp->d_name, localhostname, PRIMARY, 0, ttrtime);
+        filecount++;
     }
 
     closedir(dirp);
@@ -506,7 +511,8 @@ parse_peers(char *peerfile)
  */
 void
 usage(char *name) {
-    printf(" Usage : %s [-u] [-l <ttrtime>] <peer-list-file> <share-dir>\n\n", name);
+    printf(" Usage : %s [-t <delay>] [-u] [-l <ttrtime>] <peer-list-file> <share-dir>\n\n", name);
+    printf(" -t <delay> : triggers updates to random files at random time exponentially distributed\n");
     printf(" -u : push the updates to peers\n");
     printf(" -l <ttrtime> : pull the updates from peers. ttrtime is the time-to-refresh in secs\n");
     printf(" peer-list-file : file containing the Hostnames of the peers\n");
@@ -528,15 +534,16 @@ main (int argc, char **argv)
     pthread_t ireaper;
     pthread_t qreaper;
     pthread_t validate_thr;
+    pthread_t trigger_thr;
     int opt;
 	
 
-    if (argc < 3 || argc > 6) {
+    if (argc < 3 || argc > 8) {
         usage(argv[0]);
         return (1);
     }
 
-    while ((opt = getopt(argc, argv, "ul:")) != -1) {
+    while ((opt = getopt(argc, argv, "ul:t:")) != -1) {
         switch (opt) {
             case 'u':
                 push = 1;
@@ -544,6 +551,10 @@ main (int argc, char **argv)
             case 'l':
                 pull = 1;
                 ttrtime = atoi(optarg);
+                break;
+            case 't':
+                trigger = 1;
+                delay = atoi(optarg);
                 break;
             default:
                 usage(argv[0]);
@@ -566,8 +577,7 @@ main (int argc, char **argv)
     }
 
 #ifdef DEBUG
-    printf("localhostname : %s\n", localhostname);
-    printf("ttrtime = %d\n", ttrtime);
+    printf("localhostname : %s ttrtime = %d delay = %d\n", localhostname, ttrtime, delay);
 #endif
 
 	if (parse_peers(peerfile) != 0) {
@@ -582,6 +592,15 @@ main (int argc, char **argv)
     pthread_mutex_init(&(ipending.lock), NULL);
 
     /*
+     * Register the files in the given directory with the index-server.
+     */
+    if (register_files(localhostname, sharedir) != 0) {
+        printf("Failed to register with the index server on %s\n", argv[2]);
+        printf("Quitting :(\n");
+        return (1);
+    }
+
+    /*
      * Create the reaper_threads for ipending and qpending lists.
      */
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -592,15 +611,9 @@ main (int argc, char **argv)
         pthread_create(&validate_thr, &attr, validate_thread, (void *)&ipending);
     }
 
-    /*
-     * Register the files in the given directory with the index-server.
-     */
-    if (register_files(localhostname, sharedir) != 0) {
-        printf("Failed to register with the index server on %s\n", argv[2]);
-        printf("Quitting :(\n");
-        return (1);
+    if (trigger) {
+        pthread_create(&trigger_thr, &attr, trigger_thread, (void *)&ipending);
     }
-
 
     pmap_unset (OBTAINPROG, OBTAINVER);
 

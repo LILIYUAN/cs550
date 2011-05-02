@@ -16,7 +16,7 @@ extern "C" {
 
 #define SIZE 4096
 #define MAXNAME 128
-#define MAXCOUNT 16
+#define MAXCOUNT 4
 #define MAXHOSTNAME 32
 #define BUFSIZE 512
 #define PRIMARY 0
@@ -93,11 +93,11 @@ typedef struct b_query_req b_query_req;
 struct b_hitquery_reply {
 	msg_id id;
 	int cnt;
-	char fname[MAXNAME];
-	char hosts[BUFSIZE];
 	int pflags[MAXCOUNT];
 	int vers[MAXCOUNT];
 	my_time_t ttrs[MAXCOUNT];
+	char fname[MAXNAME];
+	char hosts[BUFSIZE];
 };
 typedef struct b_hitquery_reply b_hitquery_reply;
 

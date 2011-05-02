@@ -272,30 +272,19 @@ xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
 	if (xdrs->x_op == XDR_ENCODE) {
 		 if (!xdr_msg_id (xdrs, &objp->id))
 			 return FALSE;
-         printf("xdr_b_hitquery_reply: msg_id done\n");
-		 if (!xdr_int (xdrs, &objp->cnt))
-			 return FALSE;
-         printf("xdr_b_hitquery_reply: cnt done\n");
-		 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
-			sizeof (char), (xdrproc_t) xdr_char))
-			 return FALSE;
-         printf("xdr_b_hitquery_reply: fname done\n");
-		 if (!xdr_vector (xdrs, (char *)objp->hosts, BUFSIZE,
-			sizeof (char), (xdrproc_t) xdr_char))
-			 return FALSE;
-         printf("xdr_b_hitquery_reply: hosts done\n");
-		buf = XDR_INLINE (xdrs, ( MAXCOUNT  + MAXCOUNT ) * BYTES_PER_XDR_UNIT);
+		buf = XDR_INLINE (xdrs, (1 + ( MAXCOUNT  + MAXCOUNT )) * BYTES_PER_XDR_UNIT);
 		if (buf == NULL) {
+			 if (!xdr_int (xdrs, &objp->cnt))
+				 return FALSE;
 			 if (!xdr_vector (xdrs, (char *)objp->pflags, MAXCOUNT,
 				sizeof (int), (xdrproc_t) xdr_int))
 				 return FALSE;
-         printf("xdr_b_hitquery_reply: pflags done\n");
 			 if (!xdr_vector (xdrs, (char *)objp->vers, MAXCOUNT,
 				sizeof (int), (xdrproc_t) xdr_int))
 				 return FALSE;
-         printf("xdr_b_hitquery_reply: vers done\n");
 
 		} else {
+		IXDR_PUT_LONG(buf, objp->cnt);
 		{
 			register int *genp;
 
@@ -316,21 +305,20 @@ xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
 		 if (!xdr_vector (xdrs, (char *)objp->ttrs, MAXCOUNT,
 			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 			 return FALSE;
-         printf("xdr_b_hitquery_reply: ttrs done\n");
+		 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
+			sizeof (char), (xdrproc_t) xdr_char))
+			 return FALSE;
+		 if (!xdr_vector (xdrs, (char *)objp->hosts, BUFSIZE,
+			sizeof (char), (xdrproc_t) xdr_char))
+			 return FALSE;
 		return TRUE;
 	} else if (xdrs->x_op == XDR_DECODE) {
 		 if (!xdr_msg_id (xdrs, &objp->id))
 			 return FALSE;
-		 if (!xdr_int (xdrs, &objp->cnt))
-			 return FALSE;
-		 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
-			sizeof (char), (xdrproc_t) xdr_char))
-			 return FALSE;
-		 if (!xdr_vector (xdrs, (char *)objp->hosts, BUFSIZE,
-			sizeof (char), (xdrproc_t) xdr_char))
-			 return FALSE;
-		buf = XDR_INLINE (xdrs, ( MAXCOUNT  + MAXCOUNT ) * BYTES_PER_XDR_UNIT);
+		buf = XDR_INLINE (xdrs, (1 + ( MAXCOUNT  + MAXCOUNT )) * BYTES_PER_XDR_UNIT);
 		if (buf == NULL) {
+			 if (!xdr_int (xdrs, &objp->cnt))
+				 return FALSE;
 			 if (!xdr_vector (xdrs, (char *)objp->pflags, MAXCOUNT,
 				sizeof (int), (xdrproc_t) xdr_int))
 				 return FALSE;
@@ -339,6 +327,7 @@ xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
 				 return FALSE;
 
 		} else {
+		objp->cnt = IXDR_GET_LONG(buf);
 		{
 			register int *genp;
 
@@ -358,6 +347,12 @@ xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
 		}
 		 if (!xdr_vector (xdrs, (char *)objp->ttrs, MAXCOUNT,
 			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
+			 return FALSE;
+		 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
+			sizeof (char), (xdrproc_t) xdr_char))
+			 return FALSE;
+		 if (!xdr_vector (xdrs, (char *)objp->hosts, BUFSIZE,
+			sizeof (char), (xdrproc_t) xdr_char))
 			 return FALSE;
 	 return TRUE;
 	}
@@ -365,12 +360,6 @@ xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
 	 if (!xdr_msg_id (xdrs, &objp->id))
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->cnt))
-		 return FALSE;
-	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
-		sizeof (char), (xdrproc_t) xdr_char))
-		 return FALSE;
-	 if (!xdr_vector (xdrs, (char *)objp->hosts, BUFSIZE,
-		sizeof (char), (xdrproc_t) xdr_char))
 		 return FALSE;
 	 if (!xdr_vector (xdrs, (char *)objp->pflags, MAXCOUNT,
 		sizeof (int), (xdrproc_t) xdr_int))
@@ -380,6 +369,12 @@ xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
 		 return FALSE;
 	 if (!xdr_vector (xdrs, (char *)objp->ttrs, MAXCOUNT,
 		sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
+		sizeof (char), (xdrproc_t) xdr_char))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->hosts, BUFSIZE,
+		sizeof (char), (xdrproc_t) xdr_char))
 		 return FALSE;
 	return TRUE;
 }
