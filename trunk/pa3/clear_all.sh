@@ -6,7 +6,7 @@ ssh compute-0-0 "pkill obtain_server"
 ssh compute-0-0 "rm -rf /tmp/indsvr"
 
 ssh compute-0-1 "pkill obtain_server"
-ssh compute-0-1 "pkill obtain_server"
+ssh compute-0-1 "rm -rf /tmp/indsvr"
 
 ssh compute-0-2 "pkill obtain_server"
 ssh compute-0-2 "rm -rf /tmp/indsvr"
