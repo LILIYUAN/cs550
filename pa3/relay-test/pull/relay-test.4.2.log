@@ -1,0 +1,85 @@
+peerfile /home/rkumarma/cs550/pa3//relay-test/compute-0-2.peers sharedir /home/rkumarma/cs550/pa3//data/share2
+localhostname : compute-0-2.local ttrtime = 20 delay = 120
+compute-0-3.local : strlen = 17
+Registering file : node2.2 to the index-server : compute-0-2.local
+Walking through current entries for node2.2: rev=0 pflag=0 peer=
+Registering file : node2.2 from peer compute-0-2.local newrev=0 primary_flag=0 ttr=20 mtime=1304338835
+Registering file : node2.1 to the index-server : compute-0-2.local
+Walking through current entries for node2.1: rev=0 pflag=0 peer=
+Registering file : node2.1 from peer compute-0-2.local newrev=0 primary_flag=0 ttr=20 mtime=1304338224
+Registering file : .svn to the index-server : compute-0-2.local
+Walking through current entries for .svn: rev=0 pflag=0 peer=
+Registering file : .svn from peer compute-0-2.local newrev=0 primary_flag=0 ttr=20 mtime=1304338829
+Now ready to serve them
+
+update_1_svc: file=node2.2
+rev=0 pflag=0 peer=compute-0-2.local
+update_rec: Walking through current entries for node2.2: rev=0 pflag=0 peer=compute-0-2.local
+propagate_invalidate: file node2.2 originsvr compute-0-2.local 
+find_node: waiting for pending->lock
+find_node: Done
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 6
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 6
+propagate_invalidate: file node1.2 originsvr compute-0-1.local 
+find_node: waiting for pending->lock
+find_node: Done
+propagate_invalidate: invalidate_1(fname=node1.2, originsvr=compute-0-1.local, ttl=2, rev=1) to compute-0-3.local
+index-server : Failed to make an entry : errno = 2 : No such file or directory
+Returned from the service routine : rq_proc = 6
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 4
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 4
+b_query_1_svc() : Received query for node2.1 from compute-0-1.local
+b_query_propagate: fname node2.1 
+find_node: waiting for pending->lock
+find_node: Done
+b_query_propagate: before insert_node()
+b_query_propagate: insert_node() done
+build_peers_from_cache compute-0-2.local : Processing query for file : node2.1
+Peers serving node2.1 = 1 
+hostname : compute-0-2.local
+b_query_propagate: my_cache.count = 1 peers.count = 1
+b_query_propagate: Looking for compute-0-3.local in my_cache
+b_query_propagate(): Relaying query to compute-0-3.local for file node2.1
+Creating clnt handle for peer[compute-0-3.local]
+Called the b_query(compute-0-3.local)
+send_local_cache: read rec : rev=0 pflag=0 ttr=20 mtime=1304338224, hostname=compute-0-2.local for file node2.1
+send_local_cache: Sending response to compute-0-1.local for file node2.1
+send_local_cache: Sending response to compute-0-1.local for file node2.1
+Returned from the service routine : rq_proc = 4
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 1
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 1
+obtain_1_svc() compute-0-2.local  : Entered : filepath : /home/rkumarma/cs550/pa3//data/share2/node2.1
+obtain_1_svc() : Served 28 bytes from /home/rkumarma/cs550/pa3//data/share2/node2.1 at offset : 0
+Returned from the service routine : rq_proc = 1
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 1
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 1
+obtain_1_svc() compute-0-2.local  : Entered : filepath : /home/rkumarma/cs550/pa3//data/share2/node2.1
+obtain_1_svc() : Served 28 bytes from /home/rkumarma/cs550/pa3//data/share2/node2.1 at offset : 0
+Returned from the service routine : rq_proc = 1
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 1
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 1
+obtain_1_svc() compute-0-2.local  : Entered : filepath : /home/rkumar
