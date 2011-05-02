@@ -1,0 +1,96 @@
+peerfile /home/rkumarma/cs550/pa3//relay-test/compute-0-0.peers sharedir /home/rkumarma/cs550/pa3//data/share0
+localhostname : compute-0-0.local ttrtime = 20 delay = 120
+compute-0-1.local : strlen = 17
+Registering file : node0.1 to the index-server : compute-0-0.local
+Walking through current entries for node0.1: rev=0 pflag=0 peer=
+Registering file : node0.1 from peer compute-0-0.local newrev=0 primary_flag=0 ttr=20 mtime=1304338785
+Registering file : .svn to the index-server : compute-0-0.local
+Walking through current entries for .svn: rev=0 pflag=0 peer=
+Registering file : .svn from peer compute-0-0.local newrev=0 primary_flag=0 ttr=20 mtime=1304338829
+Now ready to serve them
+
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 2
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 2
+search_1_svc() compute-0-0.local  : Received request for file : node2.1 off=0
+b_query_propagate: fname node2.1 
+find_node: waiting for pending->lock
+find_node: Done
+b_query_propagate: before insert_node()
+b_query_propagate: insert_node() done
+build_peers_from_cache compute-0-0.local : Processing query for file : node2.1
+b_query_propagate: my_cache.count = 0 peers.count = 1
+b_query_propagate: Looking for compute-0-1.local in my_cache
+b_query_propagate(): Relaying query to compute-0-1.local for file node2.1
+Creating clnt handle for peer[compute-0-1.local]
+Called the b_query(compute-0-1.local)
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node2.1
+find_node: waiting for pending->lock
+find_node: Done
+Spawning a new thread
+Spawned a new thread
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+Walking through current entries for node2.1: Spawning a new thread
+rev=0 pflag=0 peer=
+Registering file : node2.1 from peer compute-0-2.local newrev=0 primary_flag=0 ttr=20 mtime=1304338224
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node2.1
+find_node: waiting for pending->lock
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node2.1
+find_node: waiting for pending->lock
+b_hitquery_1_svc:recv = 1 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node2.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+search_1_svc: bytes = 5
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+find_node: Done
+Walking through current entries for node2.1: rev=0 pflag=0 peer=compute-0-2.local
+b_hitquery_1_svc:recv = 2 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node2.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+find_node: Done
+b_hitquery_1_svc:recv = 3 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node2.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 2
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 2
+search_1_svc() compute-0-0.local  : Received request for file : node2.1 off=0
+b_query_propagate: fname node2.1 
+find_node: waiting for pending->lock
+find_node: Done
+b_query_propagate: before insert_node()
+b_query_propagate: insert_node() done
+build_peers_from_cache compute-0-0.local : Processing query for file : node2.1
+Peers serving node2.1 = 1 
+hostname : compute-0-2.local
+b_query_propagate: my_cache.count = 1 peers.count = 1
+b_query_propagate: Looking for compute-0-1.local in my_cache
+b_query_propagate(): Relaying query to compute-0-1.local for file node2.1
+Creating clnt handle for peer[compute-0-1.loca
