@@ -189,3 +189,18 @@ Steps to use the peer client :
     Trying next server                                              <-------*******
     Time taken to fetch the file = 0 secs
     -- snip --
+
+Test Logs :
+-----------
+
+- Logs of tests are placed in the respective test case configuration directory. 
+  It has client logs for both push and pull setup's. 
+  
+  relay-test/push/client.log
+  relay-test/pull/client.log
+
+  mesh-10node/push/client.log
+  mesh-10node/pull/client.log
+  
+  Server logs are placed in relay-test and mesh-10node directories
+
