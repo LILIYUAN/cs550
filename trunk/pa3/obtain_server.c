@@ -22,6 +22,8 @@ extern char             *localhostname;
 extern char             *sharedir;
 extern int push;
 extern int pull;
+extern int delay;
+extern int filecount;
 /*extern __thread int errno;*/
 
 int seqno;
@@ -1521,8 +1523,39 @@ validate_thread(void *unused)
  *          - Call update_1_svc() on it.
  */
 void *
-update_trigger(void *unused)
+trigger_thread(void *unused)
 {
+    long off;
+    long rdelay;
+    int rcount;
+    DIR *dirp = NULL;
+    struct dirent dent;
+    struct dirent *result = NULL;
+    update_req req;
+    update_res res;
+    int retval = 0;
 
+    dirp = opendir(sharedir);
+
+    if (dirp == NULL) {
+        printf("trigger_thread : Unable to opendir(%s) -> errno=%d\n", sharedir, errno);
+        return;
+    }
+    
+    off = telldir(dirp);
+    while (1) {
+        rdelay = random() % delay;
+        rcount = random() % filecount; 
+
+        while (rcount) {
+            retval = readdir_r(dirp, &dent, &result);
+            rcount--;
+        }
+        if (result) {
+            req.fname = dent.d_name;
+            update_1_svc(&req, &res, NULL);
+        }
+        sleep(rdelay);
+        seekdir(dirp, off);
+    }
 }
-
