@@ -12,6 +12,8 @@
 
 char localhostname[MAXHOSTNAME + 2];
 
+char *pflagstr[2] = {"PRIMARY", "CACHED"};
+
 /*
  * This routine queries the index-server to find the list of peers serving the
  * file rec->fname.
@@ -20,13 +22,15 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
 {
     query_req req;
     query_rec res_rec[32];
-    int cnt = 0, n = 0;
+    int cnt = 0, n = 0, found = 0, pass_cnt = 0;
     CLIENT *clnt;
     bool_t ret;
-    int res, i, j, attempts;
+    int res, i, j, attempts, recs = 0;
     time_t start_time, end_time;
     addcache_req ac_req;
     addcache_res ac_res;
+    long orig_mtime;
+    int orig_ver;
 
     if ((clnt = clnt_create(index_svr, OBTAINPROG, OBTAINVER, "tcp")) == NULL) {
         clnt_pcreateerror(index_svr);
@@ -69,11 +73,12 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
      */
     /*printf("Total number of peers serving %s = %d\n", res_rec.fname, res_rec.count); */
     printf("Peers serving the file are :\n");
-    printf("\tNo.\tPeer\tVersion\tmtime\n");
+    printf("\tNo.\tPeer\tVersion\tmtime\tpflag\n");
     for (j = 0, n = 0; j < cnt; j++) {
         for (i = 0; i < res_rec[j].count; i++) {
-            printf("\t%3d:\t%32s\t%3lu\t%10lu\n", n, res_rec[j].peers+(i * MAXHOSTNAME),
-                    res_rec[j].vers[i], (long unsigned int)res_rec[j].mtimes[i]);
+            printf("\t%3d:\t%s\t%3d\t%10lu%s\n", n, res_rec[j].peers+(i * MAXHOSTNAME),
+                    res_rec[j].vers[i], (long unsigned int)res_rec[j].mtimes[i],
+                    pflagstr[res_rec[j].pflags[i]]);
             n++;
         }
     }
@@ -135,6 +140,52 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
     }
 
     clnt_destroy(clnt);
+
+    /*
+     * Process the results.
+     */
+    /*
+     * Find the primary server record
+     */
+    for (j = 0, found = 0; j < cnt; j++) {
+        for (i = 0; i < res_rec[j].count; i++) {
+            if (res_rec[j].pflags[i] == PRIMARY) {
+                orig_ver = res_rec[j].vers[i];
+                orig_mtime = res_rec[j].mtimes[i];
+                found = 1;
+                break;
+            }
+        }
+        if (found == 1)
+            break;
+    }
+
+    if (found) {
+        pass_cnt = 0;
+        for (j = 0; j < cnt; j++) {
+            for (i = 0; i < res_rec[j].count; i++) {
+                if (res_rec[j].vers[i] == orig_ver)
+                    pass_cnt++;
+            }
+        }
+
+        printf("Query hit ratio by version number\n");
+        printf("\tTotal-hits = %d Good-hits=%d Stale-hits=%d\n", n, pass_cnt, n - pass_cnt);
+
+        pass_cnt = 0;
+        for (j = 0; j < cnt; j++) {
+            for (i = 0; i < res_rec[j].count; i++) {
+                if (res_rec[j].mtimes[i] > orig_mtime)
+                    pass_cnt++;
+            }
+        }
+
+        printf("Query hit ratio by mtime\n");
+        printf("\tTotal-hits = %d Good-hits=%d Stale-hits=%d\n", n, pass_cnt, n - pass_cnt);
+    } else {
+        printf("COuld not find a primary server record in the hits :-(\n");
+        printf("Total hits = %d\n", n);
+    }
 
     return (0);
 }
