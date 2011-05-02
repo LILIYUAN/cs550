@@ -61,8 +61,10 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
      */
     printf("Total number of peers serving %s = %d\n", res_rec.fname, res_rec.count);
     printf("Peers serving the file are :\n");
+    printf("\tNo.\tPeer\tVersion\tmtime\n");
     for (i = 0; i < res_rec.count; i++) {
-        printf("\t%d : %s\n", i, res_rec.peers+(i * MAXHOSTNAME));
+        printf("\t%3d:\t%32s\t%3lu\t%10lu\n", i, res_rec.peers+(i * MAXHOSTNAME),
+                res_rec.vers[i], (long unsigned int)res_rec.mtimes[i]);
     }
 
 
