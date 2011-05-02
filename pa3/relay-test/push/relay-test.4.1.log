@@ -1,0 +1,284 @@
+peerfile /home/rkumarma/cs550/pa3//relay-test/compute-0-1.peers sharedir /home/rkumarma/cs550/pa3//data/share1
+localhostname : compute-0-1.local ttrtime = 0 delay = 120
+compute-0-2.local : strlen = 17
+Registering file : node1.2 to the index-server : compute-0-1.local
+Walking through current entries for node1.2: rev=0 pflag=0 peer=
+Registering file : node1.2 from peer compute-0-1.local newrev=0 primary_flag=0 ttr=0 mtime=1304338222
+Registering file : .svn to the index-server : compute-0-1.local
+Walking through current entries for .svn: rev=0 pflag=0 peer=
+Registering file : .svn from peer compute-0-1.local newrev=0 primary_flag=0 ttr=0 mtime=1304338237
+Registering file : node1.1 to the index-server : compute-0-1.local
+Walking through current entries for node1.1: rev=0 pflag=0 peer=
+Registering file : node1.1 from peer compute-0-1.local newrev=0 primary_flag=0 ttr=0 mtime=1304338098
+update_1_svc: file=node1.2
+rev=0 pflag=0 peer=compute-0-1.local
+Now ready to serve them
+
+update_rec: Walking through current entries for node1.2: rev=0 pflag=0 peer=compute-0-1.local
+propagate_invalidate: file node1.2 originsvr compute-0-1.local 
+find_node: waiting for pending->lock
+find_node: Done
+propagate_invalidate: invalidate_1(fname=node1.2, originsvr=compute-0-1.local, ttl=3, rev=1) to compute-0-2.local
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 4
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 4
+b_query_1_svc() : Received query for node3.1 from compute-0-0.local
+b_query_propagate: fname node3.1 
+find_node: waiting for pending->lock
+find_node: Done
+b_query_propagate: before insert_node()
+b_query_propagate: insert_node() done
+build_peers_from_cache compute-0-1.local : Processing query for file : node3.1
+b_query_propagate: my_cache.count = 0 peers.count = 1
+b_query_propagate: Looking for compute-0-2.local in my_cache
+b_query_propagate(): Relaying query to compute-0-2.local for file node3.1
+Creating clnt handle for peer[compute-0-2.local]
+Called the b_query(compute-0-2.local)
+send_local_cache: Failed to open filename /tmp/indsvr//node3.1 : errno = 2
+Returned from the service routine : rq_proc = 4
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node3.1
+find_node: waiting for pending->lock
+find_node: Done
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+Spawning a new thread
+Spawned a new thread
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node3.1
+find_node: waiting for pending->lock
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node3.1
+find_node: waiting for pending->lock
+Walking through current entries for node3.1: rev=62 pflag=-1366873574 peer=
+Registering file : node3.1 from peer compute-0-3.local newrev=0 primary_flag=0 ttr=0 mtime=1304338225
+b_hitquery_1_svc:recv = 1 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node3.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+find_node: Done
+Walking through current entries for node3.1: rev=0 pflag=0 peer=compute-0-3.local
+b_hitquery_1_svc:recv = 2 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node3.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+find_node: Done
+b_hitquery_1_svc:recv = 3 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node3.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 4
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 4
+b_query_1_svc() : Received query for node3.1 from compute-0-0.local
+b_query_propagate: fname node3.1 
+find_node: waiting for pending->lock
+find_node: Done
+b_query_propagate: before insert_node()
+b_query_propagate: insert_node() done
+build_peers_from_cache compute-0-1.local : Processing query for file : node3.1
+Peers serving node3.1 = 1 
+hostname : compute-0-3.local
+b_query_propagate: my_cache.count = 1 peers.count = 1
+b_query_propagate: Looking for compute-0-2.local in my_cache
+b_query_propagate(): Relaying query to compute-0-2.local for file node3.1
+Creating clnt handle for peer[compute-0-2.local]
+Called the b_query(compute-0-2.local)
+send_local_cache: read rec : rev=0 pflag=0 ttr=0 mtime=1304338225, hostname=compute-0-3.local for file node3.1
+send_local_cache: Sending response to compute-0-0.local for file node3.1
+send_local_cache: Sending response to compute-0-0.local for file node3.1
+Returned from the service routine : rq_proc = 4
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node3.1
+find_node: waiting for pending->lock
+find_node: Done
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+Spawning a new thread
+Spawned a new thread
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node3.1
+find_node: waiting for pending->lock
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node3.1
+find_node: waiting for pending->lock
+Walking through current entries for node3.1: rev=0 pflag=0 peer=compute-0-3.local
+b_hitquery_1_svc:recv = 1 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node3.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+find_node: Done
+Walking through current entries for node3.1: rev=0 pflag=0 peer=compute-0-3.local
+b_hitquery_1_svc:recv = 2 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node3.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+find_node: Done
+b_hitquery_1_svc:recv = 3 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node3.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 4
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 4
+b_query_1_svc() : Received query for node3.1 from compute-0-0.local
+b_query_propagate: fname node3.1 
+find_node: waiting for pending->lock
+find_node: Done
+b_query_propagate: before insert_node()
+b_query_propagate: insert_node() done
+build_peers_from_cache compute-0-1.local : Processing query for file : node3.1
+Peers serving node3.1 = 1 
+hostname : compute-0-3.local
+b_query_propagate: my_cache.count = 1 peers.count = 1
+b_query_propagate: Looking for compute-0-2.local in my_cache
+b_query_propagate(): Relaying query to compute-0-2.local for file node3.1
+Creating clnt handle for peer[compute-0-2.local]
+Called the b_query(compute-0-2.local)
+send_local_cache: read rec : rev=0 pflag=0 ttr=0 mtime=1304338225, hostname=compute-0-3.local for file node3.1
+send_local_cache: Sending response to compute-0-0.local for file node3.1
+send_local_cache: Sending response to compute-0-0.local for file node3.1
+Returned from the service routine : rq_proc = 4
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+obtainprog_1 entered 
+b_hitquery_1_svc() : Received b_hitquery for node3.1
+find_node: waiting for pending->lock
+find_node: Done
+obtainprog_1: service routine : rq_proc = 5
+Spawning a new thread
+Spawned a new thread
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node3.1
+find_node: waiting for pending->lock
+service_request() : Entered
+Calling the service routine : rq_proc = 5
+b_hitquery_1_svc() : Received b_hitquery for node3.1
+find_node: waiting for pending->lock
+Walking through current entries for node3.1: rev=0 pflag=0 peer=compute-0-3.local
+b_hitquery_1_svc:recv = 1 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node3.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+find_node: Done
+Walking through current entries for node3.1: rev=0 pflag=0 peer=compute-0-3.local
+b_hitquery_1_svc:recv = 2 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node3.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+find_node: Done
+b_hitquery_1_svc:recv = 3 sent = 1
+broadcasting : so that search_1_svc() can respond back
+b_hitquery_1_svc: Done for file node3.1
+Returned from the service routine : rq_proc = 5
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 6
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 6
+propagate_invalidate: file node0.1 originsvr compute-0-0.local 
+find_node: waiting for pending->lock
+find_node: Done
+propagate_invalidate: invalidate_1(fname=node0.1, originsvr=compute-0-0.local, ttl=2, rev=1) to compute-0-2.local
+index-server : Failed to make an entry : errno = 2 : No such file or directory
+Returned from the service routine : rq_proc = 6
+Completed the sending the reply
+update_1_svc: file=node1.2
+rev=1 pflag=0 peer=compute-0-1.local
+update_rec: Walking through current entries for node1.2: rev=1 pflag=0 peer=compute-0-1.local
+propagate_invalidate: file node1.2 originsvr compute-0-1.local 
+find_node: waiting for pending->lock
+find_node: Done
+propagate_invalidate: invalidate_1(fname=node1.2, originsvr=compute-0-1.local, ttl=3, rev=2) to compute-0-2.local
+update_1_svc: file=node1.2
+rev=2 pflag=0 peer=compute-0-1.local
+update_rec: Walking through current entries for node1.2: rev=2 pflag=0 peer=compute-0-1.local
+propagate_invalidate: file node1.2 originsvr compute-0-1.local 
+find_node: waiting for pending->lock
+find_node: Done
+propagate_invalidate: invalidate_1(fname=node1.2, originsvr=compute-0-1.local, ttl=3, rev=3) to compute-0-2.local
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 4
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 4
+b_query_1_svc() : Received query for node3.1 from compute-0-0.local
+b_query_propagate: fname node3.1 
+find_node: waiting for pending->lock
+find_node: Done
+b_query_propagate: before insert_node()
+b_query_propagate: insert_node() done
+build_peers_from_cache compute-0-1.local : Processing query for file : node3.1
+Peers serving node3.1 = 1 
+hostname : compute-0-3.local
+b_query_propagate: my_cache.count = 1 peers.count = 1
+b_query_propagate: Looking for compute-0-2.local in my_cache
+b_query_propagate(): Relaying query to compute-0-2.local for file node3.1
+Creating clnt handle for peer[compute-0-2.local]
+Called the b_query(compute-0-2.local)
+send_local_cache: read rec : rev=0 pflag=0 ttr=0 mtime=1304338225, hostname=compute-0-3.local for file node3.1
+send_local_cache: Sending response to compute-0-0.local for file node3.1
+send_local_cache: Sending response to compute-0-0.local for file node3.1
+Returned from the service routine : rq_proc = 4
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+Spawning a new thread
+Spawned a new thread
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 5
+service_reque
