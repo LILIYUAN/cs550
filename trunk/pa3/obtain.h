@@ -16,7 +16,7 @@ extern "C" {
 
 #define SIZE 4096
 #define MAXNAME 128
-#define MAXCOUNT 4
+#define MAXCOUNT 1
 #define MAXHOSTNAME 32
 #define BUFSIZE 512
 #define PRIMARY 0
@@ -62,6 +62,7 @@ typedef struct file_rec file_rec;
 struct query_req {
 	char *fname;
 	int count;
+	long off;
 };
 typedef struct query_req query_req;
 
@@ -73,6 +74,7 @@ struct query_rec {
 	int vers[MAXCOUNT];
 	my_time_t ttrs[MAXCOUNT];
 	my_time_t mtimes[MAXCOUNT];
+	long off;
 	int eof;
 };
 typedef struct query_rec query_rec;

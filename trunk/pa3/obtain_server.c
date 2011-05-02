@@ -400,7 +400,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
         /*
          * This is a valid record. Now add it to the reply struct.
          */
-        res.vers[res.cnt] = rec.mtime;
+        res.mtimes[res.cnt] = rec.mtime;
         res.vers[res.cnt] = rec.ver;
         res.pflags[res.cnt] = rec.pflag;
         res.ttrs[res.cnt] = rec.ttr;
@@ -729,6 +729,12 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
 #endif
 
     /*
+     * This is a request to get the next entries. So, no need to search.
+     */
+    if (argp->off != 0)  {
+        goto send_result;
+    }
+    /*
      * Build the b_query_req for this request.
      */
     if ((query = (b_query_req *) malloc(sizeof(b_query_req))) == NULL) {
@@ -799,7 +805,10 @@ send_result:
     strcpy(result->fname, argp->fname);
     result->count = 0;
     p = result->peers; 
-    
+    if (argp->off) {
+        fseek(fh, argp->off, SEEK_SET);
+    }
+
     while (!feof(fh)) {
         fscanf(fh, IND_REC_FMT, &rec.ver, &rec.pflag, &rec.ttr, &rec.mtime, rec.hostname);
 
@@ -826,10 +835,11 @@ send_result:
          * Send it back.
          */
         if (result->count == MAXCOUNT) {
+            result->off = ftell(fh);
+            result->eof = 0;
             flock(fd, LOCK_UN);
             fclose(fh);
             close(fd);
-            result->eof = 0;
             return retval;
         }
         p += MAXHOSTNAME; 
