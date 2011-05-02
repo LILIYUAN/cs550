@@ -840,7 +840,12 @@ send_result:
          */
         if (result->count == MAXCOUNT) {
             result->off = ftell(fh);
-            result->eof = 0;
+
+            if (feof(fh))
+                result->eof = 1;
+            else
+                result->eof = 0;
+
             flock(fd, LOCK_UN);
             fclose(fh);
             close(fd);
