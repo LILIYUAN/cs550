@@ -1,0 +1,55 @@
+Created the client
+searching(node5.1) 
+Time taken by index server = 0 secs
+Peers serving the file are :
+	No.	Peer	Version	mtime	pflag
+	  0:	compute-0-5.local	  0	1304316603PRIMARY
+Pick the peer from which you want to fetch from : 0
+Time taken to fetch the file = 0 secs
+Query hit ratio by version number
+	Total-hits = 1 Good-hits=1 Stale-hits=0
+Query hit ratio by mtime
+	Total-hits = 1 Good-hits=1 Stale-hits=0
+[rkumarma@compute-0-0 pa3]$ ssh compute-0-8
+Last login: Wed Mar 30 13:13:00 2011 from csrocks.local
+Rocks Compute Node
+Rocks 5.3 (Rolled Tacos)
+Profile built 16:42 11-Feb-2011
+
+Kickstarted 19:15 01-Jan-2003
+[rkumarma@compute-0-8 ~]$ cd cs550/pa3/
+[rkumarma@compute-0-8 pa3]$ ./obtain_client node5.1 /tmp
+Created the client
+searching(node5.1) 
+Time taken by index server = 0 secs
+Peers serving the file are :
+	No.	Peer	Version	mtime	pflag
+	  0:	compute-0-5.local	  0	1304316603PRIMARY
+Pick the peer from which you want to fetch from : 0
+Time taken to fetch the file = 0 secs
+Query hit ratio by version number
+	Total-hits = 1 Good-hits=1 Stale-hits=0
+Query hit ratio by mtime
+	Total-hits = 1 Good-hits=1 Stale-hits=0
+[rkumarma@compute-0-8 pa3]$ 
+[rkumarma@compute-0-8 pa3]$ 
+[rkumarma@compute-0-8 pa3]$ 
+[rkumarma@compute-0-8 pa3]$ exit
+logout
+
+Connection to compute-0-8 closed.
+[rkumarma@compute-0-0 pa3]$ ./obtain_client node5.1 /tmp
+Created the client
+searching(node5.1) 
+Time taken by index server = 0 secs
+Peers serving the file are :
+	No.	Peer	Version	mtime	pflag
+	  0:	compute-0-5.local	  0	1304316603PRIMARY
+	  1:	compute-0-0.local	  0	1304339766CACHED
+Pick the peer from which you want to fetch from : 1
+Time taken to fetch the file = 0 secs
+Query hit ratio by version number
+	Total-hits = 2 Good-hits=2 Stale-hits=0
+Query hit ratio by mtime
+	Total-hits = 2 Good-hits=2 Stale-hits=0
+
