@@ -3,11 +3,13 @@ const MAXNAME = 128;
 const MAXCOUNT = 1;
 const MAXHOSTNAME = 32;
 const BUFSIZE = 512; /* MAXHOSTNAME * MAXCOUNT */
+/*-------------- start change ----------------*/
 const PRIMARY = 0;  /* Indicates a primary server */
 const CACHED = 1;   /* Indicates a peer which has a cached entry */
 
 
 typedef unsigned long my_time_t;
+/*-------------- end change ----------------*/
 
 /*
  * Type for storing path . Assuming max file path length to be 1024
@@ -59,6 +61,7 @@ union readfile_res switch (int error) {
         void;
 };
 
+/*-------------- start change ----------------*/
 struct file_rec {
     int         ver;
     int         pflag;
@@ -66,6 +69,7 @@ struct file_rec {
     my_time_t   mtime;
     char        hostname[MAXNAME];
 };
+/*-------------- end change ----------------*/
 
 struct query_req {
     string fname<MAXNAME>;
@@ -77,10 +81,12 @@ struct query_rec {
     char        fname[MAXNAME];
     int         count;
     char        peers[BUFSIZE]; 
+/*-------------- start change ----------------*/
     int         pflags[MAXCOUNT];
     int         vers[MAXCOUNT];
     my_time_t   ttrs[MAXCOUNT];
     my_time_t   mtimes[MAXCOUNT];
+/*-------------- end change ----------------*/
     long        off;
     int         eof;
 };
@@ -100,14 +106,17 @@ struct b_query_req {
 struct b_hitquery_reply {
 	msg_id	    id;
 	int		    cnt;
+/*-------------- start change ----------------*/
     int         pflags[MAXCOUNT];
     int         vers[MAXCOUNT];
     my_time_t   ttrs[MAXCOUNT];
     my_time_t   mtimes[MAXCOUNT];
     char        fname[MAXNAME];
     char        hosts[BUFSIZE];
+/*-------------- end change ----------------*/
 };
 
+/*-------------- start change ----------------*/
 struct invalidate_req {
     msg_id  id;
     char    originsvr[MAXHOSTNAME];
@@ -150,6 +159,7 @@ struct validate_res {
     file_rec    frec;
     int         res;
 };
+/*-------------- end change ----------------*/
 
 /*
  */
@@ -163,8 +173,10 @@ program OBTAINPROG {
 		 */
         void            b_query(b_query_req) = 4;
         void            b_hitquery(b_hitquery_reply) = 5;
+/*-------------- start change ----------------*/
         void            invalidate(invalidate_req) = 6;
         update_res      update(update_req) = 7;
         validate_res    validate(validate_req) = 8;
+/*-------------- end change ----------------*/
     } = 1;
 } = 0x20000011;

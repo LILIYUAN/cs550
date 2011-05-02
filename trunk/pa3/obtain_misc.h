@@ -21,6 +21,7 @@ typedef enum bcast {
     INVALIDATE
 } bcast_t;
 
+/*-------------- start change ----------------*/
 typedef struct query_node {
     bcast_t             type;
     union {
@@ -35,6 +36,7 @@ typedef struct query_node {
     pthread_mutex_t     node_lock;
     struct query_node   *next;
 } node_t;
+/*-------------- end change ----------------*/
 
 typedef struct pending_req {
     node_t    *head;
@@ -47,10 +49,12 @@ typedef struct pending_req {
 #define SERVER_DIR "/tmp/indsvr/"
 #define CACHE_DIR "/tmp/cachedir/"
 
+/*-------------- start change ----------------*/
 /*
  * Index record in the index file.
  * <revnumber> <primaryflag> <TTR> <mtime> <hostname>
  */
 #define IND_REC_FMT "%4d %2d %10lu %10lu %s\n"
+/*-------------- end change ----------------*/
 
 #define DEBUG 1 

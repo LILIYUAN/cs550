@@ -35,20 +35,26 @@ extern void *trigger_thread(void *);
 typedef	union argument {
 		request             obtain_1_arg;
         query_req           search_1_arg;
+/*-------------- start change ----------------*/
         addcache_req        addcache_1_req;
+/*-------------- end change ----------------*/
         b_query_req         b_query_1_arg;
         b_hitquery_reply    b_hitquery_1_arg;
+/*-------------- start change ----------------*/
         invalidate_req      invalidate_1_arg;
         update_req 	    update_1_arg;
         validate_req validate_1_arg;
+/*-------------- end change ----------------*/
 } argument_t ;
 
 typedef union result {
         readfile_res    obtain_1_res;
         query_rec       search_1_res; 
+/*-------------- start change ----------------*/
         addcache_res    addcache_1_res;
         update_res      update_1_res;
         validate_res    validate_1_res;
+/*-------------- end change ----------------*/
 } result_t;
 
 /*
@@ -192,11 +198,13 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
         datap->local = (bool_t (*) (char *, void *, struct svc_req *))search_1_svc;
         break;
  
+/*-------------- start change ----------------*/
     case addcache:
         datap->_xdr_argument = (xdrproc_t) xdr_addcache_req;
         datap->_xdr_result = (xdrproc_t) xdr_addcache_res;
         datap->local = (bool_t (*) (char *, void *,  struct svc_req *))addcache_1_svc;
         break;
+/*-------------- end change ----------------*/
 
     case b_query:
         datap->_xdr_argument = (xdrproc_t) xdr_b_query_req;
@@ -210,6 +218,7 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
         datap->local = (bool_t (*) (char *, void *, struct svc_req *))b_hitquery_1_svc;
         break;
 
+/*-------------- start change ----------------*/
     case invalidate:
         datap->_xdr_argument = (xdrproc_t) xdr_invalidate_req;
         datap->_xdr_result = (xdrproc_t) xdr_void;
@@ -227,6 +236,7 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
         datap->_xdr_result = (xdrproc_t) xdr_validate_res;
         datap->local = (bool_t (*) (char *, void *,  struct svc_req *))validate_1_svc;
         break;
+/*-------------- end change ----------------*/
 
 	default:
 		svcerr_noproc (transp);
@@ -347,6 +357,7 @@ int add_peer (char *fname, char *peername, int primary_flag, int newrev, my_time
     return (0);
 }
 
+/*-------------- start change ----------------*/
 /*
  * Searches in the fname for a record against <peername> and updates it.
  *
@@ -431,6 +442,7 @@ update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newt
 
     return (newrev);
 }
+/*-------------- end change ----------------*/
 
 /*
  * This routine registers all the files in the directory <dirname>
@@ -464,7 +476,9 @@ register_files(char *localhostname, char *dirname)
         if (stat(name, &sbuf) != 0) {
             printf("register_files : stat(%s) failed. errno=%d\n", name, errno);
         }
+/*-------------- start change ----------------*/
         ret = add_peer(entp->d_name, localhostname, PRIMARY, 0, ttrtime, sbuf.st_mtime);
+/*-------------- end change ----------------*/
         filecount++;
     }
 
@@ -512,6 +526,7 @@ parse_peers(char *peerfile)
 	return (0);
 }
 
+/*-------------- start change ----------------*/
 /*
  * usage
  */
@@ -524,6 +539,7 @@ usage(char *name) {
     printf(" peer-list-file : file containing the Hostnames of the peers\n");
     printf(" share-dir : Directory that you would like to share\n\n");
 }
+/*-------------- end change ----------------*/
 
 extern char *optarg;
 extern int optind;
@@ -606,6 +622,7 @@ main (int argc, char **argv)
         return (1);
     }
 
+/*-------------- start change ----------------*/
     /*
      * Create the reaper_threads for ipending and qpending lists.
      */
@@ -620,6 +637,7 @@ main (int argc, char **argv)
     if (trigger) {
         pthread_create(&trigger_thr, &attr, trigger_thread, (void *)&ipending);
     }
+/*-------------- end change ----------------*/
 
     pmap_unset (OBTAINPROG, OBTAINVER);
 

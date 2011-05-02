@@ -1,3 +1,4 @@
+/*-------------- start change ----------------*/
 /*
  * This code is used to update the local obtain_server to similate the
  * modification of a file and hence increment the revision number of the file.
@@ -74,3 +75,4 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+/*-------------- end change ----------------*/
