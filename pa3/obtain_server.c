@@ -729,7 +729,7 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     int orig;
 
 #ifdef DEBUG
-    printf("search_1_svc() %s  : Received request for file : %s\n", localhostname, argp->fname);
+    printf("search_1_svc() %s  : Received request for file : %s off=%lu\n", localhostname, argp->fname, argp->off);
 #endif
 
     /*
@@ -814,8 +814,12 @@ send_result:
     }
 
     while (!feof(fh)) {
-        fscanf(fh, IND_REC_FMT, &rec.ver, &rec.pflag, &rec.ttr, &rec.mtime, rec.hostname);
+        int bytes;
+        bytes = fscanf(fh, IND_REC_FMT, &rec.ver, &rec.pflag, &rec.ttr, &rec.mtime, rec.hostname);
 
+        printf("search_1_svc: bytes = %d\n", bytes);
+        if (bytes == 0) 
+            break;
         /*
          * If we have a valid origin-server record makes sure the rev of this record is the
          * same. Else, we don't add this record to the response.
