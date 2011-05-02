@@ -67,7 +67,7 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
     }
 
     printf("Time taken by index server = %ld secs\n", (long) difftime(end_time, start_time));
-
+/*-------------- start change ----------------*/
     /*
      * Continue until the user enters a valid choice.
      */
@@ -83,6 +83,7 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
         }
     }
 
+/*-------------- end change ----------------*/
 
     if (fopt == 0) {
         printf("Pick the peer from which you want to fetch from : ");
@@ -124,6 +125,7 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
         printf("Time taken to fetch the file = %ld secs\n", (long) difftime(end_time, start_time));
 
 
+/*-------------- start change ----------------*/
         // build the addcache_req object
         ac_req.fname = fname;
         ac_req.ver = res_rec[j].vers[i];
@@ -137,10 +139,12 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
             clnt_perror (clnt, "addcache_1 failed");
         }
 
+/*-------------- end change ----------------*/
     }
 
     clnt_destroy(clnt);
 
+/*-------------- start change ----------------*/
     /*
      * Process the results.
      */
@@ -186,6 +190,7 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
         printf("COuld not find a primary server record in the hits :-(\n");
         printf("Total hits = %d\n", n);
     }
+/*-------------- end change ----------------*/
 
     return (0);
 }

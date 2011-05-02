@@ -16,6 +16,7 @@
 #define WAITTIME    1
 
 extern peers_t          peers;
+/*-------------- start change ----------------*/
 extern pending_req_t    qpending;
 extern pending_req_t    ipending;
 extern char             *localhostname;
@@ -24,6 +25,7 @@ extern int push;
 extern int pull;
 extern int delay;
 extern int filecount;
+/*-------------- end change ----------------*/
 /*extern __thread int errno;*/
 
 int seqno;
@@ -288,6 +290,7 @@ int getseqno(void)
 	return(ret);
 }
 
+/*-------------- start change ----------------*/
 bool_t
 find_origin_rec(char *fname, file_rec *rec)
 {
@@ -323,6 +326,7 @@ find_origin_rec(char *fname, file_rec *rec)
     close(fd);
     return retval;
 }
+/*-------------- end change ----------------*/
 
 /*
  * This routine looks for the file in the local index directory
@@ -359,10 +363,12 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
 
     fd = fileno(fh);
 
+/*-------------- start change ----------------*/
     /*
      * Fetch the origin server record if there is one.
      */
     orig = find_origin_rec(fname_req, &orig_rec);
+/*-------------- end change ----------------*/
 
     clnt = clnt_create(uphost, OBTAINPROG, OBTAINVER, "tcp");
     if (clnt == NULL) {
@@ -392,6 +398,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
                 rec.ver, rec.pflag, (unsigned long)rec.ttr, (unsigned long)rec.mtime, rec.hostname, res.fname);
 #endif
             /*ret = b_hitquery_1(&res, &tmp, clnt);*/
+/*-------------- start change ----------------*/
         /*
          * If we found a origin server rec (orig_rec) then we compare the current records
          * rev with that of orig_rec.  If they are different we don't add that
@@ -408,6 +415,7 @@ send_local_cache(char *fname_req, msg_id id, char *uphost)
         res.vers[res.cnt] = rec.ver;
         res.pflags[res.cnt] = rec.pflag;
         res.ttrs[res.cnt] = rec.ttr;
+/*-------------- end change ----------------*/
         memcpy(p, rec.hostname, MAXHOSTNAME);
         res.cnt++;
 
@@ -647,6 +655,7 @@ b_query_propagate(b_query_req *argp, int flag)
     return (node);
 }
 
+/*-------------- start change ----------------*/
 /*
  * This routine decides if the given record of a file is valid.
  * The record is valid if the current version of the file is insync with origin
@@ -708,6 +717,7 @@ valid_rec(char *fname, file_rec *orig, file_rec *rec)
         return (pull_retval);
     }
 }
+/*-------------- end change ----------------*/
 
 bool_t
 search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
@@ -733,12 +743,14 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     printf("search_1_svc() %s  : Received request for file : %s off=%lu\n", localhostname, argp->fname, argp->off);
 #endif
 
+/*-------------- start change ----------------*/
     /*
      * This is a request to get the next entries. So, no need to search.
      */
     if (argp->off != 0)  {
         goto send_result;
     }
+/*-------------- end change ----------------*/
     /*
      * Build the b_query_req for this request.
      */
@@ -802,14 +814,17 @@ send_result:
     fd = fileno(fh);
     flock(fd, LOCK_SH);
 
+/*-------------- start change ----------------*/
     /*
      * Fetch the origin server record if there is one.
      */
     orig = find_origin_rec(argp->fname, &orig_rec);
+/*-------------- end change ----------------*/
 
     strcpy(result->fname, argp->fname);
     result->count = 0;
     p = result->peers; 
+/*-------------- start change ----------------*/
     if (argp->off) {
         fseek(fh, argp->off, SEEK_SET);
     }
@@ -836,6 +851,7 @@ send_result:
         result->ttrs[result->count] = rec.ttr;
         result->mtimes[result->count] = rec.mtime;
         result->pflags[result->count] = rec.pflag;
+/*-------------- end change ----------------*/
         memcpy(p, rec.hostname, MAXHOSTNAME);
         result->count++;
 
@@ -846,10 +862,12 @@ send_result:
         if (result->count == MAXCOUNT) {
             result->off = ftell(fh);
 
+/*-------------- start change ----------------*/
             if (feof(fh))
                 result->eof = 1;
             else
                 result->eof = 0;
+/*-------------- end change ----------------*/
 
             flock(fd, LOCK_UN);
             fclose(fh);
@@ -950,10 +968,12 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
             req.cnt = argp->cnt;
             strcpy(req.fname, argp->fname);
             memcpy(req.hosts, argp->hosts, BUFSIZE);
+/*-------------- start change ----------------*/
             memcpy(req.pflags, argp->pflags, sizeof(req.pflags));
             memcpy(req.vers, argp->vers, sizeof(req.vers));
             memcpy(req.ttrs, argp->ttrs, sizeof(req.ttrs));
             memcpy(req.mtimes, argp->mtimes, sizeof(req.mtimes));
+/*-------------- end change ----------------*/
 
             stat = b_hitquery_1(&req, &ret, clnt);
             if (stat != RPC_TIMEDOUT && stat != RPC_SUCCESS) {
@@ -998,6 +1018,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
 	return retval;
 }
 
+/*-------------- start change ----------------*/
 /*
  * Find the record for peername in the index file. 
  */
@@ -1341,6 +1362,7 @@ invalidate_1_svc(invalidate_req *argp, void *result, struct svc_req *rqstp)
     update_rec(argp->fname, argp->originsvr, PRIMARY, argp->ver, argp->ttr);
 }
 
+/*-------------- end change ----------------*/
 int
 obtainprog_1_freeresult (SVCXPRT *transp, xdrproc_t xdr_result, caddr_t result)
 {
@@ -1406,6 +1428,7 @@ reaper_thread(void *ptr)
     }
 }
 
+/*-------------- start change ----------------*/
 /*
  * validate_1_svc :
  *    - validate() method:
@@ -1608,3 +1631,4 @@ trigger_thread(void *unused)
         seekdir(dirp, off);
     }
 }
+/*-------------- end change ----------------*/
