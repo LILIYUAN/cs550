@@ -708,7 +708,7 @@ b_query_1_svc(b_query_req *argp, void *result, struct svc_req *rqstp)
 bool_t
 b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
 {
-	bool_t retval = TRUE;
+    bool_t retval = TRUE;
     query_node_t *node;
     b_hitquery_reply req;
     CLIENT *clnt;
@@ -751,6 +751,11 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
             req.cnt = argp->cnt;
             strcpy(req.fname, argp->fname);
             memcpy(req.hosts, argp->hosts, BUFSIZE);
+            memcpy(req.hosts, argp->hosts, BUFSIZE);
+            memcpy(req.pflags, argp->pflags, sizeof(req.pflags));
+            memcpy(req.vers, argp->vers, sizeof(req.vers));
+            memcpy(req.ttrs, argp->ttrs, sizeof(req.ttrs));
+            memcpy(req.mtimes, argp->mtimes, sizeof(req.mtimes));
 
             stat = b_hitquery_1(&req, &ret, clnt);
             if (stat != RPC_TIMEDOUT && stat != RPC_SUCCESS) {
@@ -766,7 +771,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
      * this info for the next queries for this file.
      */
     for (i = 0, p = argp->hosts; i < argp->cnt; i++) {
-        add_peer(argp->fname, p);
+        add_peer(argp->fname, p, );
         p = p + MAXHOSTNAME;
     }
 
@@ -791,7 +796,7 @@ b_hitquery_1_svc(b_hitquery_reply *argp, void *result, struct svc_req *rqstp)
 #ifdef DEBUG
     printf("b_hitquery_1_svc: Done for file %s\n", argp->fname);
 #endif
-	return retval;
+    return retval;
 }
 
 int

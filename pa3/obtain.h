@@ -51,10 +51,11 @@ struct readfile_res {
 typedef struct readfile_res readfile_res;
 
 struct file_rec {
-	char hostname[MAXNAME];
-	int pflag;
 	int ver;
+	int pflag;
 	my_time_t ttr;
+	my_time_t mtime;
+	char hostname[MAXNAME];
 };
 typedef struct file_rec file_rec;
 
@@ -71,7 +72,7 @@ struct query_rec {
 	int pflags[MAXCOUNT];
 	int vers[MAXCOUNT];
 	my_time_t ttrs[MAXCOUNT];
-	my_time_t mtime[MAXCOUNT];
+	my_time_t mtimes[MAXCOUNT];
 	int eof;
 };
 typedef struct query_rec query_rec;
@@ -96,6 +97,7 @@ struct b_hitquery_reply {
 	int pflags[MAXCOUNT];
 	int vers[MAXCOUNT];
 	my_time_t ttrs[MAXCOUNT];
+	my_time_t mtimes[MAXCOUNT];
 	char fname[MAXNAME];
 	char hosts[BUFSIZE];
 };
