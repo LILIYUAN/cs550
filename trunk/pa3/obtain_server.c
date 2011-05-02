@@ -172,9 +172,13 @@ obtain_1_svc(request *argp, readfile_res *result, struct svc_req *rqstp)
     sprintf(filepath, "%s/%s", sharedir, argp->name);
     file = fopen(filepath, "rb");
     if (file == NULL) {
-        printf("obtain_1_svc: Failed to open(%s) : errno %d\n", filepath, errno);
-        result->error = errno;
-        return (FALSE);
+        sprintf(filepath, "%s/%s", CACHE_DIR, argp->name);
+        file = fopen(filepath, "rb");
+        if (file == NULL) {
+            printf("obtain_1_svc: Failed to open(%s) : errno %d\n", filepath, errno);
+            result->error = errno;
+            return (FALSE);
+        }
     }
 
     fseek (file, argp->seek_bytes, SEEK_SET);
