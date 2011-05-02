@@ -1584,6 +1584,8 @@ trigger_thread(void *unused)
             retval = readdir_r(dirp, &dent, &result);
             rcount--;
         }
+        if (strcmp(dent.d_name, ".") == 0 || strcmp(dent.d_name, "..") == 0)
+            continue;
         if (result) {
             req.fname = dent.d_name;
             update_1_svc(&req, &res, NULL);
