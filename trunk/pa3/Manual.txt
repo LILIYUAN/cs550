@@ -131,44 +131,42 @@ Steps to use the peer client :
     Here is how the client is executed :
 
     -- snip --
-    $ ./obtain_client file-1k /tmp
+    [rkumarma@compute-0-0 pa3]$ ./obtain_client node3.1 /tmp
     Created the client
-    searching(file-1k) 
+    searching(node3.1)
     Time taken by index server = 0 secs
-    Total number of peers serving file-1k = 2
-    Peers service  192.168.0.102 are :
-        0 : compute-0-0.local
-        1 : compute-0-1.local
+    Peers serving the file are :
+        No. Peer    Version mtime   pflag
+          0:    compute-0-3.local     0 1304338225PRIMARY
+          1:    compute-0-0.local     0 1304338370CACHED
     Pick the peer from which you want to fetch from : 1
-    obtain_1_svc() : Served 1053 bytes from ./share1/file-1k at offset : 0
     Time taken to fetch the file = 0 secs
-
-    sbagewad@csrocks:~/trunk/pa1/p-to-p$ head /tmp/file-1k
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    Query hit ratio by version number
+        Total-hits = 2 Good-hits=2 Stale-hits=0
+    Query hit ratio by mtime
+        Total-hits = 2 Good-hits=2 Stale-hits=0
     -- snip --
+
+    NOTE : It reports the statistics of the query hits and the number of good and stale hits.
 
 - We have "-f" for the non-interactive way of petching the file. Here the app will
   pick the first listed peer and then fetches it from that peer.
 
     -- snip --
-    $ ./obtain_client -f file-1k /tmp
+    [rkumarma@compute-0-0 pa3]$ ./obtain_client node3.1 /tmp
     Created the client
-    searching(file-1k) 
+    searching(node3.1)
     Time taken by index server = 0 secs
-    Total number of peers serving file-1k = 2
-    Peers service  192.168.0.102 are :
-        0 : compute-0-0.local
-        1 : compute-0-1.local
+    Peers serving the file are :
+        No. Peer    Version mtime   pflag
+          0:    compute-0-3.local     0 1304338225PRIMARY
+          1:    compute-0-0.local     0 1304338370CACHED
+    Pick the peer from which you want to fetch from : 1
     Time taken to fetch the file = 0 secs
+    Query hit ratio by version number
+        Total-hits = 2 Good-hits=2 Stale-hits=0
+    Query hit ratio by mtime
+        Total-hits = 2 Good-hits=2 Stale-hits=0
     -- snip --
 
 - The client is also smart to try other listed server (if it fails to fetch from the choosen one).
@@ -203,4 +201,3 @@ Test Logs :
   mesh-10node/pull/client.log
   
   Server logs are placed in relay-test and mesh-10node directories
-
