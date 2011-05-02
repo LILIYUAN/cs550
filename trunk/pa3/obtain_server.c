@@ -676,7 +676,7 @@ valid_rec(char *fname, file_rec *orig, file_rec *rec)
      * If we don't have the origin_server's record we have to trust the
      * cached entry :-(
      */
-    if (orig = NULL) {
+    if (orig == NULL) {
         return (TRUE);
     }
 
@@ -727,6 +727,7 @@ search_1_svc(query_req *argp, query_rec *result, struct svc_req *rqstp)
     struct timespec timeout;
     file_rec orig_rec;
     int orig;
+    int rec_cnt;
 
 #ifdef DEBUG
     printf("search_1_svc() %s  : Received request for file : %s off=%lu\n", localhostname, argp->fname, argp->off);
@@ -818,7 +819,7 @@ send_result:
         bytes = fscanf(fh, IND_REC_FMT, &rec.ver, &rec.pflag, &rec.ttr, &rec.mtime, rec.hostname);
 
         printf("search_1_svc: bytes = %d\n", bytes);
-        if (bytes == 0) 
+        if (bytes != 5) 
             break;
         /*
          * If we have a valid origin-server record makes sure the rev of this record is the
