@@ -264,7 +264,7 @@ obtainprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
  * For every file registered we create a file under "/tmp/indsvr/" (if it does
  * not exist already). And append the name of the peer-node to that file.
  */
-int add_peer (char *fname, char *peername, int primary_flag, int newrev, my_time_t ttr)
+int add_peer (char *fname, char *peername, int primary_flag, int newrev, my_time_t ttr, my_time_t mtime)
 {
     FILE *fh;
     char filepath[MAXPATHLEN];
@@ -272,7 +272,7 @@ int add_peer (char *fname, char *peername, int primary_flag, int newrev, my_time
     int ret, found = 0;
     int fd;
     int oldrev, oldpflag;
-    my_time_t   oldttr;
+    my_time_t   oldttr, oldmtime;
     static init_done = 0;
 
     /*
@@ -323,7 +323,7 @@ int add_peer (char *fname, char *peername, int primary_flag, int newrev, my_time
 #endif
 
     while (!feof(fh)) {
-        fscanf(fh, IND_REC_FMT, &oldrev, &oldpflag, &oldttr, peer);
+        fscanf(fh, IND_REC_FMT, &oldrev, &oldpflag, &oldttr, &oldmtime, peer);
 #ifdef DEBUG
         printf("rev=%d pflag=%d peer=%s\n", oldrev, oldpflag, peer);
 #endif
@@ -335,9 +335,9 @@ int add_peer (char *fname, char *peername, int primary_flag, int newrev, my_time
     }
 
     if (found == 0) {
-        fprintf(fh, IND_REC_FMT, newrev, primary_flag, ttr, peername);
-        printf("Registering file : %s from peer %s newrev=%d primary_flag=%d ttr=%lu\n",
-                fname, peername, newrev, primary_flag, ttr);
+        fprintf(fh, IND_REC_FMT, newrev, primary_flag, ttr, mtime, peername);
+        printf("Registering file : %s from peer %s newrev=%d primary_flag=%d ttr=%lu mtime=%lu\n",
+                fname, peername, newrev, primary_flag, ttr, mtime);
     }
 
     flock(fd, LOCK_UN);
@@ -358,7 +358,7 @@ int add_peer (char *fname, char *peername, int primary_flag, int newrev, my_time
  * 1 - If it successfully updates the record.
  */
 int
-update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newttr)
+update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newttr, my_time_t newmtime)
 {
     FILE *fh;
     char filepath[MAXPATHLEN];
@@ -366,7 +366,7 @@ update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newt
     int ret, found = 0;
     int fd;
     int oldrev, oldpflag;
-    my_time_t   oldttr;
+    my_time_t   oldttr, oldmtime;
     long pos = 0;
 
     /*
@@ -397,7 +397,7 @@ update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newt
 
     while (!feof(fh)) {
         pos = ftell(fh);
-        fscanf(fh, IND_REC_FMT, &oldrev, &oldpflag, &oldttr, peer);
+        fscanf(fh, IND_REC_FMT, &oldrev, &oldpflag, &oldttr, &oldmtime, peer);
 #ifdef DEBUG
         printf("rev=%d pflag=%d peer=%s\n", oldrev, oldpflag, peer);
 #endif
@@ -420,7 +420,7 @@ update_rec(char *fname, char *peername, int newpflag, int newrev, my_time_t newt
             }
 
             fseek(fh, SEEK_SET, pos);
-            fprintf(fh, IND_REC_FMT, newrev, newpflag, newttr, peer);
+            fprintf(fh, IND_REC_FMT, newrev, newpflag, newttr, newmtime, peer);
             break;
         }
     }
@@ -443,6 +443,8 @@ register_files(char *localhostname, char *dirname)
     struct dirent *entp;
     bool_t ret;
     int res;
+    char name[MAXPATHLEN];
+    struct stat sbuf;
 
     if ((dirp = opendir(dirname)) == NULL) {
         printf("opendir(%s) failed with errno %d\n", dirname, errno);
@@ -458,7 +460,11 @@ register_files(char *localhostname, char *dirname)
             continue;
         printf("Registering file : %s to the index-server : %s\n", entp->d_name, localhostname);
 
-        ret = add_peer(entp->d_name, localhostname, PRIMARY, 0, ttrtime);
+        sprintf(name, "%s/%s", dirname, entp->d_name);
+        if (stat(name, &sbuf) != 0) {
+            printf("register_files : stat(%s) failed. errno=%d\n", name, errno);
+        }
+        ret = add_peer(entp->d_name, localhostname, PRIMARY, 0, ttrtime, sbuf.st_mtime);
         filecount++;
     }
 

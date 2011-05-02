@@ -60,10 +60,11 @@ union readfile_res switch (int error) {
 };
 
 struct file_rec {
-    char        hostname[MAXNAME];
-    int         pflag;
     int         ver;
+    int         pflag;
     my_time_t   ttr;
+    my_time_t   mtime;
+    char        hostname[MAXNAME];
 };
 
 struct query_req {
@@ -78,7 +79,7 @@ struct query_rec {
     int         pflags[MAXCOUNT];
     int         vers[MAXCOUNT];
     my_time_t   ttrs[MAXCOUNT];
-    my_time_t   mtime[MAXCOUNT];
+    my_time_t   mtimes[MAXCOUNT];
     int         eof;
 };
 
@@ -100,6 +101,7 @@ struct b_hitquery_reply {
     int         pflags[MAXCOUNT];
     int         vers[MAXCOUNT];
     my_time_t   ttrs[MAXCOUNT];
+    my_time_t   mtimes[MAXCOUNT];
     char        fname[MAXNAME];
     char        hosts[BUFSIZE];
 };

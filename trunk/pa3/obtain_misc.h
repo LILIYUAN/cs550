@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <utime.h>
 
 typedef struct peers_s {
     int     count;
@@ -48,8 +49,8 @@ typedef struct pending_req {
 
 /*
  * Index record in the index file.
- * <revnumber> <primaryflag> <TTR> <hostname>
+ * <revnumber> <primaryflag> <TTR> <mtime> <hostname>
  */
-#define IND_REC_FMT "%4d %2d %10lu %s\n"
+#define IND_REC_FMT "%4d %2d %10lu %10lu %s\n"
 
 #define DEBUG 1 

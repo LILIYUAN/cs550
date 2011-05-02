@@ -83,14 +83,16 @@ xdr_file_rec (XDR *xdrs, file_rec *objp)
 	register int32_t *buf;
 
 	int i;
-	 if (!xdr_vector (xdrs, (char *)objp->hostname, MAXNAME,
-		sizeof (char), (xdrproc_t) xdr_char))
+	 if (!xdr_int (xdrs, &objp->ver))
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->pflag))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->ver))
-		 return FALSE;
 	 if (!xdr_my_time_t (xdrs, &objp->ttr))
+		 return FALSE;
+	 if (!xdr_my_time_t (xdrs, &objp->mtime))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->hostname, MAXNAME,
+		sizeof (char), (xdrproc_t) xdr_char))
 		 return FALSE;
 	return TRUE;
 }
@@ -153,7 +155,7 @@ xdr_query_rec (XDR *xdrs, query_rec *objp)
 		 if (!xdr_vector (xdrs, (char *)objp->ttrs, MAXCOUNT,
 			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 			 return FALSE;
-		 if (!xdr_vector (xdrs, (char *)objp->mtime, MAXCOUNT,
+		 if (!xdr_vector (xdrs, (char *)objp->mtimes, MAXCOUNT,
 			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 			 return FALSE;
 		 if (!xdr_int (xdrs, &objp->eof))
@@ -198,7 +200,7 @@ xdr_query_rec (XDR *xdrs, query_rec *objp)
 		 if (!xdr_vector (xdrs, (char *)objp->ttrs, MAXCOUNT,
 			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 			 return FALSE;
-		 if (!xdr_vector (xdrs, (char *)objp->mtime, MAXCOUNT,
+		 if (!xdr_vector (xdrs, (char *)objp->mtimes, MAXCOUNT,
 			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 			 return FALSE;
 		 if (!xdr_int (xdrs, &objp->eof))
@@ -223,7 +225,7 @@ xdr_query_rec (XDR *xdrs, query_rec *objp)
 	 if (!xdr_vector (xdrs, (char *)objp->ttrs, MAXCOUNT,
 		sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 		 return FALSE;
-	 if (!xdr_vector (xdrs, (char *)objp->mtime, MAXCOUNT,
+	 if (!xdr_vector (xdrs, (char *)objp->mtimes, MAXCOUNT,
 		sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->eof))
@@ -305,6 +307,9 @@ xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
 		 if (!xdr_vector (xdrs, (char *)objp->ttrs, MAXCOUNT,
 			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 			 return FALSE;
+		 if (!xdr_vector (xdrs, (char *)objp->mtimes, MAXCOUNT,
+			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
+			 return FALSE;
 		 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
 			sizeof (char), (xdrproc_t) xdr_char))
 			 return FALSE;
@@ -348,6 +353,9 @@ xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
 		 if (!xdr_vector (xdrs, (char *)objp->ttrs, MAXCOUNT,
 			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 			 return FALSE;
+		 if (!xdr_vector (xdrs, (char *)objp->mtimes, MAXCOUNT,
+			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
+			 return FALSE;
 		 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
 			sizeof (char), (xdrproc_t) xdr_char))
 			 return FALSE;
@@ -368,6 +376,9 @@ xdr_b_hitquery_reply (XDR *xdrs, b_hitquery_reply *objp)
 		sizeof (int), (xdrproc_t) xdr_int))
 		 return FALSE;
 	 if (!xdr_vector (xdrs, (char *)objp->ttrs, MAXCOUNT,
+		sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
+		 return FALSE;
+	 if (!xdr_vector (xdrs, (char *)objp->mtimes, MAXCOUNT,
 		sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 		 return FALSE;
 	 if (!xdr_vector (xdrs, (char *)objp->fname, MAXNAME,
