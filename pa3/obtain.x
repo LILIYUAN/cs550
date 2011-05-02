@@ -1,6 +1,6 @@
 const SIZE = 4096;
 const MAXNAME = 128;
-const MAXCOUNT = 4;
+const MAXCOUNT = 1;
 const MAXHOSTNAME = 32;
 const BUFSIZE = 512; /* MAXHOSTNAME * MAXCOUNT */
 const PRIMARY = 0;  /* Indicates a primary server */
@@ -70,6 +70,7 @@ struct file_rec {
 struct query_req {
     string fname<MAXNAME>;
     int count;
+    long off;
 };
 
 struct query_rec {
@@ -80,6 +81,7 @@ struct query_rec {
     int         vers[MAXCOUNT];
     my_time_t   ttrs[MAXCOUNT];
     my_time_t   mtimes[MAXCOUNT];
+    long        off;
     int         eof;
 };
 

@@ -106,6 +106,8 @@ xdr_query_req (XDR *xdrs, query_req *objp)
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->count))
 		 return FALSE;
+	 if (!xdr_long (xdrs, &objp->off))
+		 return FALSE;
 	return TRUE;
 }
 
@@ -158,6 +160,8 @@ xdr_query_rec (XDR *xdrs, query_rec *objp)
 		 if (!xdr_vector (xdrs, (char *)objp->mtimes, MAXCOUNT,
 			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 			 return FALSE;
+		 if (!xdr_long (xdrs, &objp->off))
+			 return FALSE;
 		 if (!xdr_int (xdrs, &objp->eof))
 			 return FALSE;
 		return TRUE;
@@ -203,6 +207,8 @@ xdr_query_rec (XDR *xdrs, query_rec *objp)
 		 if (!xdr_vector (xdrs, (char *)objp->mtimes, MAXCOUNT,
 			sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
 			 return FALSE;
+		 if (!xdr_long (xdrs, &objp->off))
+			 return FALSE;
 		 if (!xdr_int (xdrs, &objp->eof))
 			 return FALSE;
 	 return TRUE;
@@ -227,6 +233,8 @@ xdr_query_rec (XDR *xdrs, query_rec *objp)
 		 return FALSE;
 	 if (!xdr_vector (xdrs, (char *)objp->mtimes, MAXCOUNT,
 		sizeof (my_time_t), (xdrproc_t) xdr_my_time_t))
+		 return FALSE;
+	 if (!xdr_long (xdrs, &objp->off))
 		 return FALSE;
 	 if (!xdr_int (xdrs, &objp->eof))
 		 return FALSE;

@@ -19,10 +19,11 @@ char localhostname[MAXHOSTNAME + 2];
 int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
 {
     query_req req;
-    query_rec res_rec;
+    query_rec res_rec[32];
+    int cnt = 0, n = 0;
     CLIENT *clnt;
     bool_t ret;
-    int res, i, attempts;
+    int res, i, j, attempts;
     time_t start_time, end_time;
     addcache_req ac_req;
     addcache_res ac_res;
@@ -41,37 +42,47 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
 
     printf("searching(%s) \n", req.fname);
     time(&start_time);
-    ret = search_1(&req,&res_rec,clnt);
+    
+    cnt = 0;
+    do {
+        ret = search_1(&req,&res_rec[cnt],clnt);
+        if (ret != RPC_SUCCESS) {
+            printf("ret = %d\n", ret);
+            clnt_perror (clnt, "call failed");
+            break;
+        }
+        req.off = res_rec[i].off;
+        cnt++;
+    } while (res_rec[cnt-1].eof == 0);
+
     time(&end_time);
 
-    printf("Time taken by index server = %ld secs\n", (long) difftime(end_time, start_time));
-
-    if (ret != RPC_SUCCESS) {
-        printf("ret = %d\n", ret);
-        clnt_perror (clnt, "call failed");
-    }
-
-    if (res_rec.count == 0) {
+    if (cnt == 0) {
         printf("Failed to find any peers serving file : %s\n", req.fname);
         return (-1);
     }
 
+    printf("Time taken by index server = %ld secs\n", (long) difftime(end_time, start_time));
+
     /*
      * Continue until the user enters a valid choice.
      */
-    printf("Total number of peers serving %s = %d\n", res_rec.fname, res_rec.count);
+    /*printf("Total number of peers serving %s = %d\n", res_rec.fname, res_rec.count); */
     printf("Peers serving the file are :\n");
     printf("\tNo.\tPeer\tVersion\tmtime\n");
-    for (i = 0; i < res_rec.count; i++) {
-        printf("\t%3d:\t%32s\t%3lu\t%10lu\n", i, res_rec.peers+(i * MAXHOSTNAME),
-                res_rec.vers[i], (long unsigned int)res_rec.mtimes[i]);
+    for (j = 0, n = 0; j < cnt; j++) {
+        for (i = 0; i < res_rec[j].count; i++) {
+            printf("\t%3d:\t%32s\t%3lu\t%10lu\n", n, res_rec[j].peers+(i * MAXHOSTNAME),
+                    res_rec[j].vers[i], (long unsigned int)res_rec[j].mtimes[i]);
+            n++;
+        }
     }
 
 
     if (fopt == 0) {
         printf("Pick the peer from which you want to fetch from : ");
         scanf("%d", &i);
-        while (i < 0 || i >= res_rec.count) {
+        while (i < 0 || i >= n) {
             printf("Pick a valid peer number : ");
             scanf("%d", &i);
         }
@@ -80,24 +91,29 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
     }
 
 
+    j = (int) i/MAXCOUNT;
+    i = i % MAXCOUNT; 
+
     /*
      * We try to fetch the file untill we succeed or have tried all the servers.
      */
     attempts = 0;
     time(&start_time);
-    while (get_file(res_rec.peers+(i * MAXHOSTNAME), fname, dest_dir) != 0 &&
-        attempts < res_rec.count) {
+    while (get_file(res_rec[j].peers+(i * MAXHOSTNAME), fname, dest_dir) != 0 &&
+        attempts < n) {
 
         printf("Failed to fetch the file from host:%s\nTrying next server\n",
-                res_rec.peers+(i * MAXHOSTNAME));
+                res_rec[j].peers+(i * MAXHOSTNAME));
 
-        i = (i + 1) % res_rec.count;
+        i = (i + 1) % n;
+        j = (int) i/MAXCOUNT;
+        i = i % MAXCOUNT;
         attempts++;
         time(&start_time);
     }
     time(&end_time);
 
-    if (attempts == res_rec.count) {
+    if (attempts == n) {
         printf("Failed to fetch the file from any of the listed peers\n");
     } else {
         printf("Time taken to fetch the file = %ld secs\n", (long) difftime(end_time, start_time));
@@ -105,9 +121,9 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
 
         // build the addcache_req object
         ac_req.fname = fname;
-        ac_req.ver = res_rec.vers[i];
+        ac_req.ver = res_rec[j].vers[i];
         ac_req.path = dest_dir;
-        ac_req.ttr = res_rec.ttrs[i];
+        ac_req.ttr = res_rec[j].ttrs[i];
 
         // make the RPC call
         ret = addcache_1(&ac_req,&ac_res,clnt);
