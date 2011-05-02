@@ -1,0 +1,36 @@
+./obtain_client node3.1 /tmp
+Created the client
+searching(node3.1) 
+Time taken by index server = 0 secs
+Peers serving the file are :
+	No.	Peer	Version	mtime	pflag
+	  0:	compute-0-3.local	  0	1304338225PRIMARY
+Pick the peer from which you want to fetch from : 
+[rkumarma@compute-0-0 pa3]$ ./obtain_client node3.1 /tmp
+Created the client
+searching(node3.1) 
+Time taken by index server = 0 secs
+Peers serving the file are :
+	No.	Peer	Version	mtime	pflag
+	  0:	compute-0-3.local	  0	1304338225PRIMARY
+Pick the peer from which you want to fetch from : 0
+Time taken to fetch the file = 0 secs
+Query hit ratio by version number
+	Total-hits = 1 Good-hits=1 Stale-hits=0
+Query hit ratio by mtime
+	Total-hits = 1 Good-hits=1 Stale-hits=0
+[rkumarma@compute-0-0 pa3]$ ./obtain_client node3.1 /tmp
+Created the client
+searching(node3.1) 
+Time taken by index server = 0 secs
+Peers serving the file are :
+	No.	Peer	Version	mtime	pflag
+	  0:	compute-0-3.local	  0	1304338225PRIMARY
+	  1:	compute-0-0.local	  0	1304338370CACHED
+Pick the peer from which you want to fetch from : 1
+Time taken to fetch the file = 0 secs
+Query hit ratio by version number
+	Total-hits = 2 Good-hits=2 Stale-hits=0
+Query hit ratio by mtime
+	Total-hits = 2 Good-hits=2 Stale-hits=0
+
