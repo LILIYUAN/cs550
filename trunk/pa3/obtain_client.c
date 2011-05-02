@@ -175,7 +175,7 @@ int query_and_fetch(char *fname, char *index_svr, char *dest_dir, int fopt)
         pass_cnt = 0;
         for (j = 0; j < cnt; j++) {
             for (i = 0; i < res_rec[j].count; i++) {
-                if (res_rec[j].mtimes[i] > orig_mtime)
+                if (res_rec[j].mtimes[i] >= orig_mtime)
                     pass_cnt++;
             }
         }
