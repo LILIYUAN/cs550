@@ -1,0 +1,90 @@
+peerfile /home/rkumarma/cs550/pa3//relay-test/compute-0-3.peers sharedir /home/rkumarma/cs550/pa3//data/share3
+localhostname : compute-0-3.local ttrtime = 0 delay = 120
+Registering file : node3.1 to the index-server : compute-0-3.local
+Walking through current entries for node3.1: rev=0 pflag=0 peer=
+Registering file : node3.1 from peer compute-0-3.local newrev=0 primary_flag=0 ttr=0 mtime=1304338225
+Registering file : .svn to the index-server : compute-0-3.local
+Walking through current entries for .svn: rev=0 pflag=0 peer=
+Registering file : .svn from peer compute-0-3.local newrev=0 primary_flag=0 ttr=0 mtime=1304338237
+Now ready to serve them
+
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 4
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 4
+b_query_1_svc() : Received query for node3.1 from compute-0-2.local
+b_query_propagate: fname node3.1 
+find_node: waiting for pending->lock
+find_node: Done
+b_query_propagate: before insert_node()
+b_query_propagate: insert_node() done
+build_peers_from_cache compute-0-3.local : Processing query for file : node3.1
+Peers serving node3.1 = 1 
+hostname : compute-0-3.local
+b_query_propagate: my_cache.count = 1 peers.count = 0
+send_local_cache: read rec : rev=0 pflag=0 ttr=0 mtime=1304338225, hostname=compute-0-3.local for file node3.1
+send_local_cache: Sending response to compute-0-2.local for file node3.1
+send_local_cache: Sending response to compute-0-2.local for file node3.1
+Returned from the service routine : rq_proc = 4
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 1
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 1
+obtain_1_svc() compute-0-3.local  : Entered : filepath : /home/rkumarma/cs550/pa3//data/share3/node3.1
+obtain_1_svc() : Served 4096 bytes from /home/rkumarma/cs550/pa3//data/share3/node3.1 at offset : 0
+Returned from the service routine : rq_proc = 1
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 1
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 1
+obtain_1_svc() compute-0-3.local  : Entered : filepath : /home/rkumarma/cs550/pa3//data/share3/node3.1
+obtain_1_svc() : Served 2858 bytes from /home/rkumarma/cs550/pa3//data/share3/node3.1 at offset : 4096
+Returned from the service routine : rq_proc = 1
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 1
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 1
+obtain_1_svc() compute-0-3.local  : Entered : filepath : /home/rkumarma/cs550/pa3//data/share3/node3.1
+obtain_1_svc() : Served 4096 bytes from /home/rkumarma/cs550/pa3//data/share3/node3.1 at offset : 0
+Returned from the service routine : rq_proc = 1
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 1
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 1
+obtain_1_svc() compute-0-3.local  : Entered : filepath : /home/rkumarma/cs550/pa3//data/share3/node3.1
+obtain_1_svc() : Served 2858 bytes from /home/rkumarma/cs550/pa3//data/share3/node3.1 at offset : 4096
+Returned from the service routine : rq_proc = 1
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 6
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 6
+index-server : Failed to make an entry : errno = 2 : No such file or directory
+Returned from the service routine : rq_proc = 6
+Completed the sending the reply
+obtainprog_1 entered 
+obtainprog_1: service routine : rq_proc = 6
+Spawning a new thread
+Spawned a new thread
+service_request() : Entered
+Calling the service routine : rq_proc = 6
+propagate_invalidate: file node2.2 originsvr compute-0-2.local 
+find_node: waiting for pending->lock
+find_node: Done
+index-server : Fa
